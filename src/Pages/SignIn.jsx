@@ -17,11 +17,17 @@ const SignIn = () => {
         const studentPassword = document.getElementById('studentPassword').value;
         const lecturerEmail = document.getElementById('lecturerEmail').value;
         const lecturerPassword = document.getElementById('lecturerPassword').value;
-
         // console.log('Sign in submitted for role:', activeForm);
         // TODO: replace with real auth + navigation
     }
-
+    const studentDashboard = () => {
+        console.log('open to student dashboard');
+        window.location.href = '/student-dashboard';
+    }
+    const lecturerDashboard = () => {
+        console.log('open to dashboard');
+        window.location.href = '/lecturer-dashboard';
+    }
     return (
         <>
             <div className='bg-[#f5f5f5] h-screen flex items-center justify-center'>
@@ -62,7 +68,7 @@ const SignIn = () => {
                             <input className="w-full border border-outline p-3 mt-2 rounded-lg focus:ring-0.5 focus:ring-[#0a643a] focus:ring-opacity-10 focus:border-[#0a643a] outline-none transition-all font-body-md text-body-md" placeholder="********" required="" type="password" id='studentPassword' />
 
                             <div className='flex items-center justify-between mt-6'>
-                                <button type='submit' className='bg-[#0a643a] text-white py-2 px-4 rounded-sm w-full'>Sign In to Dashboard</button>
+                                <button type='button' onClick={studentDashboard} className='bg-[#0a643a] text-white py-2 px-4 rounded-sm w-full'>Sign In to Dashboard</button>
                             </div>
                         </form>
                         <form id='lecturerForm' onSubmit={handleSignIn} style={{ display: activeForm === 'lecturer' ? 'block' : 'none' }}>
@@ -72,11 +78,11 @@ const SignIn = () => {
                             <label className='text-[#3f4941] text-lg mt-4 block'>Password</label>
                             <input className="w-full border border-outline p-3 mt-2 rounded-lg focus:ring-0.5 focus:ring-[#0a643a] focus:ring-opacity-10 focus:border-[#0a643a] outline-none transition-all font-body-md text-body-md" placeholder="********" required="" type="password" id="lecturerPassword" />
 
-                            <div className='flex items-center justify-between mt-6'>
-                                <button type='submit' className='bg-[#0a643a] text-white py-2 px-4 rounded-sm w-full'>Sign In to Dashboard</button>
+                            <div className='flex items-center justify-between mt-6 cursor-pointer'>
+                                <button type='button' onClick={lecturerDashboard} className='bg-[#0a643a] text-white py-2 px-4 rounded-sm w-full'>Sign In to Dashboard</button>
                             </div>
                         </form>
-                        <p className='text-[#3f4941] text-sm mt-4 text-center'>Don't have an account? <a href="/" className='text-[#0a643a] hover:underline'><strong>Sign up</strong></a></p>
+                        <p className='text-[#3f4941] text-sm mt-4 text-center'>Don't have an account? <a href="/signup" className='text-[#0a643a] hover:underline'><strong>Sign up</strong></a></p>
                     </div>
                 </div>
             </div>
