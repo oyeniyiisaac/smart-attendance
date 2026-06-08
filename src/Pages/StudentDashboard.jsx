@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import SideBar from '../Components/SideBar'
 
 const StudentDashboard = () => {
     const [activeBtn, setActiveBtn] = useState('dashboard')
@@ -22,7 +23,7 @@ const StudentDashboard = () => {
     return (
         <>
             <div className='bg-[#f4fafd] flex'>
-                <div className="bg-[#eef5f7] w-[300px] h-[100vh] p-4 border-r-1 border-[#bfc9bf]">
+                {/* <div className="bg-[#eef5f7] w-[300px] h-[100vh] p-4 border-r-1 border-[#bfc9bf]">
                     <h2 className="text-xl font-bold text-[#0a643a] mb-6 ">Smart Attendance</h2>
                     <div className='flex flex-col'>
                         <img src="" alt="" className='w-[80px] rounded-full' />
@@ -41,7 +42,8 @@ const StudentDashboard = () => {
                             video_camera_front
                         </span>Online Classes</a>
                     </div>
-                </div>
+                </div> */}
+                <SideBar profileImg="https://imgs.search.brave.com/oZeYpk1JaTtg8v9ijnX3Y7ed56qEkZsjZ_bjoW40gyg/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9pbWcu/bWFnbmlmaWMuY29t/L3ByZW1pdW0tcGhv/dG8vc29mdHdhcmUt/ZW5naW5lZXItZGln/aXRhbC1hdmF0YXIt/Z2VuZXJhdGl2ZS1h/aV85MzQ0NzUtODk5/Ny5qcGc_c2VtdD1h/aXNfaHlicmlkJnc9/NzQwJnE9ODA" ID={123456789 } courses="Computer Science"  profileName="Alex Rivers" />
                 <div className='py-6 px-20 w-full'>
                     <div className='flex items-center justify-between'>
                         <div>
@@ -70,10 +72,10 @@ const StudentDashboard = () => {
                             </div>
                             <div className='flex flex-col justify-center p-4'>
                                 <h1 className='text-[18px] font-bold p-2'>Advanced Algorithms</h1>
-                                <p className='flex items-center gap-1 text-sm text-[#3f4941] mb-2'><span class="material-symbols-outlined">
+                                <p className='flex items-center gap-1 text-sm text-[#3f4941] mb-2'><span className="material-symbols-outlined">
                                     location_on
                                 </span>Hall A12</p>
-                                <p className='flex items-center gap-1 text-sm text-[#3f4941] mb-4'><span class="material-symbols-outlined">
+                                <p className='flex items-center gap-1 text-sm text-[#3f4941] mb-4'><span className="material-symbols-outlined">
                                     schedule
                                 </span>09:00AM - 11:00AM</p>
                                 <button className='bg-[#0a643a] flex items-center justify-center text-white py-2 px-4 rounded-sm hover:bg-[#084d2c]'>
@@ -92,10 +94,10 @@ const StudentDashboard = () => {
                             </div>
                             <div className='flex flex-col justify-center p-4'>
                                 <h1 className='text-[18px] font-bold p-2'>Advanced Algorithms</h1>
-                                <p className='flex items-center gap-1 text-sm text-[#3f4941] mb-2'><span class="material-symbols-outlined">
+                                <p className='flex items-center gap-1 text-sm text-[#3f4941] mb-2'><span className="material-symbols-outlined">
                                     location_on
                                 </span>Hall A12</p>
-                                <p className='flex items-center gap-1 text-sm text-[#3f4941] mb-4'><span class="material-symbols-outlined">
+                                <p className='flex items-center gap-1 text-sm text-[#3f4941] mb-4'><span className="material-symbols-outlined">
                                     schedule
                                 </span>09:00AM - 11:00AM</p>
                                 <button className='bg-[#0a643a] flex items-center justify-center text-white py-2 px-4 rounded-sm hover:bg-[#084d2c]'>
@@ -110,7 +112,7 @@ const StudentDashboard = () => {
                         <div className='bg-[#0a643a] w-[250px] relative text-start p-4 rounded-lg border-1 border-[#bfc9bf]'>
                             <span className='text-[14px] font-bold text-[#b5cfc3]'>WEEKLY ATTENDANCE</span>
                             <h1 className='text-[32px] leading-[0.6] font-bold p-2 text-white'>95%</h1>
-                            <p className=' flex absolute items-center bottom-[10px] text-[12px] text-[#a4f4bf]'><span class="material-symbols-outlined">
+                            <p className=' flex absolute items-center bottom-[10px] text-[12px] text-[#a4f4bf]'><span className="material-symbols-outlined">
                                 trending_up
                             </span>Exceeded benchmark</p>
                         </div>

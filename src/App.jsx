@@ -1,18 +1,23 @@
 import SignIn from './Pages/SignIn'
 import SignUp from './Pages/SignUp'
 import StudentDashboard from './Pages/StudentDashboard'
+import AttendanceHistroy from './Pages/AttendanceHistroy'
 
 
 const App = () => {
-  const isSignInPage = window.location.pathname === '/signin'
-  const isSignUpPage = window.location.pathname === '/signup'
-  const isStudentDashboard = window.location.pathname === '/student-dashboard'
+  const currentPath = window.location.pathname
+
+  const pages = {
+    '/signin': <SignIn />,
+    '/signup': <SignUp />,
+    '/student-dashboard': <StudentDashboard />,
+    '/attendance-history': <AttendanceHistroy />
+
+  }
 
   return (
     <>
-      {isSignInPage ? <SignIn /> : null}
-      {isSignUpPage ? <SignUp /> : null}
-      {isStudentDashboard?  <StudentDashboard />: null}
+      {pages[currentPath] ?? <SignIn />}
     </>
   )
 }
