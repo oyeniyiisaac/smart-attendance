@@ -23,28 +23,8 @@ const StudentDashboard = () => {
     return (
         <>
             <div className='bg-[#f4fafd] flex'>
-                {/* <div className="bg-[#eef5f7] w-[300px] h-[100vh] p-4 border-r-1 border-[#bfc9bf]">
-                    <h2 className="text-xl font-bold text-[#0a643a] mb-6 ">Smart Attendance</h2>
-                    <div className='flex flex-col'>
-                        <img src="" alt="" className='w-[80px] rounded-full' />
-                        <span>Student ID : 123456789</span>
-                        <span>Computer Science</span>
-                    </div>
-                    <div className='flex flex-col gap-6 mt-6 text-lg text-[#3f4941]'>
-                        <a className={`bg-[#baeed9] flex items-center gap-2 p-2 rounded-xl cursor-pointer ${activeBtn === 'dashboard' ? 'bg-[#baeed9]' : 'bg-transparent'}`} onClick={() => setActiveBtn('dashboard')}><span className="material-symbols-rounded" style={iconStyle}>
-                            dashboard
-                        </span>Dashboard</a>
-                        <a className={`flex items-center gap-2 p-2 rounded-xl cursor-pointer ${activeBtn === 'history' ? 'bg-[#baeed9]' : 'bg-transparent'}`} onClick={() => setActiveBtn('history')}><span className="material-symbols-outlined">
-                            history
-                        </span>Attendance History</a>
-                        <a className={`flex items-center gap-2 p-2 rounded-xl cursor-pointer ${activeBtn === 'eligibility' ? 'bg-[#baeed9]' : 'bg-transparent'}`} onClick={() => setActiveBtn('eligibility')}><span className="material-symbols-outlined">fact_check</span>Eligibility</a>
-                        <a className={`flex items-center gap-2 p-2 rounded-xl cursor-pointer ${activeBtn === 'classes' ? 'bg-[#baeed9]' : 'bg-transparent'}`} onClick={() => setActiveBtn('classes')}><span className="material-symbols-outlined">
-                            video_camera_front
-                        </span>Online Classes</a>
-                    </div>
-                </div> */}
                 <SideBar profileImg="https://imgs.search.brave.com/oZeYpk1JaTtg8v9ijnX3Y7ed56qEkZsjZ_bjoW40gyg/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9pbWcu/bWFnbmlmaWMuY29t/L3ByZW1pdW0tcGhv/dG8vc29mdHdhcmUt/ZW5naW5lZXItZGln/aXRhbC1hdmF0YXIt/Z2VuZXJhdGl2ZS1h/aV85MzQ0NzUtODk5/Ny5qcGc_c2VtdD1h/aXNfaHlicmlkJnc9/NzQwJnE9ODA" ID={123456789 } courses="Computer Science"  profileName="Alex Rivers" />
-                <div className='py-6 px-20 w-full'>
+                <div className='py-6 px-20 w-[78%] absolute right-0'>
                     <div className='flex items-center justify-between'>
                         <div>
                             <h1 className='text-[30px] font-bold'>Welcome back, Alex!</h1>
