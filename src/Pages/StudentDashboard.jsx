@@ -23,7 +23,7 @@ const StudentDashboard = () => {
     return (
         <>
             <div className='bg-[#f4fafd] flex'>
-                <SideBar profileImg="https://imgs.search.brave.com/oZeYpk1JaTtg8v9ijnX3Y7ed56qEkZsjZ_bjoW40gyg/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9pbWcu/bWFnbmlmaWMuY29t/L3ByZW1pdW0tcGhv/dG8vc29mdHdhcmUt/ZW5naW5lZXItZGln/aXRhbC1hdmF0YXIt/Z2VuZXJhdGl2ZS1h/aV85MzQ0NzUtODk5/Ny5qcGc_c2VtdD1h/aXNfaHlicmlkJnc9/NzQwJnE9ODA" ID={123456789 } courses="Computer Science"  profileName="Alex Rivers" />
+                {/* <UserProfile profileImg="https://imgs.search.brave.com/oZeYpk1JaTtg8v9ijnX3Y7ed56qEkZsjZ_bjoW40gyg/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9pbWcu/bWFnbmlmaWMuY29t/L3ByZW1pdW0tcGhv/dG8vc29mdHdhcmUt/ZW5naW5lZXItZGln/aXRhbC1hdmF0YXIt/Z2VuZXJhdGl2ZS1h/aV85MzQ0NzUtODk5/Ny5qcGc_c2VtdD1h/aXNfaHlicmlkJnc9/NzQwJnE9ODA" ID={123456789 } courses="Computer Science"  profileName="Alex Rivers" /> */}
                 <div className='py-6 px-20 w-[78%] absolute right-0'>
                     <div className='flex items-center justify-between'>
                         <div>
