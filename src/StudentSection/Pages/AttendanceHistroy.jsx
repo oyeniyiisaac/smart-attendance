@@ -1,5 +1,4 @@
 import AttendanceTable from '../Components/AttendanceTable'
-import SideBar from '../Components/SideBar'
 
 const AttendanceHistroy = () => {
     const iconStyle = {
@@ -78,7 +77,7 @@ const AttendanceHistroy = () => {
                             </div>
                         </div>
                         <div>
-                            <AttendanceTable/>
+                            <AttendanceTable />
                         </div>
 
                     </div>

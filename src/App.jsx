@@ -1,11 +1,20 @@
-import SignIn from './Pages/SignIn'
-import SignUp from './Pages/SignUp'
-import StudentDashboard from './Pages/StudentDashboard'
-import AttendanceHistroy from './Pages/AttendanceHistroy'
 import { Route, Routes } from 'react-router-dom'
-import SideBar from './Components/SideBar'
-import NotFound from './Pages/NotFound'
-import EligibilitySummary from './Pages/EligibilitySummary'
+import SideBar from './StudentSection/Components/SideBar'
+import AttendanceHistroy from './StudentSection/Pages/AttendanceHistroy'
+import EligibilitySummary from './StudentSection/Pages/EligibilitySummary'
+import NotFound from './StudentSection/Pages/NotFound'
+import SignIn from './StudentSection/Pages/SignIn'
+import SignUp from './StudentSection/Pages/SignUp'
+import StudentDashboard from './StudentSection/Pages/StudentDashboard'
+import NavBar from './AdminSections/Components/NavBar'
+import AdminProfile from './AdminSections/Components/AdminProfile'
+import AdminSideBar from './AdminSections/Components/AdminSideBar'
+import AdminDashboard from './AdminSections/Pages/AdminDashboard'
+import CreateSession from './AdminSections/Pages/CreateSession'
+import AdminLogin from './AdminSections/Pages/AdminLogin'
+import CreateSessionForm from './AdminSections/Pages/CreateSessionForm'
+import SessionMonitor from './AdminSections/Pages/SessionMonitor'
+// import Adminsidebar from './AdminSections/Components/Adminsidebar'
 
 
 const App = () => {
@@ -22,14 +31,23 @@ const App = () => {
   return (
     <>
       <Routes>
+        <Route path='/' element={<SignUp />} />
         <Route path='/signin' element={<SignIn />} />
-        <Route path='/signup' element={<SignUp />} />
 
-        <Route path='/' element={<SideBar />}>
-          <Route path='student-dashboard' element={<StudentDashboard />} />
-          <Route path='attendance-history' element={<AttendanceHistroy />} />
+        <Route path='/student' element={<SideBar />}>
+          <Route path='dashboard' element={<StudentDashboard />} />
+          <Route path='history' element={<AttendanceHistroy />} />
         </Route>
-        <Route path='student-eligibility' element={ <EligibilitySummary/> } />
+        <Route path='/admin/login' element={<AdminLogin />} />
+        <Route path='/admin' element={<NavBar />} >
+          <Route path='lecturer-dashboard' element={<AdminDashboard />} />
+          <Route path='session' element={<CreateSessionForm/>} />
+          <Route path='monitor' element={<SessionMonitor/>} />
+          <Route path="/admin/monitor/:id" element={<SessionMonitor />} />
+        </Route>
+        <Route path='/adminsidebar' element={<AdminSideBar />} />
+        {/* <Route path='/adminsidebar' element={<Adminsidebar/>} /> */}
+        <Route path='student-eligibility' element={<EligibilitySummary />} />
 
         <Route path='*' element={<NotFound />} />
         {/* <Route path='/:ID' element={<SideBar/>} /> */}

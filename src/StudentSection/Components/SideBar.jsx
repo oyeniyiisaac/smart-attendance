@@ -17,15 +17,15 @@ const SideBar = () => {
 
     const dashboardBtn = () => {
         setLocalActiveBtn('dashboard')
-        navigate('/student-dashboard')
+        navigate('/student/dashboard')
     }
     const historyBtn = () => {
         setLocalActiveBtn('history')
-        navigate('/attendance-history')
+        navigate('/student/history')
     }
     const eligibilityBtn = () => {
         setLocalActiveBtn('eligibility')
-        navigate('student-eligibility')
+        navigate('/student-eligibility')
     }
     const classesBtn = () => {
         setLocalActiveBtn('classes')
