@@ -35,7 +35,7 @@ const SideBar = () => {
     }
     return (
         <>
-            <div className="bg-[#eef5f7] fixed w-[300px] h-[100vh] p-4 border-r-1 border-[#bfc9bf]">
+            <div className="hidden sm:hidden md:hidden lg:block bg-[#eef5f7] fixed w-[300px] h-[250vh] p-4 border-r-1 border-[#bfc9bf]">
                 <h2 className="text-xl font-bold text-[#0a643a] mb-6 ">Smart Attendance</h2>
                 {/* <div className='flex items-center gap-2 mb-2'>
                     <img src={displayProfileImg} alt="profile" className="w-[60px] rounded-xl border-2 border-[#2e7d52] object-cover" />
@@ -63,7 +63,7 @@ const SideBar = () => {
                     </span>Online Classes</button>
                 </div>
             </div>
-            <div className="ml[300px] p-4 w-full">
+            <div className="lg:ml-[300px] p-4 w-full">
                 <Outlet />
             </div>
         </>

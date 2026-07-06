@@ -123,13 +123,14 @@ const StudentDashboard = () => {
     return (
         <>
             <ToastContainer />
-            <div className='bg-[#f4fafd] flex min-h-screen'>
-                <div className='py-6 px-20 w-[78%] absolute right-0'>
+            <div className='bg-[#f4fd] flex '>
+                <div className='pt-16 px-6 lg:py-2 lg:px-5  lg:w-[78%] w-[100%] absolute right-0'>
                     <div className='flex items-center justify-between'>
                         <div>
                             <h1 className='text-[30px] font-bold'>Welcome back, {firstname || "Student"}!</h1>
                             <span className='text-[16px] text-[#3f4941] font-medium'>MATRIC : {matricNo || "N/A"}</span>
                         </div>
+
                     </div>
 
                     <div className='mt-6 p-4 flex gap-2 items-center'>
@@ -146,7 +147,7 @@ const StudentDashboard = () => {
                             No active classes found at the moment.
                         </div>
                     ) : (
-                                <div className='grid grid-cols-3 gap-4'>
+                                <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3  gap-4'>
                                     {/* 👈 Dynamic Mapping over sessions array */}
                                     {sessions.map((sessionItem) => {
                                         const displayTimeFrom = sessionItem.dateTimeFrom
@@ -159,7 +160,7 @@ const StudentDashboard = () => {
 
                                         // 👈 FIXED: Brought the opening parenthesis up to the return line!
                                         return (
-                                            <div key={sessionItem._id} className='bg-[#ffffff] w-[250px] rounded-lg border border-[#bfc9bf] flex flex-col justify-between shadow-sm'>
+                                            <div key={sessionItem._id} className='bg-[#ffffff] sm:w-[300px] md:w-[350px] lg:w-[355px] rounded-lg border border-[#bfc9bf] flex flex-col justify-between shadow-sm'>
                                                 <div className='bg-[#e2e9ec] flex justify-between p-2 rounded-tl-lg rounded-tr-lg items-center'>
                                                     <span className='text-[12px] text-[#3f4941] font-bold uppercase'>
                                                         {sessionItem.courseCode}

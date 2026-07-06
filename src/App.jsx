@@ -14,6 +14,8 @@ import CreateSession from './AdminSections/Pages/CreateSession'
 import AdminLogin from './AdminSections/Pages/AdminLogin'
 import CreateSessionForm from './AdminSections/Pages/CreateSessionForm'
 import SessionMonitor from './AdminSections/Pages/SessionMonitor'
+import NavbarBottom from './StudentSection/Components/NavbarBottom'
+import NavbarTopDashboard from './StudentSection/Components/NavbarTopDashboard'
 // import Adminsidebar from './AdminSections/Components/Adminsidebar'
 
 
@@ -33,8 +35,12 @@ const App = () => {
       <Routes>
         <Route path='/' element={<SignUp />} />
         <Route path='/signin' element={<SignIn />} />
-
-        <Route path='/student' element={<SideBar />}>
+        <Route path='/navbarbottom' element={<NavbarBottom />} />
+        <Route path='/student' element={<>
+          <NavbarTopDashboard className="lg:hidden z-50 "/>
+          <SideBar />
+          <NavbarBottom />
+        </>}>
           <Route path='dashboard' element={<StudentDashboard />} />
           <Route path='history' element={<AttendanceHistroy />} />
         </Route>
