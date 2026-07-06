@@ -184,6 +184,13 @@ const StudentDashboard = () => {
                                                         <span className="material-symbols-outlined text-[16px]">schedule</span>
                                                         {displayTimeFrom} - {displayTimeTo}
                                                     </p>
+                                                    {sessionItem.mapUrl && (
+                                                        <a href={sessionItem.mapUrl} target='_blank' rel='noopener noreferrer'
+                                                            className='flex items-center gap-1 text-xs text-[#0a643a] hover:text-[#084d2c] hover:underline mb-2'>
+                                                            <span className="material-symbols-outlined text-[16px]">map</span>
+                                                            View on Google Maps
+                                                        </a>
+                                                    )}
                                                     <button
                                                         onClick={() => verifyLocation(sessionItem.courseCode)}
                                                         className='bg-[#0a643a] flex items-center justify-center text-white py-2 px-4 rounded-sm hover:bg-[#084d2c] gap-1 font-semibold transition-colors mt-auto w-full text-sm'
