@@ -88,7 +88,7 @@ const StudentDashboard = () => {
                 console.error(error)
                 toast.error('Unable to retrieve location. Please check device location permissions.')
             },
-            { enableHighAccuracy: true, timeout: 10000 }
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         )
     }
 
