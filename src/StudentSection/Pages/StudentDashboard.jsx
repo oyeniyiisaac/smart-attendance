@@ -42,7 +42,10 @@ const StudentDashboard = () => {
                     setMatricNo(data.matricno)
                 }
             })
-            .catch((err) => console.error("Profile error:", err))
+            .catch((err) => {
+                console.error("Profile error:", err)
+                navigate('/signin')
+            })
 
         // 2. Fetch Active Lecture Sessions from your router
         axios.get(sessionURL, {
@@ -123,8 +126,8 @@ const StudentDashboard = () => {
     return (
         <>
             <ToastContainer />
-            <div className='bg-[#f4fd] flex '>
-                <div className='pt-16 px-6 lg:py-2 lg:px-5  lg:w-[78%] w-[100%] absolute right-0'>
+            <div className='bg-[#f4f2fd] min-h-screen'>
+                <div className='pt-16 px-6 lg:py-2 lg:px-5 w-full pb-28'>
                     <div className='flex items-center justify-between'>
                         <div>
                             <h1 className='text-[30px] font-bold'>Welcome back, {firstname || "Student"}!</h1>

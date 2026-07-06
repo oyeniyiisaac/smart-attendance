@@ -6,9 +6,9 @@ const AttendanceHistroy = () => {
     }
     return (
         <>
-            <div className='bg-[#fafdf4] flex'>
+            <div className='bg-[#fafdf4] min-h-screen'>
                 {/* <SideBar profileImg="https://imgs.search.brave.com/Y20_Qf09jZ8KyraFayP-Bh7mXPopmU4Pc6JBLcB4CBY/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9zdGF0/aWMudmVjdGVlenku/Y29tL3N5c3RlbS9y/ZXNvdXJjZXMvdGh1/bWJuYWlscy8wMjcv/OTUxLzEzMC9zbWFs/bC9hZnJpY2EtZ3V5/LTNkLWF2YXRhci1j/aGFyYWN0ZXItaWxs/dXN0cmF0aW9ucy1w/bmcucG5n" profileName="MercyTech" courses="Information system" /> */}
-                <div className='py-4 px-10 w-[78%] absolute right-0'>
+                <div className='py-4 px-6 lg:px-10 w-full pb-28'>
                     <div className='flex flex-col  '>
                         <div className='flex items-center justify-between'>
                             <div>
