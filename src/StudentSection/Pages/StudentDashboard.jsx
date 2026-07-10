@@ -150,7 +150,7 @@ const StudentDashboard = () => {
                             No active classes found at the moment.
                         </div>
                     ) : (
-                                <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3  gap-4'>
+                                <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-4 lg:gap-10'>
                                     {/* 👈 Dynamic Mapping over sessions array */}
                                     {sessions.map((sessionItem) => {
                                         const displayTimeFrom = sessionItem.dateTimeFrom
