@@ -43,7 +43,7 @@ const AdminSideBar = ({ isOpen }) => {
   return (
     /* Added flex flex-col justify-between to force children items to opposite poles */
     <aside
-      className={`bg-[#eef5f7] fixed top-0 left-0 h-[100vh] p-4 border-r border-[#bfc9bf] flex flex-col justify-between transition-all duration-300 z-20 ${isOpen ? "w-[300px]" : "w-[80px]"}`}
+      className={`bg-[#eef5f7] hidden lg:block fixed top-0 left-0 h-[100vh] p-4 border-r border-[#bfc9bf] flex flex-col justify-between transition-all duration-300 z-20 ${isOpen ? "w-[300px]" : "w-[80px]"}`}
     >
       {/* TOP GROUP: Logo Header + Navigation Menus */}
       <div className="flex flex-col w-full">
@@ -104,6 +104,8 @@ const AdminSideBar = ({ isOpen }) => {
         </button>
       </div>
     </aside>
+    
+  
   );
 };
 
