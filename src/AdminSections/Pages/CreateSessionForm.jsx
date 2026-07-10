@@ -108,7 +108,7 @@ export default function CreateSessionForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 p-4 h-screen overflow-y-auto scrollbar-thin">
+    <form onSubmit={handleSubmit} className="space-y-6 p-4 max-h-[100vh] overflow-y-auto scrollbar-thin">
       <ToastContainer />
       {/* SECTION 1: Course Information */}
       <FormSection title="Course Information">
