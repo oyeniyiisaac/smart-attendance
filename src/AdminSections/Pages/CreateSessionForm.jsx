@@ -269,13 +269,13 @@ export default function CreateSessionForm() {
 
       {/* SECTION 3: Geofencing & GPS Coordinates */}
       <FormSection title="Geofencing & GPS Coordinates">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-4 z-1">
           <div className="lg:col-span-2 relative bg-slate-900 border border-gray-300 rounded-lg h-48 overflow-hidden flex items-center justify-center">
             <iframe
               title="Venue Location Map"
               width="100%"
               height="100%"
-              className="absolute inset-0 border-0"
+              className="absolute inset-0 border-0 z-1"
               loading="lazy"
               allowFullScreen
               referrerPolicy="no-referrer-when-downgrade"
@@ -376,7 +376,7 @@ export default function CreateSessionForm() {
               type="text"
               name="mapUrl"
               placeholder="Google Maps or Mapbox URL"
-              className="w-full border border-gray-300 rounded pl-9 pr-3 py-2 text-sm focus:outline-none focus:border-emerald-600 bg-slate-50"
+              className="w-full border border-gray-300 rounded pl-9 pr-3 py-2 text-sm focus:outline-none focus:border-emerald-600 bg-slate-50 z-1"
               value={formData.mapUrl}
               onChange={handleChange}
             />
