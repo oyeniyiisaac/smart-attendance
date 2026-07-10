@@ -141,7 +141,7 @@ const AdminDashboard = () => {
     };
 
     return (
-        <div className="mt-[0rem] px-6 pb-6 min-h-screen">
+        <div className="min-h-screen mt-[0rem] px-6 pb-24 lg:pb-6">
 
             {/* ── Page Header ─────────────────────────────── */}
             <div className="mb-4">
@@ -259,7 +259,7 @@ const AdminDashboard = () => {
                     )}
 
                     {invite && (
-                        <div className={`border rounded-xl p-5 transition-colors ${invite.revoked ? 'bg-[#fff4f4] border-[#ba1a1a]' : 'bg-[#f0f4f1] border-[#baeed9]'}`}>
+                        <div className={`border w-[100%] rounded-xl p-5 transition-colors ${invite.revoked ? 'bg-[#fff4f4] border-[#ba1a1a]' : 'bg-[#f0f4f1] border-[#baeed9]'}`}>
                             <div className="flex items-center justify-between mb-2">
                                 <span className={`text-sm font-semibold flex items-center gap-1 ${invite.revoked ? 'text-[#ba1a1a]' : 'text-[#0a643a]'}`}>
                                     <span className="material-symbols-outlined text-base">
@@ -267,38 +267,40 @@ const AdminDashboard = () => {
                                     </span>
                                     {invite.revoked ? 'Token revoked — it can no longer be used' : 'Token generated — share this with the new admin'}
                                 </span>
-                                <span className="text-xs text-[#535856] bg-[#e2e3e3] px-2 py-1 rounded-full">
+                                <span className="text-xs text-[#535856] bg-[#e2e3e3] px-2 py-1 lg:rounded-full rounded-lg ml-auto">
                                     Expires: {invite.expiresAt}
                                 </span>
                             </div>
 
-                            <div className="flex items-center gap-2 mt-3 bg-white border border-gray-200 rounded-lg px-4 py-3">
+                            <div className="lg:flex  items-center w-[100%] gap-2 mt-3 bg-white border border-gray-200 rounded-lg px-4 py-3">
                                 <code className={`flex-1 text-sm break-all font-mono ${invite.revoked ? 'line-through text-[#9e9e9e]' : 'text-[#1a1c1a]'}`}>
                                     {invite.token}
                                 </code>
-                                {!invite.revoked && (
-                                    <button
-                                        onClick={handleCopy}
-                                        title="Copy token"
-                                        className="flex items-center gap-1 text-sm text-[#0a643a] font-semibold border border-[#0a643a] px-3 py-1 rounded-lg hover:bg-[#baeed9] transition-colors whitespace-nowrap cursor-pointer"
-                                    >
-                                        <span className="material-symbols-outlined text-base">
-                                            {copied ? 'check' : 'content_copy'}
-                                        </span>
-                                        {copied ? 'Copied!' : 'Copy'}
-                                    </button>
-                                )}
-                                {!invite.revoked && (
-                                    <button
-                                        onClick={handleRevoke}
-                                        disabled={revoking}
-                                        title="Revoke token"
-                                        className="flex items-center gap-1 text-sm text-[#ba1a1a] font-semibold border border-[#ba1a1a] px-3 py-1 rounded-lg hover:bg-[#fdecea] disabled:opacity-60 disabled:cursor-not-allowed transition-colors whitespace-nowrap cursor-pointer"
-                                    >
-                                        <span className="material-symbols-outlined text-base">block</span>
-                                        {revoking ? 'Revoking...' : 'Revoke'}
-                                    </button>
-                                )}
+                                <div className="mt-2 lg:mt-0 flex items-center gap-2">
+                                    {!invite.revoked && (
+                                        <button
+                                            onClick={handleCopy}
+                                            title="Copy token"
+                                            className="flex items-center gap-1 text-sm text-[#0a643a] font-semibold border border-[#0a643a] px-3 py-1 rounded-lg hover:bg-[#baeed9] transition-colors whitespace-nowrap cursor-pointer"
+                                        >
+                                            <span className="material-symbols-outlined text-base">
+                                                {copied ? 'check' : 'content_copy'}
+                                            </span>
+                                            {copied ? 'Copied!' : 'Copy'}
+                                        </button>
+                                    )}
+                                    {!invite.revoked && (
+                                        <button
+                                            onClick={handleRevoke}
+                                            disabled={revoking}
+                                            title="Revoke token"
+                                            className="flex items-center gap-1 text-sm text-[#ba1a1a] font-semibold border border-[#ba1a1a] px-3 py-1 rounded-lg hover:bg-[#fdecea] disabled:opacity-60 disabled:cursor-not-allowed transition-colors whitespace-nowrap cursor-pointer"
+                                        >
+                                            <span className="material-symbols-outlined text-base">block</span>
+                                            {revoking ? 'Revoking...' : 'Revoke'}
+                                        </button>
+                                    )}
+                                </div>
                             </div>
 
                             <p className="text-xs text-[#535856] mt-3 flex items-center gap-1">
