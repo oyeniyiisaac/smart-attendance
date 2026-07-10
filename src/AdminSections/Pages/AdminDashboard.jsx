@@ -141,7 +141,7 @@ const AdminDashboard = () => {
     };
 
     return (
-        <div className="mt-[0rem] px-6 pb-6">
+        <div className="mt-[0rem] px-6 pb-6 min-h-screen">
 
             {/* ── Page Header ─────────────────────────────── */}
             <div className="mb-4">
