@@ -1,12 +1,43 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
+import axios from 'axios'
 import UserProfile from './UserProfile'
 
 const SideBar = () => {
     const [localActiveBtn, setLocalActiveBtn] = useState('dashboard')
     const currentPath = window.location.pathname
     const navigate = useNavigate()
-    // const
+    const [studentData, setStudentData] = useState({
+        firstname: '',
+        lastname: '',
+        matricno: '',
+        department: '',
+        faculty: ''
+    })
+
+    const token = localStorage.getItem('token')
+    const endpoint = import.meta.env.VITE_ENDPOINT
+
+    useEffect(() => {
+        if (!token) return
+
+        axios.get(endpoint, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            },
+        })
+        .then((response) => {
+            if (response.status === 200 || response.status === 201) {
+                console.log('🔍 SideBar profile data from API:', response.data.result)
+                setStudentData(response.data.result)
+            }
+        })
+        .catch((err) => {
+            console.error("SideBar Profile error:", err)
+        })
+    }, [token, endpoint])
 
     const routeActiveMap = {
         '/student-dashboard': 'dashboard',
@@ -48,7 +79,12 @@ const SideBar = () => {
                     <span className='text-[#0a643a] text-[14px] font-semibold'>CURRENT DEPARTMENT</span>
                     <span className='font-medium'>{courses}</span>
                 </div> */}
-                <UserProfile/>
+                <UserProfile
+                    profileName={studentData.firstname || studentData.lastname ? `${studentData.firstname} ${studentData.lastname}` : ''}
+                    studentId={studentData.matricno}
+                    faculty={studentData.faculty || ''}
+                    department={studentData.department || ''}
+                />
 
                 <div className='flex flex-col gap-6 mt-6 text-lg text-[#3f4941]'>
                     <button className={`flex items-center gap-2 p-2 rounded-xl cursor-pointer text-left ${activeBtn === 'dashboard' ? 'bg-[#baeed9]' : 'bg-transparent'}`} onClick={dashboardBtn}><span className="material-symbols-rounded" style={iconStyle}>

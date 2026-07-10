@@ -8,6 +8,8 @@ const StudentDashboard = () => {
     const [activeBtn, setActiveBtn] = useState('dashboard')
     const [firstname, setFirstname] = useState('')
     const [matricNo, setMatricNo] = useState('')
+    const [faculty, setFaculty] = useState('')
+    const [department, setDepartment] = useState('')
     const [sessions, setSessions] = useState([]) // 👈 Store active database classes
     const [loading, setLoading] = useState(true)
 
@@ -40,6 +42,8 @@ const StudentDashboard = () => {
                     const data = response.data.result
                     setFirstname(data.firstname)
                     setMatricNo(data.matricno)
+                    setFaculty(data.faculty || '')
+                    setDepartment(data.department || '')
                 }
             })
             .catch((err) => {
@@ -132,6 +136,12 @@ const StudentDashboard = () => {
                         <div>
                             <h1 className='text-[30px] font-bold'>Welcome back, {firstname || "Student"}!</h1>
                             <span className='text-[16px] text-[#3f4941] font-medium'>MATRIC : {matricNo || "N/A"}</span>
+                            
+                            {department && (
+                                <p className='text-[13px] text-[#3f4941]'>
+                                    <span className='font-semibold'>Department:</span> {department}
+                                </p>
+                            )}
                         </div>
 
                     </div>
@@ -143,7 +153,7 @@ const StudentDashboard = () => {
 
                     {loading ? (
                         <div className="text-[#3f4941] text-center font-medium mt-6 animate-pulse">
-                            Loading ongoing lectures...
+                            Loading ongoing lectures...isaacoyeniyi2@gmail.com
                         </div>
                     ) : sessions.length === 0 ? (
                         <div className="text-gray-500 border border-dashed border-gray-300 rounded-lg p-6 text-center mt-4 bg-white max-w-sm">
