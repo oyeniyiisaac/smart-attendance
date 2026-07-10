@@ -106,7 +106,7 @@ const AdminSideBar = ({ isOpen }) => {
         </div>
       </aside>
       <div className="">
-        <div className="bg-[#eef5f7] fixed bottom-0 w-[100%] sm:w-[100%] md:w-[100%] lg:hidden px-6 py-3 border-r-1 border-[#bfc9bf]">
+        <div className="bg-[#eef5f7] fixed bottom-0 w-[100%] sm:w-[100%] md:w-[100%] z-50 lg:hidden px-6 py-3 border-r-1 border-[#bfc9bf]">
                     
 
                     <div className='flex justify-between gap-2 mt-1 text-xs text-[#3f4941]'>
