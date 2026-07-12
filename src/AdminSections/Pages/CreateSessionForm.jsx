@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import FormSection from "./FormSection";
 import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 const sessionURI = import.meta.env.VITE_SESSION_URL;
 
 // Helper function to get current browser local time formatted for <input type="datetime-local">
@@ -18,12 +21,8 @@ const getFormattedLocalDateTime = (offsetHours = 0) => {
 
   return `${year}-${month}-${day}T${hours}:${minutes}`;
 };
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 
 export default function CreateSessionForm() {
-  // (see top-level helper) Get current browser local time formatted for <input type="datetime-local">
-  // const token = localStorage.getItem('token');
   const initialFormState = () => ({
     courseName: "",
     courseCode: "",
@@ -31,24 +30,28 @@ export default function CreateSessionForm() {
     academicLevel: "",
     semester: "First Semester",
     academicSession: "",
-    dateTimeFrom: getFormattedLocalDateTime(0), // Automatically sets to your current browser time
-    dateTimeTo: getFormattedLocalDateTime(1), // Automatically sets to +1 hour from now
+    dateTimeFrom: getFormattedLocalDateTime(0),
+    dateTimeTo: getFormattedLocalDateTime(1),
     venue: "",
     activateImmediately: true,
+    
+    // Toggles for active validation strategies
+    useGpsVerification: true,
+    useWifiVerification: false,
+    useBeaconVerification: false,
+
+    // Hardware value properties
     latitude: "",
     longitude: "",
-    expectedBssid: null,
-    expectedSsid: null,
-    beaconUuid: null,
+    expectedBssid: "",
+    expectedSsid: "",
+    beaconUuid: "",
     mapUrl: "",
   });
 
   const [formData, setFormData] = useState(initialFormState());
 
-  // Reset dates if the form stays open over a long period before initial interaction
   useEffect(() => {
-    // Refresh only the date fields on mount so long-lived open forms get current times
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setFormData((prev) => ({
       ...prev,
       dateTimeFrom: getFormattedLocalDateTime(0),
@@ -67,25 +70,32 @@ export default function CreateSessionForm() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // 1. Grab the admin token from localStorage (Ensure 'token' matches the exact key name used at login)
     const token = localStorage.getItem("adminToken");
     console.log("Token sent to header:", token);
-    // 2. Guard clause: Stop the request immediately if the user isn't logged in
+    
     if (!token) {
-      toast.error(
-        "Your session has expired or you are not authorized. Please log in again.",
-      );
+      toast.error("Your session has expired or you are not authorized. Please log in again.");
       return;
     }
 
-    // Convert the localized form strings into absolute ISO standard UTC strings for backend safety
+    // Validation Guard: Ensure at least one verification strategy is checked
+    if (!formData.useGpsVerification && !formData.useWifiVerification && !formData.useBeaconVerification) {
+      toast.error("Please select at least one verification method (GPS, Wi-Fi, or Bluetooth).");
+      return;
+    }
+
     const payload = {
       ...formData,
       dateTimeFrom: new Date(formData.dateTimeFrom).toISOString(),
       dateTimeTo: new Date(formData.dateTimeTo).toISOString(),
+      // Clean up fields if their respective verification strategies are untoggled
+      latitude: formData.useGpsVerification ? formData.latitude : null,
+      longitude: formData.useGpsVerification ? formData.longitude : null,
+      expectedBssid: formData.useWifiVerification ? formData.expectedBssid : null,
+      expectedSsid: formData.useWifiVerification ? formData.expectedSsid : null,
+      beaconUuid: formData.useBeaconVerification ? formData.beaconUuid : null,
     };
 
-    // 3. Pass the payload along with the Authorization headers config
     axios
       .post(sessionURI, payload, {
         headers: {
@@ -96,27 +106,24 @@ export default function CreateSessionForm() {
       })
       .then((res) => {
         toast.success(res.data.message || "Session created successfully! 🚀");
-        console.log(res.data);
-        setFormData(initialFormState()); // Clean state reset including refreshed times
+        setFormData(initialFormState());
       })
       .catch((err) => {
         console.error("Session creation error:", err);
-        const errorMsg =
-          err.response?.data?.message || "Failed to create session.";
+        const errorMsg = err.response?.data?.message || "Failed to create session.";
         toast.error(errorMsg);
       });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 p-4 max-h-[75vh] overflow-y-auto scrollbar-thin">
+    <form onSubmit={handleSubmit} className="space-y-6 p-4 max-h-[85vh] overflow-y-auto scrollbar-thin">
       <ToastContainer />
+      
       {/* SECTION 1: Course Information */}
       <FormSection title="Course Information">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-2">
-              Course Name
-            </label>
+            <label className="block text-xs font-bold text-slate-700 mb-2">Course Name</label>
             <input
               type="text"
               name="courseName"
@@ -127,9 +134,7 @@ export default function CreateSessionForm() {
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-2">
-              Course Code
-            </label>
+            <label className="block text-xs font-bold text-slate-700 mb-2">Course Code</label>
             <input
               type="text"
               name="courseCode"
@@ -140,9 +145,7 @@ export default function CreateSessionForm() {
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-2">
-              Course ID
-            </label>
+            <label className="block text-xs font-bold text-slate-700 mb-2">Course ID</label>
             <input
               type="text"
               name="courseId"
@@ -153,9 +156,7 @@ export default function CreateSessionForm() {
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-2">
-              Academic Level
-            </label>
+            <label className="block text-xs font-bold text-slate-700 mb-2">Academic Level</label>
             <select
               name="academicLevel"
               className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-600 bg-slate-50 text-slate-600"
@@ -170,9 +171,7 @@ export default function CreateSessionForm() {
             </select>
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-2">
-              Semester
-            </label>
+            <label className="block text-xs font-bold text-slate-700 mb-2">Semester</label>
             <select
               name="semester"
               className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-600 bg-slate-50 text-slate-700"
@@ -184,9 +183,7 @@ export default function CreateSessionForm() {
             </select>
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-2">
-              Academic Session
-            </label>
+            <label className="block text-xs font-bold text-slate-700 mb-2">Academic Session</label>
             <input
               type="text"
               name="academicSession"
@@ -204,9 +201,7 @@ export default function CreateSessionForm() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
           <div className="flex flex-col gap-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-2">
-                Date & Time From
-              </label>
+              <label className="block text-xs font-bold text-slate-700 mb-2">Date & Time From</label>
               <input
                 type="datetime-local"
                 name="dateTimeFrom"
@@ -216,9 +211,7 @@ export default function CreateSessionForm() {
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-2">
-                Date & Time To
-              </label>
+              <label className="block text-xs font-bold text-slate-700 mb-2">Date & Time To</label>
               <input
                 type="datetime-local"
                 name="dateTimeTo"
@@ -229,10 +222,7 @@ export default function CreateSessionForm() {
             </div>
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-2">
-              {" "}
-              Venue Name
-            </label>
+            <label className="block text-xs font-bold text-slate-700 mb-2">Venue Name</label>
             <input
               type="text"
               name="venue"
@@ -247,12 +237,8 @@ export default function CreateSessionForm() {
         {/* Activation Toggle Button Block */}
         <div className="border border-gray-200 rounded-lg p-4 flex items-center justify-between bg-white">
           <div>
-            <h4 className="text-sm font-bold text-slate-800">
-              Activate Session Immediately
-            </h4>
-            <p className="text-xs text-slate-500">
-              Students can start signing in once created
-            </p>
+            <h4 className="text-sm font-bold text-slate-800">Activate Session Immediately</h4>
+            <p className="text-xs text-slate-500">Students can start signing in once created</p>
           </div>
           <label className="relative inline-flex items-center cursor-pointer">
             <input
@@ -267,116 +253,163 @@ export default function CreateSessionForm() {
         </div>
       </FormSection>
 
-      {/* SECTION 3: Geofencing & GPS Coordinates */}
-      <FormSection title="Geofencing & GPS Coordinates">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-4 z-1">
-          <div className="lg:col-span-2 relative bg-slate-900 border border-gray-300 rounded-lg h-48 overflow-hidden flex items-center justify-center">
-            <iframe
-              title="Venue Location Map"
-              width="100%"
-              height="100%"
-              className="absolute inset-0 border-0 z-1"
-              loading="lazy"
-              allowFullScreen
-              referrerPolicy="no-referrer-when-downgrade"
-              src={`https://maps.google.com/maps?q=${formData.latitude},${formData.longitude}&t=k&z=17&output=embed`}
-            ></iframe>
-            <span className="absolute bottom-2 left-2 text-[10px] text-white/60 bg-black/70 px-2 py-0.5 rounded pointer-events-none z-10">
-              Satellite Preview Active
-            </span>
-          </div>
+      {/* SECTION 3: Verification Methods & Constraints */}
+      <FormSection title="Verification Methods & Constraints">
+        {/* Verification Checkbox Strategy Selectors */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <label className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition-colors ${formData.useGpsVerification ? 'border-emerald-600 bg-emerald-50/50' : 'border-gray-200 bg-white'}`}>
+            <input
+              type="checkbox"
+              name="useGpsVerification"
+              checked={formData.useGpsVerification}
+              onChange={handleChange}
+              className="h-4 w-4 rounded text-emerald-600 focus:ring-emerald-500 border-gray-300"
+            />
+            <div>
+              <span className="block text-xs font-bold text-slate-800">GPS Geofencing</span>
+              <span className="block text-[10px] text-slate-500">Verify coordinates</span>
+            </div>
+          </label>
 
-          <div className="flex flex-col justify-between space-y-4">
+          <label className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition-colors ${formData.useWifiVerification ? 'border-emerald-600 bg-emerald-50/50' : 'border-gray-200 bg-white'}`}>
+            <input
+              type="checkbox"
+              name="useWifiVerification"
+              checked={formData.useWifiVerification}
+              onChange={handleChange}
+              className="h-4 w-4 rounded text-emerald-600 focus:ring-emerald-500 border-gray-300"
+            />
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Latitude
-              </label>
-              <input
-                type="text"
-                name="latitude"
-                placeholder="e.g. 51.5074"
-                className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-600 bg-slate-50"
-                value={formData.latitude}
-                onChange={handleChange}
-              />
+              <span className="block text-xs font-bold text-slate-800">Wi-Fi Router Routing</span>
+              <span className="block text-[10px] text-slate-500">Verify network BSSID/SSID</span>
             </div>
+          </label>
+
+          <label className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition-colors ${formData.useBeaconVerification ? 'border-emerald-600 bg-emerald-50/50' : 'border-gray-200 bg-white'}`}>
+            <input
+              type="checkbox"
+              name="useBeaconVerification"
+              checked={formData.useBeaconVerification}
+              onChange={handleChange}
+              className="h-4 w-4 rounded text-emerald-600 focus:ring-emerald-500 border-gray-300"
+            />
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Longitude
-              </label>
-              <input
-                type="text"
-                name="longitude"
-                placeholder="e.g. -0.1278"
-                className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-600 bg-slate-50"
-                value={formData.longitude}
-                onChange={handleChange}
-              />
+              <span className="block text-xs font-bold text-slate-800">Bluetooth Beacon</span>
+              <span className="block text-[10px] text-slate-500">Verify physical proximity</span>
             </div>
-            <div className="bg-[#e6f4ea] border border-[#ceead6] text-[#137333] text-xs p-3 rounded flex items-start space-x-2">
-              <span className="font-bold text-sm leading-none">ⓘ</span>
-              <p>
-                Ensure coordinates match the physical venue for accurate
-                geofencing.
-              </p>
+          </label>
+        </div>
+
+        {/* Conditional GPS Configuration Layout Mapping */}
+        {formData.useGpsVerification && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 pb-6 border-b border-dashed border-gray-200">
+            <div className="lg:col-span-2 relative bg-slate-900 border border-gray-300 rounded-lg h-48 overflow-hidden flex items-center justify-center">
+              <iframe
+                title="Venue Location Map"
+                width="100%"
+                height="100%"
+                className="absolute inset-0 border-0 z-1"
+                loading="lazy"
+                allowFullScreen
+                referrerPolicy="no-referrer-when-downgrade"
+                src={`https://maps.google.com/maps?q=${formData.latitude || 0},${formData.longitude || 0}&t=k&z=17&output=embed`}
+              ></iframe>
+              <span className="absolute bottom-2 left-2 text-[10px] text-white/60 bg-black/70 px-2 py-0.5 rounded pointer-events-none z-10">
+                Satellite Preview Active
+              </span>
+            </div>
+
+            <div className="flex flex-col justify-between space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Latitude</label>
+                <input
+                  type="text"
+                  name="latitude"
+                  placeholder="e.g. 51.5074"
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-600 bg-slate-50"
+                  value={formData.latitude}
+                  onChange={handleChange}
+                  required={formData.useGpsVerification}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Longitude</label>
+                <input
+                  type="text"
+                  name="longitude"
+                  placeholder="e.g. -0.1278"
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-600 bg-slate-50"
+                  value={formData.longitude}
+                  onChange={handleChange}
+                  required={formData.useGpsVerification}
+                />
+              </div>
+              <div className="bg-[#e6f4ea] border border-[#ceead6] text-[#137333] text-xs p-3 rounded flex items-start space-x-2">
+                <span className="font-bold text-sm leading-none">ⓘ</span>
+                <p>Ensure coordinates match the physical venue for accurate geofencing.</p>
+              </div>
             </div>
           </div>
-          <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-5 mt-4">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Expected BSSID
-              </label>
-              <input
-                type="text"
-                name="expectedBssid"
-                placeholder="e.g. 00:11:22:33:44:55"
-                className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-600 bg-slate-50"
-                value={formData.expectedBssid}
-                onChange={handleChange}
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Expected SSID
-              </label>
-              <input
-                type="text"
-                name="expectedSsid"
-                placeholder="e.g. MyWiFiNetwork"
-                className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-600 bg-slate-50"
-                value={formData.expectedSsid}
-                onChange={handleChange}
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
-                Beacon UUID
-              </label>
-              <input
-                type="text"
-                name="beaconUuid"
-                placeholder="e.g. 123e4567-e89b-12d3-a456-426614174000"
-                className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-600 bg-slate-50"
-                value={formData.beaconUuid}
-                onChange={handleChange}
-              />
-            </div>
+        )}
+
+        {/* Hardware Network Configurations Inputs Container Block */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-4">
+          <div>
+            <label className={`block text-xs font-bold mb-2 ${formData.useWifiVerification ? 'text-slate-700' : 'text-slate-400'}`}>
+              Expected BSSID {formData.useWifiVerification && <span className="text-rose-500">*</span>}
+            </label>
+            <input
+              type="text"
+              name="expectedBssid"
+              disabled={!formData.useWifiVerification}
+              placeholder="e.g. 00:11:22:33:44:55"
+              className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-600 bg-slate-50 disabled:bg-gray-100 disabled:cursor-not-allowed text-slate-800"
+              value={formData.expectedBssid || ""}
+              onChange={handleChange}
+              required={formData.useWifiVerification}
+            />
+          </div>
+          <div>
+            <label className={`block text-xs font-bold mb-2 ${formData.useWifiVerification ? 'text-slate-700' : 'text-slate-400'}`}>
+              Expected SSID {formData.useWifiVerification && <span className="text-rose-500">*</span>}
+            </label>
+            <input
+              type="text"
+              name="expectedSsid"
+              disabled={!formData.useWifiVerification}
+              placeholder="e.g. MyWiFiNetwork"
+              className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-600 bg-slate-50 disabled:bg-gray-100 disabled:cursor-not-allowed text-slate-800"
+              value={formData.expectedSsid || ""}
+              onChange={handleChange}
+              required={formData.useWifiVerification}
+            />
+          </div>
+          <div>
+            <label className={`block text-xs font-bold mb-2 ${formData.useBeaconVerification ? 'text-slate-700' : 'text-slate-400'}`}>
+              Beacon UUID {formData.useBeaconVerification && <span className="text-rose-500">*</span>}
+            </label>
+            <input
+              type="text"
+              name="beaconUuid"
+              disabled={!formData.useBeaconVerification}
+              placeholder="e.g. 123e4567-e89b-12d3..."
+              className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-600 bg-slate-50 disabled:bg-gray-100 disabled:cursor-not-allowed text-slate-800"
+              value={formData.beaconUuid || ""}
+              onChange={handleChange}
+              required={formData.useBeaconVerification}
+            />
           </div>
         </div>
 
         <div className="mt-4">
-          <label className="block text-xs font-bold text-slate-700 mb-2">
-            Map URL
-          </label>
+          <label className="block text-xs font-bold text-slate-700 mb-2">Map URL</label>
           <div className="relative">
-            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 text-sm">
-              🔗
-            </span>
+            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400 text-sm">🔗</span>
             <input
               type="text"
               name="mapUrl"
               placeholder="Google Maps or Mapbox URL"
-              className="w-full border border-gray-300 rounded pl-9 pr-3 py-2 text-sm focus:outline-none focus:border-emerald-600 bg-slate-50 z-1"
+              className="w-full border border-gray-300 rounded pl-9 pr-3 py-2 text-sm focus:outline-none focus:border-emerald-600 bg-slate-50"
               value={formData.mapUrl}
               onChange={handleChange}
             />
@@ -384,10 +417,11 @@ export default function CreateSessionForm() {
         </div>
       </FormSection>
 
-      <div className="flex justify-end pt-2">
+      {/* Action Button Section with Mobile Full-Width Snapping Optimization */}
+      <div className="sticky bottom-0 bg-white border-t border-gray-100 p-3 -mx-4 -mb-4 flex justify-end md:static md:bg-transparent md:border-0 md:p-0 md:m-0 pt-4 z-50">
         <button
           type="submit"
-          className="bg-[#0f5132] hover:bg-[#0b3d26] text-white font-semibold text-sm py-3 px-6 rounded-lg shadow transition-colors flex items-center space-x-2"
+          className="bg-[#0f5132] hover:bg-[#0b3d26] text-white font-semibold text-sm py-3 px-6 rounded-lg shadow transition-colors flex items-center space-x-2 w-full md:w-auto justify-center"
         >
           <span>📋</span>
           <span>Save & Create Session</span>
