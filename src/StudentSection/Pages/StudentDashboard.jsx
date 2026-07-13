@@ -142,7 +142,7 @@ const StudentDashboard = () => {
             studentLatitude: 0,
             studentLongitude: 0,
             // ⚙️ FIXED: Key renamed to match "scannedBssid" in controller
-            scannedBssid: "54:1F:8D:2B:86:87" 
+            scannedBssid: "54:1F:8D:2B:86:87"
         })
     }
 
@@ -164,19 +164,26 @@ const StudentDashboard = () => {
 
     const sendToServer = async (payloadData) => {
         try {
-            console.log("📤 Sending verification payload to server:", payloadData);
+            // 🚨 FIX: Grab the token directly from storage at the moment of submission
+            const directToken = localStorage.getItem('token') || localStorage.getItem('jwt');
+
+            if (!directToken) {
+                toast.error("Session expired. Please log in again.");
+                return;
+            }
+
             const response = await axios.post(verifyLocationURL, payloadData, {
                 headers: {
-                    Authorization: `Bearer ${token}`,
+                    // Prepend Bearer explicitly with the freshly-grabbed token
+                    Authorization: `Bearer ${directToken}`,
                     'Content-Type': 'application/json',
                     "Accept": "application/json",
                 }
             })
 
-            // 💡 NOTE: In your backend controller, your success property is "verified" (true/false)
             if (response.data.success || response.data.verified) {
                 toast.success(response.data.message || 'Attendance marked successfully! 🎉')
-                setIsModalOpen(false) // Shut modal drawer on success
+                setIsModalOpen(false)
             } else {
                 toast.error(response.data.message || 'Verification failed.')
             }
