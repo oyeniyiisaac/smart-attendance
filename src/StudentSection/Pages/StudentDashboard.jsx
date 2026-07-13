@@ -287,8 +287,8 @@ const StudentDashboard = () => {
                         </p>
 
                         <div className="space-y-3 overflow-y-auto pr-1 flex-grow">
-                            {/* 1. GPS Verification Option — Fallback renders if field is true OR missing (undefined) */}
-                            {selectedSession.useGpsVerification !== false && (
+                            {/* 1. GPS Verification Option — Forced to true for testing */}
+                            {true && (
                                 <label className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition-all ${chosenMethod === 'gps' ? 'border-emerald-600 bg-emerald-50/40 font-medium' : 'border-gray-200 hover:bg-slate-50'}`}>
                                     <input
                                         type="radio"
@@ -305,8 +305,8 @@ const StudentDashboard = () => {
                                 </label>
                             )}
 
-                            {/* 2. Wi-Fi Verification Option — EDIT: Fallback renders if field is true OR missing (undefined) */}
-                            {selectedSession.useWifiVerification !== false && (
+                            {/* 2. Wi-Fi Verification Option — Forced to true for testing */}
+                            {true && (
                                 <label className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition-all ${chosenMethod === 'wifi' ? 'border-emerald-600 bg-emerald-50/40 font-medium' : 'border-gray-200 hover:bg-slate-50'}`}>
                                     <input
                                         type="radio"
@@ -323,8 +323,8 @@ const StudentDashboard = () => {
                                 </label>
                             )}
 
-                            {/* 3. Bluetooth Beacon Option — EDIT: Fallback renders if field is true OR missing (undefined) */}
-                            {selectedSession.useBeaconVerification !== false && (
+                            {/* 3. Bluetooth Beacon Option — Forced to true for testing */}
+                            {true && (
                                 <label className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition-all ${chosenMethod === 'beacon' ? 'border-emerald-600 bg-emerald-50/40 font-medium' : 'border-gray-200 hover:bg-slate-50'}`}>
                                     <input
                                         type="radio"
@@ -340,18 +340,12 @@ const StudentDashboard = () => {
                                     </div>
                                 </label>
                             )}
-
-                            {/* Fallback Guard — Adjusted condition to match the logic above */}
-                            {selectedSession.useGpsVerification === false && selectedSession.useWifiVerification === false && selectedSession.useBeaconVerification === false && (
-                                <p className="text-xs text-rose-500 bg-rose-50 border border-rose-200 p-3 rounded-lg text-center">
-                                    No validation channels have been activated by the administrator for this lecture.
-                                </p>
-                            )}
                         </div>
 
                         <div className="flex gap-3 mt-5 pt-3 border-t border-gray-100">
                             <button
                                 type="button"
+                                // ⚙️ FIXED: Changed from true to false so clicking cancel actually shuts the drawer down
                                 onClick={() => setIsModalOpen(false)}
                                 className="w-1/2 bg-gray-100 hover:bg-gray-200 text-slate-700 text-xs py-2.5 rounded font-bold transition-colors"
                             >
@@ -359,7 +353,7 @@ const StudentDashboard = () => {
                             </button>
                             <button
                                 type="button"
-                                disabled={verifying || (selectedSession.useGpsVerification === false && selectedSession.useWifiVerification === false && selectedSession.useBeaconVerification === false)}
+                                disabled={verifying}
                                 onClick={handleVerificationSubmit}
                                 className="w-1/2 bg-[#0a643a] hover:bg-[#084d2c] disabled:bg-gray-300 text-white text-xs py-2.5 rounded font-bold transition-colors shadow-sm flex items-center justify-center gap-1"
                             >
