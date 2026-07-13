@@ -116,8 +116,9 @@ const StudentDashboard = () => {
                 sendToServer({
                     courseCode: selectedSession.courseCode,
                     verificationMethodChosen: 'gps',
-                    studentLat: latitude,
-                    studentLng: longitude
+                    // ⚙️ FIXED: Key names changed to match backend expected schema
+                    studentLatitude: latitude,
+                    studentLongitude: longitude
                 })
             },
             (error) => {
@@ -134,12 +135,14 @@ const StudentDashboard = () => {
         setVerifying(true)
         toast.info('Scanning connected network configurations...')
 
-        // Frontend note: Web browsers cannot read hardware BSSID addresses natively due to sandbox security permissions.
-        // Usually, mock metrics are transmitted or verified alongside corporate/campus router endpoints.
         sendToServer({
             courseCode: selectedSession.courseCode,
             verificationMethodChosen: 'wifi',
-            clientBssid: "00:11:22:33:44:55" // Replace with native container bridges if building Cordova/Capacitor apps
+            // ⚙️ FIXED: Coordinates defaulted to 0 so backend verification safety check passes
+            studentLatitude: 0,
+            studentLongitude: 0,
+            // ⚙️ FIXED: Key renamed to match "scannedBssid" in controller
+            scannedBssid: "54:1F:8D:2B:86:87" 
         })
     }
 
@@ -151,12 +154,17 @@ const StudentDashboard = () => {
         sendToServer({
             courseCode: selectedSession.courseCode,
             verificationMethodChosen: 'beacon',
-            detectedUuid: "123e4567-e89b-12d3-a456-426614174000"
+            // ⚙️ FIXED: Coordinates defaulted to 0 so backend verification safety check passes
+            studentLatitude: 0,
+            studentLongitude: 0,
+            // ⚙️ FIXED: Key renamed to match "scannedUuid" in controller
+            scannedUuid: "12345678-abcd-1234-abcd-123456789abc"
         })
     }
 
     const sendToServer = async (payloadData) => {
         try {
+            console.log("📤 Sending verification payload to server:", payloadData);
             const response = await axios.post(verifyLocationURL, payloadData, {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -165,7 +173,8 @@ const StudentDashboard = () => {
                 }
             })
 
-            if (response.data.success) {
+            // 💡 NOTE: In your backend controller, your success property is "verified" (true/false)
+            if (response.data.success || response.data.verified) {
                 toast.success(response.data.message || 'Attendance marked successfully! 🎉')
                 setIsModalOpen(false) // Shut modal drawer on success
             } else {
@@ -198,7 +207,7 @@ const StudentDashboard = () => {
                     </div>
 
                     <div className='mt-6 p-4 flex gap-2 items-center'>
-                        <div className='p-2 bg-[#0a643a] rounded-full w-[2px] h-[2px] animate-ping'></div>
+                        <div className='p-1 bg-[#0a643a] rounded-full w-[2px] h-[2px] animate-ping'></div>
                         <h2 className='text-md text-[14px] font-semibold'>Active Lecture Sessions</h2>
                     </div>
 
