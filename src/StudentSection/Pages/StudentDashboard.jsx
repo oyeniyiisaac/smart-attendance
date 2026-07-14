@@ -22,7 +22,7 @@ const StudentDashboard = () => {
     const token = localStorage.getItem('token')
     const endpoint = import.meta.env.VITE_ENDPOINT
     const sessionURL = import.meta.env.VITE_SESSIONALL_URL
-    const verifyLectureHallUrl = import.meta.env.VITE_VERIFYLECTUREHALL_URL
+    // const verifyLectureHallUrl = import.meta.env.VITE_VERIFYLECTUREHALL_URL
     const navigate = useNavigate()
 
     useEffect(() => {
@@ -163,38 +163,42 @@ const StudentDashboard = () => {
     }
 
     const sendToServer = async (payloadData) => {
-        try {
-            // 🚨 FIX: Grab the token directly from storage at the moment of submission
-            const directToken = localStorage.getItem('token') || localStorage.getItem('jwt');
+    try {
+        setVerifying(true);
 
-            if (!directToken) {
-                toast.error("Session expired. Please log in again.");
-                return;
-            }
+        // 🚨 CRITICAL FIX: Pull the token straight out of localStorage
+        // Double-check if you stored it as 'token' or 'jwt' when signing in!
+        const token = localStorage.getItem('token'); 
 
-            const response = await axios.post("https://smart-backend-1-q3fb.onrender.com/verify-attendance", payloadData, {
-                headers: {
-                    // Prepend Bearer explicitly with the freshly-grabbed token
-                    Authorization: `Bearer ${directToken}`,
-                    'Content-Type': 'application/json',
-                    "Accept": "application/json",
-                }
-            })
-
-            if (response.data.success || response.data.verified) {
-                toast.success(response.data.message || 'Attendance marked successfully! 🎉')
-                setIsModalOpen(false)
-            } else {
-                toast.error(response.data.message || 'Verification failed.')
-            }
-        } catch (error) {
-            console.error(error)
-            const errorMsg = error.response?.data?.message || 'Error connecting to verification server.'
-            toast.error(errorMsg)
-        } finally {
-            setVerifying(false)
+        if (!token) {
+            toast.error("No login token found. Please log out and sign back in.");
+            return;
         }
+
+        console.log("🔑 Attaching Token to request:", `Bearer ${token}`);
+
+        // Send the POST request with headers explicitly attached
+        const response = await axios.post("https://smart-backend-1-q3fb.onrender.com/verify-attendance", payloadData, {
+            headers: {
+                // Ensure 'Bearer ' has a space after it
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.data.verified) {
+            toast.success(response.data.message || "Attendance marked successfully! 🎉");
+            setIsModalOpen(false);
+        }
+
+    } catch (error) {
+        console.error("❌ Verification failed:", error);
+        const errorMsg = error.response?.data?.message || "Verification failed.";
+        toast.error(errorMsg);
+    } finally {
+        setVerifying(false);
     }
+};
 
     return (
         <>
