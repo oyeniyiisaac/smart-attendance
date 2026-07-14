@@ -22,7 +22,7 @@ const StudentDashboard = () => {
     const token = localStorage.getItem('token')
     const endpoint = import.meta.env.VITE_ENDPOINT
     const sessionURL = import.meta.env.VITE_SESSIONALL_URL
-    const verifyLocationURL = import.meta.env.VITE_VERIFYLOCATION_URL
+    const verifyLectureHallUrl = import.meta.env.VITE_VERIFYLECTUREHALL_URL
     const navigate = useNavigate()
 
     useEffect(() => {
@@ -172,7 +172,7 @@ const StudentDashboard = () => {
                 return;
             }
 
-            const response = await axios.post(verifyLocationURL, payloadData, {
+            const response = await axios.post(verifyLectureHallUrl, payloadData, {
                 headers: {
                     // Prepend Bearer explicitly with the freshly-grabbed token
                     Authorization: `Bearer ${directToken}`,
