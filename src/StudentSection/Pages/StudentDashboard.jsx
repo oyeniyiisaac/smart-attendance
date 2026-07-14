@@ -172,7 +172,7 @@ const StudentDashboard = () => {
                 return;
             }
 
-            const response = await axios.post(verifyLocationURL, payloadData, {
+            const response = await axios.post("https://smart-backend-1-q3fb.onrender.com/verify-attendance", payloadData, {
                 headers: {
                     // Prepend Bearer explicitly with the freshly-grabbed token
                     Authorization: `Bearer ${directToken}`,
