@@ -199,17 +199,22 @@ export default function CreateSessionForm() {
     }
 
     const payload = {
-      ...formData,
-      dateTimeFrom: new Date(formData.dateTimeFrom).toISOString(),
-      dateTimeTo: new Date(formData.dateTimeTo).toISOString(),
-      // Clean up fields if their respective verification strategies are untoggled
-      latitude: formData.useGpsVerification ? formData.latitude : null,
-      longitude: formData.useGpsVerification ? formData.longitude : null,
-      expectedBssid: formData.useWifiVerification ? formData.expectedBssid : null,
-      expectedSsid: formData.useWifiVerification ? formData.expectedSsid : null,
-      beaconUuid: formData.useBeaconVerification ? formData.beaconUuid : null,
-    };
+  ...formData,
+  
+  // 🟢 Explicitly map frontend keys to match backend controller destructuring!
+  level: formData.academicLevel, 
+  session: formData.academicSession,
 
+  dateTimeFrom: new Date(formData.dateTimeFrom).toISOString(),
+  dateTimeTo: new Date(formData.dateTimeTo).toISOString(),
+
+  // Clean up fields if their respective verification strategies are untoggled
+  latitude: formData.useGpsVerification ? formData.latitude : null,
+  longitude: formData.useGpsVerification ? formData.longitude : null,
+  expectedBssid: formData.useWifiVerification ? formData.expectedBssid : null,
+  expectedSsid: formData.useWifiVerification ? formData.expectedSsid : null,
+  beaconUuid: formData.useBeaconVerification ? formData.beaconUuid : null,
+};
     axios
       .post(sessionURI, payload, {
         headers: {
