@@ -198,23 +198,38 @@ export default function CreateSessionForm() {
       return;
     }
 
+    // 🟢 BUILD CLEAN PAYLOAD: Map frontend-only names directly to backend schema fields
     const payload = {
-  ...formData,
-  
-  // 🟢 Explicitly map frontend keys to match backend controller destructuring!
-  level: formData.academicLevel, 
-  session: formData.academicSession,
+      courseName: formData.courseName,
+      courseCode: formData.courseCode,
+      courseId: formData.courseId,
+      
+      // 🏫 Align React keys to meet Backend Controller destructuring rules
+      level: formData.academicLevel,         
+      semester: formData.semester,
+      session: formData.academicSession,     
+      
+      faculty: formData.faculty,             
+      department: formData.department,       
+      venue: formData.venue,
+      mapUrl: formData.mapUrl,
+      isSessionActive: formData.activateImmediately,
 
-  dateTimeFrom: new Date(formData.dateTimeFrom).toISOString(),
-  dateTimeTo: new Date(formData.dateTimeTo).toISOString(),
+      dateTimeFrom: new Date(formData.dateTimeFrom).toISOString(),
+      dateTimeTo: new Date(formData.dateTimeTo).toISOString(),
 
-  // Clean up fields if their respective verification strategies are untoggled
-  latitude: formData.useGpsVerification ? formData.latitude : null,
-  longitude: formData.useGpsVerification ? formData.longitude : null,
-  expectedBssid: formData.useWifiVerification ? formData.expectedBssid : null,
-  expectedSsid: formData.useWifiVerification ? formData.expectedSsid : null,
-  beaconUuid: formData.useBeaconVerification ? formData.beaconUuid : null,
-};
+      // Clean up verification settings
+      useGpsVerification: formData.useGpsVerification,
+      useWifiVerification: formData.useWifiVerification,
+      useBeaconVerification: formData.useBeaconVerification,
+
+      latitude: formData.useGpsVerification ? parseFloat(formData.latitude) || 0 : 0,
+      longitude: formData.useGpsVerification ? parseFloat(formData.longitude) || 0 : 0,
+      expectedBssid: formData.useWifiVerification ? formData.expectedBssid : null,
+      expectedSsid: formData.useWifiVerification ? formData.expectedSsid : null,
+      beaconUuid: formData.useBeaconVerification ? formData.beaconUuid : null,
+    };
+
     axios
       .post(sessionURI, payload, {
         headers: {
