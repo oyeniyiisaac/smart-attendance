@@ -58,7 +58,7 @@ const StudentDashboard = () => {
             })
 
         // 2. Fetch Department-Filtered Active Lecture Sessions 
-        axios.get("https://smart-backend-1-q3fb.onrender.com/student/active-sessions", {
+        axios.get("https://smart-backend-1-q3fb.onrender.com/active-sessions", {
             headers: {
                 Authorization: `Bearer ${token}` // Reuses the unified local token
             }
