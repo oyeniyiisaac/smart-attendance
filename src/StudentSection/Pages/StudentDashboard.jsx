@@ -10,7 +10,9 @@ const StudentDashboard = () => {
     const [matricNo, setMatricNo] = useState('')
     const [faculty, setFaculty] = useState('')
     const [department, setDepartment] = useState('')
-    const [sessions, setSessions] = useState([])
+    
+    // 🟢 Keep 'sessions' as your single source of truth for the filtered array
+    const [sessions, setSessions] = useState([]) 
     const [loading, setLoading] = useState(true)
 
     // Modal States for Student Selection
@@ -21,8 +23,6 @@ const StudentDashboard = () => {
 
     const token = localStorage.getItem('token')
     const endpoint = import.meta.env.VITE_ENDPOINT
-    const sessionURL = import.meta.env.VITE_SESSIONALL_URL
-    // const verifyLectureHallUrl = import.meta.env.VITE_VERIFYLECTUREHALL_URL
     const navigate = useNavigate()
 
     useEffect(() => {
@@ -57,25 +57,25 @@ const StudentDashboard = () => {
                 navigate('/signin')
             })
 
-        // 2. Fetch Active Lecture Sessions
-        axios.get(sessionURL, {
+        // 2. Fetch Department-Filtered Active Lecture Sessions 
+        axios.get("https://smart-backend-1-q3fb.onrender.com/student/active-sessions", {
             headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-                "Accept": "application/json",
+                Authorization: `Bearer ${token}` // Reuses the unified local token
             }
         })
-            .then((response) => {
-                setSessions(response.data.data || [])
+            .then((res) => {
+                // We update the single 'sessions' state so your map template populates automatically
+                setSessions(res.data.sessions || []);
             })
             .catch((err) => {
-                console.error("Failed to fetch sessions:", err)
-                toast.error("Could not load active lectures.")
+                console.error("Failed to load active sessions:", err);
+                toast.error("Could not load active lectures.");
             })
             .finally(() => {
                 setLoading(false)
-            })
-    }, [token, endpoint, sessionURL, navigate])
+            });
+
+    }, [token, endpoint, navigate])
 
     // Opens the selector drawer modal for the clicked card session
     const openVerificationModal = (sessionItem) => {
@@ -116,7 +116,6 @@ const StudentDashboard = () => {
                 sendToServer({
                     courseCode: selectedSession.courseCode,
                     verificationMethodChosen: 'gps',
-                    // ⚙️ FIXED: Key names changed to match backend expected schema
                     studentLatitude: latitude,
                     studentLongitude: longitude
                 })
@@ -138,10 +137,8 @@ const StudentDashboard = () => {
         sendToServer({
             courseCode: selectedSession.courseCode,
             verificationMethodChosen: 'wifi',
-            // ⚙️ FIXED: Coordinates defaulted to 0 so backend verification safety check passes
             studentLatitude: 0,
             studentLongitude: 0,
-            // ⚙️ FIXED: Key renamed to match "scannedBssid" in controller
             scannedBssid: "54:1F:8D:2B:86:87"
         })
     }
@@ -154,51 +151,45 @@ const StudentDashboard = () => {
         sendToServer({
             courseCode: selectedSession.courseCode,
             verificationMethodChosen: 'beacon',
-            // ⚙️ FIXED: Coordinates defaulted to 0 so backend verification safety check passes
             studentLatitude: 0,
             studentLongitude: 0,
-            // ⚙️ FIXED: Key renamed to match "scannedUuid" in controller
             scannedUuid: "12345678-abcd-1234-abcd-123456789abc"
         })
     }
 
     const sendToServer = async (payloadData) => {
-    try {
-        setVerifying(true);
+        try {
+            setVerifying(true);
 
-        // 🚨 CRITICAL FIX: Pull the token straight out of localStorage
-        // Double-check if you stored it as 'token' or 'jwt' when signing in!
-        const token = localStorage.getItem('token'); 
+            const token = localStorage.getItem('token');
 
-        if (!token) {
-            toast.error("No login token found. Please log out and sign back in.");
-            return;
-        }
-
-        console.log("🔑 Attaching Token to request:", `Bearer ${token}`);
-
-        // Send the POST request with headers explicitly attached
-        const response = await axios.post("https://smart-backend-1-q3fb.onrender.com/verify-attendance", payloadData, {
-            headers: {
-                // Ensure 'Bearer ' has a space after it
-                'Authorization': 'Bearer ' + token,
-                'Content-Type': 'application/json'
+            if (!token) {
+                toast.error("No login token found. Please log out and sign back in.");
+                return;
             }
-        });
 
-        if (response.data.verified) {
-            toast.success(response.data.message || "Attendance marked successfully! 🎉");
-            setIsModalOpen(false);
+            console.log("🔑 Attaching Token to request:", `Bearer ${token}`);
+
+            const response = await axios.post("https://smart-backend-1-q3fb.onrender.com/verify-attendance", payloadData, {
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.data.verified) {
+                toast.success(response.data.message || "Attendance marked successfully! 🎉");
+                setIsModalOpen(false);
+            }
+
+        } catch (error) {
+            console.error("❌ Verification failed:", error);
+            const errorMsg = error.response?.data?.message || "Verification failed.";
+            toast.error(errorMsg);
+        } finally {
+            setVerifying(false);
         }
-
-    } catch (error) {
-        console.error("❌ Verification failed:", error);
-        const errorMsg = error.response?.data?.message || "Verification failed.";
-        toast.error(errorMsg);
-    } finally {
-        setVerifying(false);
-    }
-};
+    };
 
     return (
         <>
@@ -228,7 +219,7 @@ const StudentDashboard = () => {
                         </div>
                     ) : sessions.length === 0 ? (
                         <div className="text-gray-500 border border-dashed border-gray-300 rounded-lg p-6 text-center mt-4 bg-white max-w-sm mx-auto sm:mx-0">
-                            No active classes found at the moment.
+                            No active classes found for your department at the moment.
                         </div>
                     ) : (
                         <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-4 lg:gap-10'>
@@ -307,65 +298,55 @@ const StudentDashboard = () => {
                         </p>
 
                         <div className="space-y-3 overflow-y-auto pr-1 flex-grow">
-                            {/* 1. GPS Verification Option — Forced to true for testing */}
-                            {true && (
-                                <label className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition-all ${chosenMethod === 'gps' ? 'border-emerald-600 bg-emerald-50/40 font-medium' : 'border-gray-200 hover:bg-slate-50'}`}>
-                                    <input
-                                        type="radio"
-                                        name="verificationChannel"
-                                        value="gps"
-                                        checked={chosenMethod === 'gps'}
-                                        onChange={(e) => setChosenMethod(e.target.value)}
-                                        className="h-4 w-4 text-emerald-600 border-gray-300 focus:ring-emerald-500"
-                                    />
-                                    <div>
-                                        <span className="block text-xs font-bold text-slate-800">GPS Geofencing Mapping</span>
-                                        <span className="block text-[10px] text-slate-500">Matches current physical coordinates inside classroom footprint.</span>
-                                    </div>
-                                </label>
-                            )}
+                            <label className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition-all ${chosenMethod === 'gps' ? 'border-emerald-600 bg-emerald-50/40 font-medium' : 'border-gray-200 hover:bg-slate-50'}`}>
+                                <input
+                                    type="radio"
+                                    name="verificationChannel"
+                                    value="gps"
+                                    checked={chosenMethod === 'gps'}
+                                    onChange={(e) => setChosenMethod(e.target.value)}
+                                    className="h-4 w-4 text-emerald-600 border-gray-300 focus:ring-emerald-500"
+                                />
+                                <div>
+                                    <span className="block text-xs font-bold text-slate-800">GPS Geofencing Mapping</span>
+                                    <span className="block text-[10px] text-slate-500">Matches current physical coordinates inside classroom footprint.</span>
+                                </div>
+                            </label>
 
-                            {/* 2. Wi-Fi Verification Option — Forced to true for testing */}
-                            {true && (
-                                <label className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition-all ${chosenMethod === 'wifi' ? 'border-emerald-600 bg-emerald-50/40 font-medium' : 'border-gray-200 hover:bg-slate-50'}`}>
-                                    <input
-                                        type="radio"
-                                        name="verificationChannel"
-                                        value="wifi"
-                                        checked={chosenMethod === 'wifi'}
-                                        onChange={(e) => setChosenMethod(e.target.value)}
-                                        className="h-4 w-4 text-emerald-600 border-gray-300 focus:ring-emerald-500"
-                                    />
-                                    <div>
-                                        <span className="block text-xs font-bold text-slate-800">Classroom Network Wi-Fi Link</span>
-                                        <span className="block text-[10px] text-slate-500">Validates if you are connected to the specific hall router access point.</span>
-                                    </div>
-                                </label>
-                            )}
+                            <label className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition-all ${chosenMethod === 'wifi' ? 'border-emerald-600 bg-emerald-50/40 font-medium' : 'border-gray-200 hover:bg-slate-50'}`}>
+                                <input
+                                    type="radio"
+                                    name="verificationChannel"
+                                    value="wifi"
+                                    checked={chosenMethod === 'wifi'}
+                                    onChange={(e) => setChosenMethod(e.target.value)}
+                                    className="h-4 w-4 text-emerald-600 border-gray-300 focus:ring-emerald-500"
+                                />
+                                <div>
+                                    <span className="block text-xs font-bold text-slate-800">Classroom Network Wi-Fi Link</span>
+                                    <span className="block text-[10px] text-slate-500">Validates if you are connected to the specific hall router access point.</span>
+                                </div>
+                            </label>
 
-                            {/* 3. Bluetooth Beacon Option — Forced to true for testing */}
-                            {true && (
-                                <label className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition-all ${chosenMethod === 'beacon' ? 'border-emerald-600 bg-emerald-50/40 font-medium' : 'border-gray-200 hover:bg-slate-50'}`}>
-                                    <input
-                                        type="radio"
-                                        name="verificationChannel"
-                                        value="beacon"
-                                        checked={chosenMethod === 'beacon'}
-                                        onChange={(e) => setChosenMethod(e.target.value)}
-                                        className="h-4 w-4 text-emerald-600 border-gray-300 focus:ring-emerald-500"
-                                    />
-                                    <div>
-                                        <span className="block text-xs font-bold text-slate-800">Bluetooth Proximity Beacon Scan</span>
-                                        <span className="block text-[10px] text-slate-500">Checks connection signals from active hardware setups inside room.</span>
-                                    </div>
-                                </label>
-                            )}
+                            <label className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition-all ${chosenMethod === 'beacon' ? 'border-emerald-600 bg-emerald-50/40 font-medium' : 'border-gray-200 hover:bg-slate-50'}`}>
+                                <input
+                                    type="radio"
+                                    name="verificationChannel"
+                                    value="beacon"
+                                    checked={chosenMethod === 'beacon'}
+                                    onChange={(e) => setChosenMethod(e.target.value)}
+                                    className="h-4 w-4 text-emerald-600 border-gray-300 focus:ring-emerald-500"
+                                />
+                                <div>
+                                    <span className="block text-xs font-bold text-slate-800">Bluetooth Proximity Beacon Scan</span>
+                                    <span className="block text-[10px] text-slate-500">Checks connection signals from active hardware setups inside room.</span>
+                                </div>
+                            </label>
                         </div>
 
                         <div className="flex gap-3 mt-5 pt-3 border-t border-gray-100">
                             <button
                                 type="button"
-                                // ⚙️ FIXED: Changed from true to false so clicking cancel actually shuts the drawer down
                                 onClick={() => setIsModalOpen(false)}
                                 className="w-1/2 bg-gray-100 hover:bg-gray-200 text-slate-700 text-xs py-2.5 rounded font-bold transition-colors"
                             >

@@ -6,6 +6,100 @@ import "react-toastify/dist/ReactToastify.css";
 
 const sessionURI = import.meta.env.VITE_SESSION_URL;
 
+// 🏫 Dynamic Scale Mapping: 13 Faculties & 100+ Departments
+// Add or adjust these names to match your exact institutional database naming conventions!
+const FACULTIES_DATA = {
+  "Faculty of Engineering (FET)": [
+    "Electrical & Electronic Engineering",
+    "Mechanical Engineering",
+    "Civil Engineering",
+    "Computer Engineering"
+  ],
+  "Faculty of Computing and Informatics (FCI)": [
+    "Computer Science",
+    "Software Engineering",
+    "Information Systems",
+    "Cybersecurity"
+  ],
+  "Faculty of Pure and Applied Science(FPAS)": [
+    "Pure and Applied Physics",
+    "Pure and Applied Chemistry",
+    "Pure and Applied Mathematics",
+    "Pure and Applied Biology",
+    "Statistics",
+    "Science Laboratory Technology",
+    "Earth Sciences"
+  ],
+  "Faculty of Agriculture Sciences(FAG)": [
+    "Agricultural Economics",
+    "Animal Nutrition and Biotechnology",
+    "Crop and Environmental Production",
+    "Crop Production and Soil Science",
+    "Animal Production and Health",
+    "Agricultural Extension and Rural Development"
+  ],
+  "Faculty of Renewable Natural Resources (FRNR)": [
+    "Forest Resource Management",
+    "Fisheries and Aquaculture",
+    "Wildlife and Ecotourism Management"
+  ],
+  "Faculty of Management Sciences (FMS)": [
+    "Accounting",
+    "Business Management",
+    "Economics",
+    "Marketing",
+    "Transport Management",
+  ],
+  "Faculty of Environmental Sciences(FES)": [
+    "Architecture",
+    "Urban and Regional Planning",
+    "Estate Management",
+    "Surveying and Geoinformatics",
+    "Fine and Applied Arts",
+    "Building"
+  ],
+  "Faculty of Food and Consumer Sciences(FES)": [
+    "Food Science",
+    "Consumer Science/Home Economics",
+    "Nutrition and Dietetics"
+  ],
+  "Faculty of Arts and Social Sciences(FASS)": [
+    "Sociology",
+    "Economics",
+    "Political Science",
+    "English and Literary Studies",
+    "Philosophy",
+    "History",
+    "Linguistics and Yoruba Studies",
+    "Theatre Arts",
+    "Psychology"
+  ],
+  "Faculty of Basic Medical Sciences (FBMS)": [
+    "Anatomy",
+    "Biochemistry",
+    "Medical Laboratory Science",
+    "Physiology"
+  ],
+  "Faculty of Clinical Sciences(FCS)": [
+    "Medicine",
+    "Surgery",
+    "Ophthalmology",
+    "Obstetrics and Gynaecology",
+    "Radiology",
+    "Paediatrics",
+    "Anaesthesia"
+  ],
+  "Faculty of Basic Clinical Sciences(FBCS)": [
+    "Chemical Pathology",
+    "Haematology/Blood Transfusion",
+    "Medical Microbiology/Parasitology",
+    "Morbid Anatomy and Histopathology",
+  ],
+  "Faculty of Clinical Nursing Sciences(FCNS)": [
+    "Nursing"
+  ],
+};
+
 // Helper function to get current browser local time formatted for <input type="datetime-local">
 const getFormattedLocalDateTime = (offsetHours = 0) => {
   const localDate = new Date();
@@ -34,7 +128,11 @@ export default function CreateSessionForm() {
     dateTimeTo: getFormattedLocalDateTime(1),
     venue: "",
     activateImmediately: true,
-    
+
+    // 🏫 Dynamic Academic Routing
+    faculty: "",
+    department: "",
+
     // Toggles for active validation strategies
     useGpsVerification: true,
     useWifiVerification: false,
@@ -59,6 +157,16 @@ export default function CreateSessionForm() {
     }));
   }, []);
 
+  // Handle resets for department dropdown if faculty gets changed
+  const handleFacultyChange = (e) => {
+    const selectedFaculty = e.target.value;
+    setFormData((prev) => ({
+      ...prev,
+      faculty: selectedFaculty,
+      department: "", // Reset department selection back to default on faculty change
+    }));
+  };
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
@@ -72,9 +180,15 @@ export default function CreateSessionForm() {
 
     const token = localStorage.getItem("adminToken");
     console.log("Token sent to header:", token);
-    
+
     if (!token) {
       toast.error("Your session has expired or you are not authorized. Please log in again.");
+      return;
+    }
+
+    // Validation Guard: Ensure Faculty and Department are selected
+    if (!formData.faculty || !formData.department) {
+      toast.error("Please assign a Faculty and Department for this session.");
       return;
     }
 
@@ -118,7 +232,7 @@ export default function CreateSessionForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-6 p-4 max-h-[85vh] overflow-y-auto scrollbar-thin">
       <ToastContainer />
-      
+
       {/* SECTION 1: Course Information */}
       <FormSection title="Course Information">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -170,6 +284,49 @@ export default function CreateSessionForm() {
               <option value="400">400 Level</option>
             </select>
           </div>
+
+          {/* 🆕 Faculty Selection Dropdown */}
+          <div>
+            <label className="block text-xs font-bold text-slate-700 mb-2">Faculty</label>
+            <select
+              name="faculty"
+              className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-600 bg-slate-50 text-slate-700"
+              value={formData.faculty}
+              onChange={handleFacultyChange}
+              required
+            >
+              <option value="">Select Faculty</option>
+              {Object.keys(FACULTIES_DATA).map((facultyName) => (
+                <option key={facultyName} value={facultyName}>
+                  {facultyName}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* 🆕 Department Selection Dropdown (Depends on Faculty choice) */}
+          <div>
+            <label className={`block text-xs font-bold mb-2 ${formData.faculty ? 'text-slate-700' : 'text-slate-400'}`}>
+              Department
+            </label>
+            <select
+              name="department"
+              disabled={!formData.faculty}
+              className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-emerald-600 bg-slate-50 disabled:bg-gray-100 disabled:cursor-not-allowed text-slate-700"
+              value={formData.department}
+              onChange={handleChange}
+              required
+            >
+              <option value="">Select Department</option>
+              {formData.faculty &&
+                FACULTIES_DATA[formData.faculty].map((deptName) => (
+                  <option key={deptName} value={deptName}>
+                    {deptName}
+                  </option>
+                ))}
+            </select>
+          </div>
+
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-2">Semester</label>
             <select
