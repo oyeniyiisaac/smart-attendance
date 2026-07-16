@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import Cards from '../Components/Cards';
 import SessionCard from '../Components/SessionCard';
 import { useNavigate } from 'react-router-dom';
+import SetViewAll from './SetViewAll';
 
 const AdminDashboard = () => {
     const [generating, setGenerating] = useState(false);
@@ -16,7 +17,7 @@ const AdminDashboard = () => {
     const [loadingSessions, setLoadingSessions] = useState(true);
 
     // STEP 1: Define a toggle state to swap between Overview dashboard and Full-Screen Session lists
-    const [viewAll, setViewAll] = useState(false); 
+    const [viewAll, setViewAll] = useState(false);
 
     // FIXED: Adding a dynamic clock tick tracker to automatically update session statuses live every 30 seconds
     const [currentTime, setCurrentTime] = useState(new Date());
@@ -36,7 +37,7 @@ const AdminDashboard = () => {
 
     useEffect(() => {
         if (token) {
-            axios.get(`${ admindashboardUrl }`, {
+            axios.get(`${admindashboardUrl}`, {
                 headers: { Authorization: `Bearer ${token}` }
             })
                 .then((response) => {
@@ -139,17 +140,11 @@ const AdminDashboard = () => {
     // so we can test that the button is working perfectly before inserting the full design!
     if (viewAll) {
         return (
-            <div className="min-h-screen p-6 bg-gray-50">
-                <button 
-                    onClick={() => setViewAll(false)}
-                    className="flex items-center gap-2 text-sm text-[#0a643a] font-bold mb-4 cursor-pointer"
-                >
-                    <span className="material-symbols-outlined text-sm">arrow_back</span>
-                    Back to Overview
-                </button>
-                <h1 className="text-2xl font-bold">Session History Page Target</h1>
-                <p className="text-gray-600 mt-2">Next, we will drop the full UI here card-by-card!</p>
-            </div>
+            <SetViewAll
+                sessions={sessions}
+                loading={loadingSessions}
+                onBack={() => setViewAll(false)}
+            />
         );
     }
 
@@ -174,7 +169,7 @@ const AdminDashboard = () => {
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-[#1a1c1a]">Today's Sessions</h2>
                 {/* STEP 2: Update click handler on View All */}
-                <button 
+                <button
                     onClick={() => setViewAll(true)}
                     className="flex items-center gap-1 text-[#0a643a] font-semibold text-sm cursor-pointer"
                 >
@@ -184,46 +179,56 @@ const AdminDashboard = () => {
             </div>
 
             {/* Dynamic Rendering List Layer */}
+            {/* Today's Sessions List (Excluding Closed Sessions) */}
             {loadingSessions ? (
                 <div className="py-8 text-center text-sm text-slate-500 font-medium">Loading session feeds...</div>
-            ) : sessions.length === 0 ? (
+            ) : sessions.filter(sessionItem => {
+                // A session is closed if it is explicitly inactive OR the current time has passed its end time
+                const isClosed = !sessionItem.isSessionActive || (currentTime > new Date(sessionItem.dateTimeTo));
+                return !isClosed; // Only keep sessions that are NOT closed (i.e. Open or Upcoming)
+            }).length === 0 ? (
                 <div className="bg-white border border-dashed border-gray-300 rounded-2xl p-8 text-center text-slate-400 font-medium text-sm mb-12">
-                    No lecture sessions found matching database tracking logs.
+                    No active or upcoming lecture sessions found for today.
                 </div>
             ) : (
                 <div className="flex flex-wrap gap-4 mb-12">
-                    {sessions.map((sessionItem) => {
-                        const isLiveOpen =
-                            sessionItem.isSessionActive &&
-                            currentTime >= new Date(sessionItem.dateTimeFrom) &&
-                            currentTime <= new Date(sessionItem.dateTimeTo);
+                    {sessions
+                        .filter(sessionItem => {
+                            const isClosed = !sessionItem.isSessionActive || (currentTime > new Date(sessionItem.dateTimeTo));
+                            return !isClosed;
+                        })
+                        .slice(0, 4) // Only show the first 4 active/upcoming sessions
+                        .map((sessionItem) => {
+                            const isLiveOpen =
+                                sessionItem.isSessionActive &&
+                                currentTime >= new Date(sessionItem.dateTimeFrom) &&
+                                currentTime <= new Date(sessionItem.dateTimeTo);
 
-                        const sessionStatus = isLiveOpen ? "OPEN" : "CLOSED";
-                        const bgStatusColor = isLiveOpen ? "bg-[#baeed9]" : "bg-[#e2e3e3]";
-                        const textStatusColor = isLiveOpen ? "text-[#0a643a]" : "text-[#535856]";
+                            const sessionStatus = isLiveOpen ? "OPEN" : "UPCOMING";
+                            const bgStatusColor = isLiveOpen ? "bg-[#baeed9]" : "bg-blue-50";
+                            const textStatusColor = isLiveOpen ? "text-[#0a643a]" : "text-blue-700";
 
-                        const displayTime = sessionItem.dateTimeFrom
-                            ? new Date(sessionItem.dateTimeFrom).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
-                            : "09:00 AM";
+                            const displayTime = sessionItem.dateTimeFrom
+                                ? new Date(sessionItem.dateTimeFrom).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+                                : "09:00 AM";
 
-                        return (
-                            <SessionCard
-                                key={sessionItem._id}
-                                id={sessionItem._id}
-                                sessionName={sessionItem.courseName}
-                                courseName={`${sessionItem.courseCode}: ${sessionItem.courseName}`}
-                                sessionStatus={sessionStatus}
-                                time={displayTime}
-                                bgStatusColor={bgStatusColor}
-                                textStatusColor={textStatusColor}
-                                icon="location_on"
-                                location={sessionItem.venue || "Unassigned"}
-                            />
-                        );
-                    })}
+                            return (
+                                <SessionCard
+                                    key={sessionItem._id}
+                                    id={sessionItem._id}
+                                    sessionName={sessionItem.courseName}
+                                    courseName={`${sessionItem.courseCode}: ${sessionItem.courseName}`}
+                                    sessionStatus={sessionStatus}
+                                    time={displayTime}
+                                    bgStatusColor={bgStatusColor}
+                                    textStatusColor={textStatusColor}
+                                    icon="location_on"
+                                    location={sessionItem.venue || "Unassigned"}
+                                />
+                            );
+                        })}
                 </div>
             )}
-
             {/* ── Invite Admin Panel ──────────────────────── */}
             <div className="border border-gray-200 rounded-2xl bg-white shadow-sm overflow-hidden">
                 <div className="bg-[#f0f4f1] px-6 py-4 flex items-center gap-3 border-b border-gray-200">

@@ -1,22 +1,36 @@
 import React, { useState } from 'react';
 
-export default function AttendanceRoster() {
+export default function AttendanceRoster({ session }) {
     const [search, setSearch] = useState('');
 
-    const rosterData = [
-        { name: 'Adewale Johnson', matric: 'ENG/19/0422', time: '09:04 AM', verified: true },
-        { name: 'Elena Rodriguez', matric: 'SCI/20/1105', time: '09:05 AM', verified: true },
-        { name: 'Chen Wei', matric: 'ENG/19/0882', time: '09:08 AM', verified: true },
-        { name: 'Sarah Jenkins', matric: 'ART/21/0043', time: '09:12 AM', verified: true },
-        { name: 'Oluwatobi Adeyemi', matric: 'ENG/19/0511', time: '09:15 AM', verified: true },
-        { name: 'Isabella Moretti', matric: 'SCI/20/2290', time: '09:18 AM', verified: true },
-        { name: 'Marcus Thorne', matric: 'ENG/19/0415', time: '09:22 AM', verified: true },
-    ];
+    // ── RESILIENT DATA EXTRACTION ──────────────────────────────────────────
+    // This checks every possible backend key names so nothing fails silently!
+    const liveStudents = 
+        session?.checkedInStudents || 
+        session?.attendance || 
+        session?.students || 
+        session?.checkins || 
+        [];
+
+    // Filter students based on search queries
+    const filteredStudents = liveStudents.filter((student) => {
+        if (!student) return false;
+        
+        // Handle cases where the student is just an ID string (not populated yet by backend)
+        if (typeof student === 'string') return false;
+
+        const name = student.name || student.studentId?.name || '';
+        const matric = student.matricNumber || student.matric || student.studentId?.matricNumber || '';
+        
+        return (
+            name.toLowerCase().includes(search.toLowerCase()) ||
+            matric.toLowerCase().includes(search.toLowerCase())
+        );
+    });
 
     return (
         <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm flex-1 flex flex-col justify-between">
             <div>
-                {/* Header toolbar component filtering parameters */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
                     <h3 className="text-lg font-bold text-slate-800">Live Attendance Roster</h3>
                     <div className="flex items-center gap-2">
@@ -30,13 +44,9 @@ export default function AttendanceRoster() {
                                 className="pl-9 pr-4 py-1.5 border border-gray-300 rounded-lg text-sm bg-slate-50 focus:outline-none focus:border-[#0a643a] w-full sm:w-48"
                             />
                         </div>
-                        <button className="flex items-center gap-1 px-3 py-1.5 border border-gray-300 rounded-lg text-sm font-semibold text-slate-600 bg-white hover:bg-slate-50 cursor-pointer">
-                            <span className="material-symbols-outlined text-base">filter_list</span> Filter
-                        </button>
                     </div>
                 </div>
 
-                {/* Dynamic Responsive Roster Table viewport */}
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm border-collapse">
                         <thead>
@@ -48,36 +58,54 @@ export default function AttendanceRoster() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 text-slate-700 font-medium">
-                            {rosterData.map((row, idx) => (
-                                <tr key={idx} className="hover:bg-slate-50/70 transition-colors">
-                                    <td className="py-3.5 px-4 font-semibold text-slate-800">{row.name}</td>
-                                    <td className="py-3.5 px-4 text-slate-500">{row.matric}</td>
-                                    <td className="py-3.5 px-4 font-mono text-slate-600">{row.time}</td>
-                                    <td className="py-3.5 px-4 text-center">
-                                        {row.verified && (
-                                            <span className="material-symbols-rounded text-[#137333] bg-[#e6f4ea] p-1 rounded-full text-base inline-block leading-none">
-                                                check_circle
+                            {filteredStudents.length === 0 ? (
+                                <tr>
+                                    <td colSpan="4" className="py-12 text-center text-slate-400 font-medium text-sm">
+                                        {liveStudents.length > 0 && typeof liveStudents[0] === 'string' ? (
+                                            <span className="text-amber-600 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200 inline-block">
+                                                ⚠️ Student details are raw IDs. Make sure your backend uses `.populate()` on the check-ins!
                                             </span>
+                                        ) : (
+                                            "No checked-in students found."
                                         )}
                                     </td>
                                 </tr>
-                            ))}
+                            ) : (
+                                filteredStudents.map((item, idx) => {
+                                    // Handle cases where students are nested under an object like item.studentId
+                                    const studentDetails = item.studentId && typeof item.studentId === 'object' ? item.studentId : item;
+                                    
+                                    const name = studentDetails.name || "Unknown Student";
+                                    const matric = studentDetails.matricNumber || studentDetails.matric || "N/A";
+                                    
+                                    const rawTime = item.timeCheckedIn || item.time || item.createdAt;
+                                    const formattedTime = rawTime 
+                                        ? new Date(rawTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                        : 'N/A';
+
+                                    return (
+                                        <tr key={item._id || idx} className="hover:bg-slate-50/70 transition-colors">
+                                            <td className="py-3.5 px-4 font-semibold text-slate-800">{name}</td>
+                                            <td className="py-3.5 px-4 text-slate-500">{matric}</td>
+                                            <td className="py-3.5 px-4 font-mono text-slate-600">{formattedTime}</td>
+                                            <td className="py-3.5 px-4 text-center">
+                                                {(item.isLocationVerified ?? item.verified ?? true) && (
+                                                    <span className="material-symbols-rounded text-[#137333] bg-[#e6f4ea] p-1 rounded-full text-base inline-block leading-none">
+                                                        check_circle
+                                                    </span>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                            )}
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            {/* Pagination component frame elements */}
             <div className="flex items-center justify-between pt-5 border-t border-gray-100 text-xs font-semibold text-slate-500 mt-4">
-                <span>Showing 7 of 24 records</span>
-                <div className="flex items-center gap-1.5">
-                    <button className="p-1 border border-gray-300 rounded bg-white hover:bg-slate-50 text-slate-600 disabled:opacity-50 cursor-pointer" disabled>
-                        <span className="material-symbols-outlined text-base leading-none">chevron_left</span>
-                    </button>
-                    <button className="p-1 border border-gray-300 rounded bg-white hover:bg-slate-50 text-slate-600 cursor-pointer">
-                        <span className="material-symbols-outlined text-base leading-none">chevron_right</span>
-                    </button>
-                </div>
+                <span>Showing {filteredStudents.length} of {liveStudents.length} records</span>
             </div>
         </div>
     );
