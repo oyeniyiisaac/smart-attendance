@@ -14,13 +14,9 @@ const AdminDashboard = () => {
 
     const [sessions, setSessions] = useState([]);
     const [loadingSessions, setLoadingSessions] = useState(true);
-    // const [viewAll, setViewAll] = useState(second)
 
-    // const setViewAll = () => {
-    //     return (
-    //         re
-    //     )
-    // }
+    // STEP 1: Define a toggle state to swap between Overview dashboard and Full-Screen Session lists
+    const [viewAll, setViewAll] = useState(false); 
 
     // FIXED: Adding a dynamic clock tick tracker to automatically update session statuses live every 30 seconds
     const [currentTime, setCurrentTime] = useState(new Date());
@@ -45,7 +41,6 @@ const AdminDashboard = () => {
             })
                 .then((response) => {
                     console.log('Protected dashboard data:', response)
-                    // setdata(response)
                 })
                 .catch((error) => {
                     navigate('/signin')
@@ -109,7 +104,7 @@ const AdminDashboard = () => {
         } catch (err) {
             const msg = err.response?.data?.message || 'Failed to generate token. Are you logged in?';
             setError(msg);
-        } finally { // FIXED: Changed 'fillAll:' to standard 'finally'
+        } finally {
             setGenerating(false);
         }
     };
@@ -140,6 +135,24 @@ const AdminDashboard = () => {
         }
     };
 
+    // If "View All" is true, we will temporarily show a simple placeholder 
+    // so we can test that the button is working perfectly before inserting the full design!
+    if (viewAll) {
+        return (
+            <div className="min-h-screen p-6 bg-gray-50">
+                <button 
+                    onClick={() => setViewAll(false)}
+                    className="flex items-center gap-2 text-sm text-[#0a643a] font-bold mb-4 cursor-pointer"
+                >
+                    <span className="material-symbols-outlined text-sm">arrow_back</span>
+                    Back to Overview
+                </button>
+                <h1 className="text-2xl font-bold">Session History Page Target</h1>
+                <p className="text-gray-600 mt-2">Next, we will drop the full UI here card-by-card!</p>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen mt-[0rem] px-6 pb-24 lg:pb-6">
 
@@ -160,7 +173,11 @@ const AdminDashboard = () => {
             {/* ── Today's Sessions ────────────────────────── */}
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-[#1a1c1a]">Today's Sessions</h2>
-                <button className="flex items-center gap-1 text-[#0a643a] font-semibold text-sm cursor-pointer">
+                {/* STEP 2: Update click handler on View All */}
+                <button 
+                    onClick={() => setViewAll(true)}
+                    className="flex items-center gap-1 text-[#0a643a] font-semibold text-sm cursor-pointer"
+                >
                     View All
                     <span className="material-symbols-outlined text-base">arrow_right_alt</span>
                 </button>
