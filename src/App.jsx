@@ -16,6 +16,7 @@ import CreateSessionForm from './AdminSections/Pages/CreateSessionForm'
 import SessionMonitor from './AdminSections/Pages/SessionMonitor'
 import NavbarBottom from './StudentSection/Components/NavbarBottom'
 import NavbarTopDashboard from './StudentSection/Components/NavbarTopDashboard'
+import SetViewAll from './AdminSections/Pages/SetViewAll'
 // import Adminsidebar from './AdminSections/Components/Adminsidebar'
 
 
@@ -49,6 +50,7 @@ const App = () => {
           <Route path='lecturer-dashboard' element={<AdminDashboard />} />
           <Route path='session' element={<CreateSessionForm/>} />
           <Route path='monitor' element={<SessionMonitor/>} />
+          <Route path='viewall' element={<SetViewAll/>} />
           <Route path="/admin/monitor/:id" element={<SessionMonitor />} />
         </Route>
         <Route path='/adminsidebar' element={<AdminSideBar />} />
