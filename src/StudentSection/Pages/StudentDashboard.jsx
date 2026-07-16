@@ -26,57 +26,61 @@ const StudentDashboard = () => {
     const navigate = useNavigate()
 
     useEffect(() => {
-        if (!token) {
-            navigate('/signin')
-            return
-        }
+    if (!token) {
+        navigate('/signin')
+        return
+    }
 
-        // 1. Fetch Student Profile Information
-        axios.get(endpoint, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-            },
-        })
-            .then((response) => {
-                if (response.status === 200 || response.status === 201) {
-                    toast.success(`Welcome back, ${response.data.result.firstname}! 👋`, {
-                        position: 'bottom-right',
-                        autoClose: 3000,
-                    })
-                    const data = response.data.result
-                    setFirstname(data.firstname)
-                    setMatricNo(data.matricno)
-                    setFaculty(data.faculty || '')
-                    setDepartment(data.department || '')
-                }
-            })
-            .catch((err) => {
-                console.error("Profile error:", err)
-                navigate('/signin')
-            })
+    setLoading(true) // Ensure loading is true when starting
 
-        // 2. Fetch Department-Filtered Active Lecture Sessions 
-        axios.get("https://smart-backend-1-q3fb.onrender.com/active-sessions", {
-            headers: {
-                Authorization: `Bearer ${token}` // Reuses the unified local token
+    // 1. Fetch Student Profile Information FIRST
+    axios.get(endpoint, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        },
+    })
+        .then((response) => {
+            if (response.status === 200 || response.status === 201) {
+                toast.success(`Welcome back, ${response.data.result.firstname}! 👋`, {
+                    position: 'bottom-right',
+                    autoClose: 3000,
+                })
+                const data = response.data.result
+                setFirstname(data.firstname)
+                setMatricNo(data.matricno)
+                setFaculty(data.faculty || '')
+                setDepartment(data.department || '')
+
+                // 2. ONLY THEN fetch the active sessions
+                return axios.get("https://smart-backend-1-q3fb.onrender.com/active-sessions", {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                })
             }
         })
-            .then((res) => {
-                // We update the single 'sessions' state so your map template populates automatically
-                setSessions(res.data.sessions || []);
-            })
-            .catch((err) => {
-                console.error("Failed to load active sessions:", err);
-                toast.error("Could not load active lectures.");
-            })
-            .finally(() => {
-                setLoading(false)
-            });
+        .then((res) => {
+            if (res && res.data) {
+                // Update the state with the active sessions
+                setSessions(res.data.sessions || res.data.data || []);
+            }
+        })
+        .catch((err) => {
+            console.error("Dashboard error:", err)
+            // Optional: only navigate to signin if it was a profile auth error
+            if (err.response?.status === 401) {
+                navigate('/signin')
+            } else {
+                toast.error("Could not load active lectures.")
+            }
+        })
+        .finally(() => {
+            setLoading(false) // Turns off loading spinner only after BOTH requests finish
+        })
 
-    }, [token, endpoint, navigate])
-
+}, [token, endpoint, navigate])
     // Opens the selector drawer modal for the clicked card session
     const openVerificationModal = (sessionItem) => {
         setSelectedSession(sessionItem)
