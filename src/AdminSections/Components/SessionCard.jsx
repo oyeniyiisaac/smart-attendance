@@ -1,24 +1,59 @@
-import React from 'react';
+import axios from 'axios';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const SessionCard = ({
-    id, // <-- Make sure to pass the unique database _id as a prop!
+    id,             // Unique Mongo _id of the session
     sessionName,
     sessionStatus,
     courseName,
+    courseCode,     // 🎯 Added courseCode prop
+    department,     // 🎯 Added department prop
     time,
     icon,
     location,
     bgStatusColor,
     textStatusColor
-}) => {
+    }) => {
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
+
+    const closeSession = async (sessionId) => {
+    try {
+        setLoading(true);
+        const token = localStorage.getItem('adminToken');
+
+        // Make sure sessionId is a string, not the full session object!
+        const idString = typeof sessionId === 'object' ? sessionId._id : sessionId;
+
+        const response = await axios.post(
+            `https://smart-backend-1-q3fb.onrender.com/admin/end-session/${idString}`,
+            {},
+            {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            }
+        );
+
+        if (response.data && response.data.success) {
+            alert(response.data.message || "Session closed successfully!");
+            // Trigger UI refresh
+        }
+    } catch (error) {
+        console.error("Error closing session:", error);
+        alert(error.response?.data?.message || "Failed to close session.");
+    } finally {
+        setLoading(false);
+    }
+};
+
 
     const setViewDetails = () => {
-        // Navigate to the monitor path with the unique dynamic ID param
+        // Navigate to the monitor path with the dynamic ID param
         navigate(`/admin/monitor/${id}`);
     };
-    
+
     return (
         <div className='w-[400px] rounded-lg bg-[#ffffff] border-2 border-[#e4ebed]'>
             <div className='flex justify-between items-center py-1 px-3 bg-[#676b6a] rounded-tl-lg rounded-tr-lg'>
@@ -35,16 +70,22 @@ const SessionCard = ({
                     <span className="material-symbols-outlined">{icon}</span>{location}
                 </p>
                 <div className='flex gap-2 text-center justify-between my-4'>
-                    <button onClick={setViewDetails} className='flex items-center justify-center py-2 w-full rounded-sm px-6 bg-[#0a643a] text-[18px] text-[#fff] font-semibold cursor-pointer'>
+                    <button
+                        onClick={setViewDetails}
+                        className='flex items-center justify-center py-2 w-full rounded-sm px-6 bg-[#0a643a] text-[18px] text-[#fff] font-semibold cursor-pointer'
+                    >
                         View Details
                     </button>
-                    <button className='flex items-center justify-center py-2 w-full rounded-sm px-6 border border-[#0a643a] text-[18px] text-[#0a643a] font-semibold cursor-pointer'>
-                        Close Session
+                    <button
+                        onClick={() => closeSession(id)}
+                        disabled={loading}
+                        className='flex items-center justify-center py-2 w-full rounded-sm px-6 border border-[#0a643a] text-[18px] text-[#0a643a] font-semibold cursor-pointer disabled:opacity-50'
+                    >
+                        {loading ? 'Closing...' : 'Close Session'}
                     </button>
                 </div>
             </div>
         </div>
     );
 };
-
 export default SessionCard;

@@ -16,48 +16,48 @@ const AdminDashboard = () => {
     const [sessions, setSessions] = useState([]);
     const [loadingSessions, setLoadingSessions] = useState(true);
 
-    // STEP 1: Define a toggle state to swap between Overview dashboard and Full-Screen Session lists
+    // Toggle state to swap between Overview dashboard and Full-Screen Session lists
     const [viewAll, setViewAll] = useState(false);
 
-    // FIXED: Adding a dynamic clock tick tracker to automatically update session statuses live every 30 seconds
+    // Dynamic clock tick tracker (updates session statuses live every 30s)
     const [currentTime, setCurrentTime] = useState(new Date());
 
     const navigate = useNavigate();
 
     const adminInviteUrl = import.meta.env.VITE_ADMIN_INVITE_URL;
     const sessionURI = import.meta.env.VITE_SESSIONALL_URL;
-    const admindashboardUrl = import.meta.env.VITE_ADMINDASHBOARD_URL
+    const admindashboardUrl = import.meta.env.VITE_ADMINDASHBOARD_URL;
     const token = localStorage.getItem('adminToken');
 
     // 1. Clock Tracker Lifecycle Hook
     useEffect(() => {
-        const timer = setInterval(() => setCurrentTime(new Date()), 30000); // ticks every 30s
+        const timer = setInterval(() => setCurrentTime(new Date()), 30000);
         return () => clearInterval(timer);
     }, []);
 
+    // 2. Validate Protected Dashboard Route
     useEffect(() => {
         if (token) {
-            axios.get(`${admindashboardUrl}`, {
+            axios.get(`${sessionURI}`, {
                 headers: { Authorization: `Bearer ${token}` }
             })
-                .then((response) => {
-                    console.log('Protected dashboard data:', response)
-                })
-                .catch((error) => {
-                    navigate('/signin')
-                    console.error('Error fetching protected dashboard data:', error)
-                })
+                .then((res) => {
+                    console.log("SESSION API RESPONSE:", res.data); // 👈 ADD THIS LOG
 
+                    // Check if res.data is directly the array, OR if it's nested inside something else!
+                    const data = res.data.sessions || res.data.data || res.data;
+
+                    setSessions(Array.isArray(data) ? data : []);
+                })
         } else {
-            navigate('/signin')
-            console.warn('No token found. Please sign in to access the dashboard.')
+            navigate('/signin');
         }
-    }, [token])
+    }, [token, admindashboardUrl, navigate]);
 
-    // 2. Fetch Sessions Lifecycle Hook
+    // 3. Fetch All Sessions Lifecycle Hook
     useEffect(() => {
         if (!token) {
-            navigate('/admin/login');
+            navigate('/signin');
             return;
         }
 
@@ -70,11 +70,13 @@ const AdminDashboard = () => {
             }
         })
             .then((res) => {
-                setSessions(res.data.data || []);
+                // FIXED: Support both res.data.sessions AND res.data.data so state is never lost
+                const fetchedSessions = res.data?.sessions || res.data?.data || res.data || [];
+                setSessions(Array.isArray(fetchedSessions) ? fetchedSessions : []);
             })
             .catch((err) => {
                 console.error("Failed to fetch dashboard sessions:", err);
-                setError(err.response?.data?.message || 'Failed to retrieve active sessions.');
+                setError(err.response?.data?.message || 'Failed to retrieve sessions.');
             })
             .finally(() => {
                 setLoadingSessions(false);
@@ -84,7 +86,7 @@ const AdminDashboard = () => {
 
     const handleGenerateToken = async () => {
         if (!token) {
-            navigate('/admin/login');
+            navigate('/signin');
             return;
         }
 
@@ -136,15 +138,10 @@ const AdminDashboard = () => {
         }
     };
 
-    // If "View All" is true, we will temporarily show a simple placeholder 
-    // so we can test that the button is working perfectly before inserting the full design!
+    // Render Full-Screen Sessions View when viewAll is enabled
     if (viewAll) {
         return (
-            <SetViewAll
-                sessions={sessions}
-                loading={loadingSessions}
-                onBack={() => setViewAll(false)}
-            />
+            <SetViewAll sessions={sessions} currentTime={currentTime} />
         );
     }
 
@@ -168,24 +165,21 @@ const AdminDashboard = () => {
             {/* ── Today's Sessions ────────────────────────── */}
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold text-[#1a1c1a]">Today's Sessions</h2>
-                {/* STEP 2: Update click handler on View All */}
                 <button
                     onClick={() => setViewAll(true)}
-                    className="flex items-center gap-1 text-[#0a643a] font-semibold text-sm cursor-pointer"
+                    className="flex items-center gap-1 text-[#0a643a] font-semibold text-sm cursor-pointer hover:underline"
                 >
                     View All
                     <span className="material-symbols-outlined text-base">arrow_right_alt</span>
                 </button>
             </div>
 
-            {/* Dynamic Rendering List Layer */}
             {/* Today's Sessions List (Excluding Closed Sessions) */}
             {loadingSessions ? (
                 <div className="py-8 text-center text-sm text-slate-500 font-medium">Loading session feeds...</div>
             ) : sessions.filter(sessionItem => {
-                // A session is closed if it is explicitly inactive OR the current time has passed its end time
-                const isClosed = !sessionItem.isSessionActive || (currentTime > new Date(sessionItem.dateTimeTo));
-                return !isClosed; // Only keep sessions that are NOT closed (i.e. Open or Upcoming)
+                const isClosed = !sessionItem?.isSessionActive || (currentTime > new Date(sessionItem?.dateTimeTo));
+                return !isClosed;
             }).length === 0 ? (
                 <div className="bg-white border border-dashed border-gray-300 rounded-2xl p-8 text-center text-slate-400 font-medium text-sm mb-12">
                     No active or upcoming lecture sessions found for today.
@@ -194,10 +188,10 @@ const AdminDashboard = () => {
                 <div className="flex flex-wrap gap-4 mb-12">
                     {sessions
                         .filter(sessionItem => {
-                            const isClosed = !sessionItem.isSessionActive || (currentTime > new Date(sessionItem.dateTimeTo));
+                            const isClosed = !sessionItem?.isSessionActive || (currentTime > new Date(sessionItem?.dateTimeTo));
                             return !isClosed;
                         })
-                        .slice(0, 4) // Only show the first 4 active/upcoming sessions
+                        .slice(0, 4)
                         .map((sessionItem) => {
                             const isLiveOpen =
                                 sessionItem.isSessionActive &&
@@ -209,7 +203,7 @@ const AdminDashboard = () => {
                             const textStatusColor = isLiveOpen ? "text-[#0a643a]" : "text-blue-700";
 
                             const displayTime = sessionItem.dateTimeFrom
-                                ? new Date(sessionItem.dateTimeFrom).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+                                ? new Date(sessionItem.dateTimeFrom).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                                 : "09:00 AM";
 
                             return (
@@ -229,6 +223,7 @@ const AdminDashboard = () => {
                         })}
                 </div>
             )}
+
             {/* ── Invite Admin Panel ──────────────────────── */}
             <div className="border border-gray-200 rounded-2xl bg-white shadow-sm overflow-hidden">
                 <div className="bg-[#f0f4f1] px-6 py-4 flex items-center gap-3 border-b border-gray-200">
@@ -294,7 +289,7 @@ const AdminDashboard = () => {
                                 </span>
                             </div>
 
-                            <div className="lg:flex  items-center w-[100%] gap-2 mt-3 bg-white border border-gray-200 rounded-lg px-4 py-3">
+                            <div className="lg:flex items-center w-[100%] gap-2 mt-3 bg-white border border-gray-200 rounded-lg px-4 py-3">
                                 <code className={`flex-1 text-sm break-all font-mono ${invite.revoked ? 'line-through text-[#9e9e9e]' : 'text-[#1a1c1a]'}`}>
                                     {invite.token}
                                 </code>

@@ -11,7 +11,6 @@ const StudentDashboard = () => {
     const [faculty, setFaculty] = useState('')
     const [department, setDepartment] = useState('')
     
-    // 🟢 Keep 'sessions' as your single source of truth for the filtered array
     const [sessions, setSessions] = useState([]) 
     const [loading, setLoading] = useState(true)
 
@@ -25,70 +24,64 @@ const StudentDashboard = () => {
     const endpoint = import.meta.env.VITE_ENDPOINT
     const navigate = useNavigate()
 
-    useEffect(() => {
-    if (!token) {
-        navigate('/signin')
-        return
+    const fetchDashboardData = () => {
+        if (!token) {
+            navigate('/signin')
+            return
+        }
+
+        setLoading(true)
+
+        axios.get(endpoint, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            },
+        })
+            .then((response) => {
+                if (response.status === 200 || response.status === 201) {
+                    const data = response.data.result
+                    setFirstname(data.firstname)
+                    setMatricNo(data.matricno)
+                    setFaculty(data.faculty || '')
+                    setDepartment(data.department || '')
+
+                    return axios.get("https://smart-backend-1-q3fb.onrender.com/active-sessions", {
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    })
+                }
+            })
+            .then((res) => {
+                if (res && res.data) {
+                    setSessions(res.data.sessions || res.data.data || []);
+                }
+            })
+            .catch((err) => {
+                console.error("Dashboard error:", err)
+                if (err.response?.status === 401 || err.response?.status === 403) {
+                    navigate('/signin')
+                } else {
+                    toast.error("Could not load active lectures.")
+                }
+            })
+            .finally(() => {
+                setLoading(false)
+            })
     }
 
-    setLoading(true) // Ensure loading is true when starting
+    useEffect(() => {
+        fetchDashboardData()
+    }, [token, endpoint, navigate])
 
-    // 1. Fetch Student Profile Information FIRST
-    axios.get(endpoint, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-        },
-    })
-        .then((response) => {
-            if (response.status === 200 || response.status === 201) {
-                toast.success(`Welcome back, ${response.data.result.firstname}! 👋`, {
-                    position: 'bottom-right',
-                    autoClose: 3000,
-                })
-                const data = response.data.result
-                setFirstname(data.firstname)
-                setMatricNo(data.matricno)
-                setFaculty(data.faculty || '')
-                setDepartment(data.department || '')
-
-                // 2. ONLY THEN fetch the active sessions
-                return axios.get("https://smart-backend-1-q3fb.onrender.com/active-sessions", {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                })
-            }
-        })
-        .then((res) => {
-            if (res && res.data) {
-                // Update the state with the active sessions
-                setSessions(res.data.sessions || res.data.data || []);
-            }
-        })
-        .catch((err) => {
-            console.error("Dashboard error:", err)
-            // Optional: only navigate to signin if it was a profile auth error
-            if (err.response?.status === 401) {
-                navigate('/signin')
-            } else {
-                toast.error("Could not load active lectures.")
-            }
-        })
-        .finally(() => {
-            setLoading(false) // Turns off loading spinner only after BOTH requests finish
-        })
-
-}, [token, endpoint, navigate])
-    // Opens the selector drawer modal for the clicked card session
     const openVerificationModal = (sessionItem) => {
         setSelectedSession(sessionItem)
-        setChosenMethod('') // Reset selection
+        setChosenMethod('')
         setIsModalOpen(true)
     }
 
-    // Coordinates router based on student's final submission selection
     const handleVerificationSubmit = () => {
         if (!chosenMethod) {
             toast.error('Please choose a verification method.')
@@ -104,7 +97,6 @@ const StudentDashboard = () => {
         }
     }
 
-    // Strategy 1: Handle GPS Lock
     const handleGpsLookup = () => {
         if (!navigator.geolocation) {
             toast.error('Geolocation is not supported by your browser.')
@@ -133,7 +125,6 @@ const StudentDashboard = () => {
         )
     }
 
-    // Strategy 2: Simulate or capture Wi-Fi interfaces (BSSID)
     const handleWifiLookup = () => {
         setVerifying(true)
         toast.info('Scanning connected network configurations...')
@@ -147,7 +138,6 @@ const StudentDashboard = () => {
         })
     }
 
-    // Strategy 3: Bluetooth BLE Hardware Handshakes
     const handleBeaconLookup = () => {
         setVerifying(true)
         toast.info('Searching for local Bluetooth transmitter pulses...')
@@ -164,15 +154,12 @@ const StudentDashboard = () => {
     const sendToServer = async (payloadData) => {
         try {
             setVerifying(true);
-
             const token = localStorage.getItem('token');
 
             if (!token) {
                 toast.error("No login token found. Please log out and sign back in.");
                 return;
             }
-
-            console.log("🔑 Attaching Token to request:", `Bearer ${token}`);
 
             const response = await axios.post("https://smart-backend-1-q3fb.onrender.com/verify-attendance", payloadData, {
                 headers: {
@@ -199,87 +186,185 @@ const StudentDashboard = () => {
         <>
             <ToastContainer />
             <div className='bg-[#f4f2fd] min-h-screen'>
-                <div className='pt-16 px-6 lg:py-2 lg:px-5 w-full pb-28'>
-                    <div className='flex items-center justify-between'>
+                <div className='pt-8 px-4 lg:px-8 w-full pb-20 max-w-7xl mx-auto'>
+                    
+                    {/* Header Welcome Section */}
+                    <div className='flex flex-col md:flex-row md:items-center justify-between bg-white p-6 rounded-xl border border-[#bfc9bf] shadow-sm gap-4'>
                         <div>
-                            <h1 className='text-[30px] font-bold'>Welcome back, {firstname || "Student"}!</h1>
-                            <span className='text-[16px] text-[#3f4941] font-medium'>MATRIC : {matricNo || "N/A"}</span>
-                            {department && (
-                                <p className='text-[13px] text-[#3f4941] mt-1'>
-                                    <span className='font-semibold'>Department:</span> {department}
-                                </p>
+                            <div className='flex items-center gap-2 mb-1'>
+                                <h1 className='text-2xl md:text-3xl font-bold text-slate-800'>Welcome back, {firstname || "Student"}! 👋</h1>
+                            </div>
+                            <p className='text-sm text-[#3f4941] font-medium'>
+                                <span className='font-bold'>MATRIC:</span> {matricNo || "N/A"} 
+                                {department && <span className='ml-2'>• <span className='font-bold'>Dept:</span> {department}</span>}
+                            </p>
+                        </div>
+
+                        <button 
+                            onClick={fetchDashboardData}
+                            className='flex items-center gap-1.5 text-xs font-semibold text-[#0a643a] bg-[#e2e9ec] px-3.5 py-2 rounded-lg hover:bg-[#d0dbdf] transition-colors w-fit'
+                        >
+                            <span className="material-symbols-outlined text-[18px]">refresh</span>
+                            Refresh Sessions
+                        </button>
+                    </div>
+
+                    {/* Stats Overview Grid */}
+                    <div className='grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6'>
+                        <div className='bg-white border border-[#bfc9bf] p-4 rounded-xl shadow-sm flex items-center justify-between'>
+                            <div>
+                                <span className='text-xs text-[#3f4941] font-semibold uppercase tracking-wider block mb-1'>Overall Attendance</span>
+                                <span className='text-2xl font-bold text-slate-800'>88%</span>
+                            </div>
+                            <div className='w-10 h-10 rounded-full bg-[#e2e9ec] flex items-center justify-center text-[#0a643a]'>
+                                <span className="material-symbols-outlined">analytics</span>
+                            </div>
+                        </div>
+
+                        <div className='bg-white border border-[#bfc9bf] p-4 rounded-xl shadow-sm flex items-center justify-between'>
+                            <div>
+                                <span className='text-xs text-[#3f4941] font-semibold uppercase tracking-wider block mb-1'>Classes Attended</span>
+                                <span className='text-2xl font-bold text-slate-800'>24 Sessions</span>
+                            </div>
+                            <div className='w-10 h-10 rounded-full bg-[#e2e9ec] flex items-center justify-center text-[#0a643a]'>
+                                <span className="material-symbols-outlined">fact_check</span>
+                            </div>
+                        </div>
+
+                        <div className='bg-white border border-[#bfc9bf] p-4 rounded-xl shadow-sm flex items-center justify-between'>
+                            <div>
+                                <span className='text-xs text-[#3f4941] font-semibold uppercase tracking-wider block mb-1'>Exam Eligibility</span>
+                                <span className='text-2xl font-bold text-emerald-700 flex items-center gap-1'>
+                                    Eligible <span className="material-symbols-outlined text-[18px]">verified</span>
+                                </span>
+                            </div>
+                            <div className='w-10 h-10 rounded-full bg-[#e2e9ec] flex items-center justify-center text-[#0a643a]'>
+                                <span className="material-symbols-outlined">school</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Main Content Layout Grid */}
+                    <div className='grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8 items-start'>
+                        
+                        {/* Left Aspect: Active Sessions (Takes 2 Columns) */}
+                        <div className='lg:col-span-2 flex flex-col justify-between space-y-4'>
+                            <div className='flex items-center justify-between'>
+                                <div className='flex items-center gap-2'>
+                                    <div className='p-1 bg-[#0a643a] rounded-full w-[8px] h-[8px] animate-ping'></div>
+                                    <h2 className='text-lg font-bold text-slate-800'>Active Lecture Sessions</h2>
+                                </div>
+                                <span className='text-xs font-semibold text-[#3f4941] bg-white px-2.5 py-1 rounded-full border border-[#bfc9bf]'>
+                                    {sessions.length} Available
+                                </span>
+                            </div>
+
+                            {loading ? (
+                                <div className="bg-white border border-[#bfc9bf] rounded-xl p-12 text-center text-[#3f4941] font-medium animate-pulse shadow-sm">
+                                    Loading ongoing lectures...
+                                </div>
+                            ) : sessions.length === 0 ? (
+                                <div className="bg-white border border-[#bfc9bf] rounded-xl p-8 text-center shadow-sm flex flex-col items-center justify-center gap-3">
+                                    <div className="w-12 h-12 rounded-full bg-[#e2e9ec] flex items-center justify-center text-[#3f4941]">
+                                        <span className="material-symbols-outlined text-2xl">event_busy</span>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-base font-bold text-slate-800">No Active Lectures</h3>
+                                        <p className="text-xs text-[#3f4941] mt-1 max-w-sm">
+                                            There are no active check-in sessions running for your department at the moment.
+                                        </p>
+                                    </div>
+                                    <button 
+                                        onClick={fetchDashboardData}
+                                        className="mt-2 text-xs font-semibold text-[#0a643a] bg-[#e2e9ec] hover:bg-[#d0dbdf] px-4 py-2 rounded-lg transition-colors"
+                                    >
+                                        Check Again
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                                    {sessions.map((sessionItem) => {
+                                        const displayTimeFrom = sessionItem.dateTimeFrom
+                                            ? new Date(sessionItem.dateTimeFrom).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                            : "N/A";
+
+                                        const displayTimeTo = sessionItem.dateTimeTo
+                                            ? new Date(sessionItem.dateTimeTo).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                            : "N/A";
+
+                                        return (
+                                            <div key={sessionItem._id} className='bg-white rounded-xl border border-[#bfc9bf] flex flex-col justify-between shadow-sm overflow-hidden hover:shadow-md transition-shadow'>
+                                                <div className='bg-[#e2e9ec] flex justify-between p-3.5 items-center border-b border-[#bfc9bf]'>
+                                                    <span className='text-xs text-[#3f4941] font-bold uppercase tracking-wider'>
+                                                        {sessionItem.courseCode}
+                                                    </span>
+                                                    <span className='bg-[#0a643a] py-0.5 px-2.5 rounded-full text-[10px] font-extrabold text-white tracking-wider animate-pulse'>
+                                                        LIVE
+                                                    </span>
+                                                </div>
+                                                <div className='flex flex-col justify-between p-5 flex-grow gap-3'>
+                                                    <div>
+                                                        <h1 className='text-base font-bold text-slate-800 line-clamp-2 mb-2'>
+                                                            {sessionItem.courseName}
+                                                        </h1>
+                                                        <p className='flex items-center gap-1.5 text-xs text-[#3f4941] mb-1.5'>
+                                                            <span className="material-symbols-outlined text-[16px] text-[#0a643a]">location_on</span>
+                                                            {sessionItem.venue}
+                                                        </p>
+                                                        <p className='flex items-center gap-1.5 text-xs text-[#3f4941] mb-2'>
+                                                            <span className="material-symbols-outlined text-[16px] text-[#0a643a]">schedule</span>
+                                                            {displayTimeFrom} - {displayTimeTo}
+                                                        </p>
+                                                        {sessionItem.mapUrl && (
+                                                            <a href={sessionItem.mapUrl} target='_blank' rel='noopener noreferrer'
+                                                                className='flex items-center gap-1 text-xs text-[#0a643a] hover:underline font-medium w-fit'>
+                                                                <span className="material-symbols-outlined text-[16px]">map</span>
+                                                                View on Google Maps
+                                                            </a>
+                                                        )}
+                                                    </div>
+                                                    <button
+                                                        onClick={() => openVerificationModal(sessionItem)}
+                                                        className='bg-[#0a643a] flex items-center justify-center text-white py-2.5 px-4 rounded-lg hover:bg-[#084d2c] gap-1 font-semibold transition-colors w-full text-sm mt-2 shadow-sm'
+                                                    >
+                                                        <span className="material-symbols-outlined text-[18px]">fingerprint</span>
+                                                        Mark Attendance
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
                             )}
                         </div>
+
+                        {/* Right Aspect: Quick Info & Notices (Takes 1 Column) */}
+                        <div className='space-y-4'>
+                            <h2 className='text-lg font-bold text-slate-800'>Class Announcements</h2>
+                            
+                            <div className='bg-white border border-[#bfc9bf] rounded-xl p-5 shadow-sm space-y-4'>
+                                <div className='border-b border-gray-100 pb-3'>
+                                    <span className='text-[10px] font-bold text-[#0a643a] bg-[#e2e9ec] px-2 py-0.5 rounded uppercase tracking-wider'>Important</span>
+                                    <h4 className='text-xs font-bold text-slate-800 mt-1.5'>Geofence Attendance Verification</h4>
+                                    <p className='text-xs text-[#3f4941] mt-1 leading-relaxed'>
+                                        Ensure location permissions are turned on in browser settings prior to verifying GPS coordinates.
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <span className='text-[10px] font-bold text-slate-600 bg-gray-100 px-2 py-0.5 rounded uppercase tracking-wider'>Notice</span>
+                                    <h4 className='text-xs font-bold text-slate-800 mt-1.5'>Minimum Attendance Requirement</h4>
+                                    <p className='text-xs text-[#3f4941] mt-1 leading-relaxed'>
+                                        Students must achieve a minimum of 75% total course attendance to sit for upcoming semester examinations.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
-
-                    <div className='mt-6 p-4 flex gap-2 items-center'>
-                        <div className='p-1 bg-[#0a643a] rounded-full w-[2px] h-[2px] animate-ping'></div>
-                        <h2 className='text-md text-[14px] font-semibold'>Active Lecture Sessions</h2>
-                    </div>
-
-                    {loading ? (
-                        <div className="text-[#3f4941] text-center font-medium mt-6 animate-pulse">
-                            Loading ongoing lectures...
-                        </div>
-                    ) : sessions.length === 0 ? (
-                        <div className="text-gray-500 border border-dashed border-gray-300 rounded-lg p-6 text-center mt-4 bg-white max-w-sm mx-auto sm:mx-0">
-                            No active classes found for your department at the moment.
-                        </div>
-                    ) : (
-                        <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-4 lg:gap-10'>
-                            {sessions.map((sessionItem) => {
-                                const displayTimeFrom = sessionItem.dateTimeFrom
-                                    ? new Date(sessionItem.dateTimeFrom).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
-                                    : "N/A";
-
-                                const displayTimeTo = sessionItem.dateTimeTo
-                                    ? new Date(sessionItem.dateTimeTo).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
-                                    : "N/A";
-
-                                return (
-                                    <div key={sessionItem._id} className='bg-[#ffffff] rounded-lg border border-[#bfc9bf] flex flex-col justify-between shadow-sm overflow-hidden'>
-                                        <div className='bg-[#e2e9ec] flex justify-between p-3 items-center'>
-                                            <span className='text-[12px] text-[#3f4941] font-bold uppercase tracking-wider'>
-                                                {sessionItem.courseCode}
-                                            </span>
-                                            <span className='bg-[#0a643a] py-0.5 px-2 rounded-full text-[9px] font-extrabold text-white tracking-wider animate-pulse'>
-                                                LIVE
-                                            </span>
-                                        </div>
-                                        <div className='flex flex-col justify-center p-4 flex-grow'>
-                                            <h1 className='text-[16px] font-bold mb-2 line-clamp-2 min-h-[48px] text-slate-800'>
-                                                {sessionItem.courseName}
-                                            </h1>
-                                            <p className='flex items-center gap-1 text-xs text-[#3f4941] mb-2'>
-                                                <span className="material-symbols-outlined text-[16px]">location_on</span>
-                                                {sessionItem.venue}
-                                            </p>
-                                            <p className='flex items-center gap-1 text-xs text-[#3f4941] mb-4'>
-                                                <span className="material-symbols-outlined text-[16px]">schedule</span>
-                                                {displayTimeFrom} - {displayTimeTo}
-                                            </p>
-                                            {sessionItem.mapUrl && (
-                                                <a href={sessionItem.mapUrl} target='_blank' rel='noopener noreferrer'
-                                                    className='flex items-center gap-1 text-xs text-[#0a643a] hover:text-[#084d2c] hover:underline mb-4 w-fit'>
-                                                    <span className="material-symbols-outlined text-[16px]">map</span>
-                                                    View on Google Maps
-                                                </a>
-                                            )}
-                                            <button
-                                                onClick={() => openVerificationModal(sessionItem)}
-                                                className='bg-[#0a643a] flex items-center justify-center text-white py-2.5 px-4 rounded hover:bg-[#084d2c] gap-1 font-semibold transition-colors mt-auto w-full text-sm'
-                                            >
-                                                <span className="material-symbols-outlined text-[18px]">fingerprint</span>
-                                                Mark Attendance
-                                            </button>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    )}
                 </div>
             </div>
+
             {/* SELECTION MODAL LAYER DRAWER */}
             {isModalOpen && selectedSession && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fadeIn">
@@ -302,14 +387,14 @@ const StudentDashboard = () => {
                         </p>
 
                         <div className="space-y-3 overflow-y-auto pr-1 flex-grow">
-                            <label className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition-all ${chosenMethod === 'gps' ? 'border-emerald-600 bg-emerald-50/40 font-medium' : 'border-gray-200 hover:bg-slate-50'}`}>
+                            <label className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition-all ${chosenMethod === 'gps' ? 'border-[#0a643a] bg-[#e2e9ec]/50 font-medium' : 'border-gray-200 hover:bg-slate-50'}`}>
                                 <input
                                     type="radio"
                                     name="verificationChannel"
                                     value="gps"
                                     checked={chosenMethod === 'gps'}
                                     onChange={(e) => setChosenMethod(e.target.value)}
-                                    className="h-4 w-4 text-emerald-600 border-gray-300 focus:ring-emerald-500"
+                                    className="h-4 w-4 text-[#0a643a] border-gray-300 focus:ring-[#0a643a]"
                                 />
                                 <div>
                                     <span className="block text-xs font-bold text-slate-800">GPS Geofencing Mapping</span>
@@ -317,14 +402,14 @@ const StudentDashboard = () => {
                                 </div>
                             </label>
 
-                            <label className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition-all ${chosenMethod === 'wifi' ? 'border-emerald-600 bg-emerald-50/40 font-medium' : 'border-gray-200 hover:bg-slate-50'}`}>
+                            <label className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition-all ${chosenMethod === 'wifi' ? 'border-[#0a643a] bg-[#e2e9ec]/50 font-medium' : 'border-gray-200 hover:bg-slate-50'}`}>
                                 <input
                                     type="radio"
                                     name="verificationChannel"
                                     value="wifi"
                                     checked={chosenMethod === 'wifi'}
                                     onChange={(e) => setChosenMethod(e.target.value)}
-                                    className="h-4 w-4 text-emerald-600 border-gray-300 focus:ring-emerald-500"
+                                    className="h-4 w-4 text-[#0a643a] border-gray-300 focus:ring-[#0a643a]"
                                 />
                                 <div>
                                     <span className="block text-xs font-bold text-slate-800">Classroom Network Wi-Fi Link</span>
@@ -332,14 +417,14 @@ const StudentDashboard = () => {
                                 </div>
                             </label>
 
-                            <label className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition-all ${chosenMethod === 'beacon' ? 'border-emerald-600 bg-emerald-50/40 font-medium' : 'border-gray-200 hover:bg-slate-50'}`}>
+                            <label className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition-all ${chosenMethod === 'beacon' ? 'border-[#0a643a] bg-[#e2e9ec]/50 font-medium' : 'border-gray-200 hover:bg-slate-50'}`}>
                                 <input
                                     type="radio"
                                     name="verificationChannel"
                                     value="beacon"
                                     checked={chosenMethod === 'beacon'}
                                     onChange={(e) => setChosenMethod(e.target.value)}
-                                    className="h-4 w-4 text-emerald-600 border-gray-300 focus:ring-emerald-500"
+                                    className="h-4 w-4 text-[#0a643a] border-gray-300 focus:ring-[#0a643a]"
                                 />
                                 <div>
                                     <span className="block text-xs font-bold text-slate-800">Bluetooth Proximity Beacon Scan</span>
@@ -352,7 +437,7 @@ const StudentDashboard = () => {
                             <button
                                 type="button"
                                 onClick={() => setIsModalOpen(false)}
-                                className="w-1/2 bg-gray-100 hover:bg-gray-200 text-slate-700 text-xs py-2.5 rounded font-bold transition-colors"
+                                className="w-1/2 bg-gray-100 hover:bg-gray-200 text-slate-700 text-xs py-2.5 rounded-lg font-bold transition-colors"
                             >
                                 Cancel
                             </button>
@@ -360,7 +445,7 @@ const StudentDashboard = () => {
                                 type="button"
                                 disabled={verifying}
                                 onClick={handleVerificationSubmit}
-                                className="w-1/2 bg-[#0a643a] hover:bg-[#084d2c] disabled:bg-gray-300 text-white text-xs py-2.5 rounded font-bold transition-colors shadow-sm flex items-center justify-center gap-1"
+                                className="w-1/2 bg-[#0a643a] hover:bg-[#084d2c] disabled:bg-gray-300 text-white text-xs py-2.5 rounded-lg font-bold transition-colors shadow-sm flex items-center justify-center gap-1"
                             >
                                 {verifying ? (
                                     <span className="animate-pulse">Validating Proximity...</span>

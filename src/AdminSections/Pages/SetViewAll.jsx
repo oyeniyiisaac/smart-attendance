@@ -1,40 +1,50 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminDashboard from './AdminDashboard';
 
-// We default sessions to an empty array [] to prevent the "reading 'forEach'" crash!
 const SetViewAll = ({ sessions = [], currentTime = new Date() }) => {
     const navigate = useNavigate();
 
     // Search & Filter States
     const [searchQuery, setSearchQuery] = useState('');
     const [activeFilter, setActiveFilter] = useState('All');
-    const [currentPage, setCurrentPage] = useState(1);
     const [backToDashboard, setBackToDashboard] = useState(false); 
 
+    // Helper function to reliably compute status
+    const getSessionStatus = (session) => {
+        if (!session) return 'Closed';
+
+        // If session was explicitly ended or has passed its end time
+        if (!session.isSessionActive || currentTime > new Date(session.dateTimeTo)) {
+            return 'Closed';
+        }
+
+        // If active and current time is within slot
+        if (session.isSessionActive && currentTime >= new Date(session.dateTimeFrom)) {
+            return 'Open';
+        }
+
+        // If active but start time is in the future
+        if (session.isSessionActive && currentTime < new Date(session.dateTimeFrom)) {
+            return 'Upcoming';
+        }
+
+        return 'Closed';
+    };
+
     // Calculate Dynamic Real-Time Stats safely
-    const computedStats = React.useMemo(() => {
+    const computedStats = useMemo(() => {
         let openCount = 0;
         let upcomingCount = 0;
         let completedCount = 0;
 
         sessions?.forEach((sessionItem) => {
             if (!sessionItem) return;
-            const isLiveOpen =
-                sessionItem.isSessionActive &&
-                currentTime >= new Date(sessionItem.dateTimeFrom) &&
-                currentTime <= new Date(sessionItem.dateTimeTo);
+            const status = getSessionStatus(sessionItem);
 
-            const isUpcoming = currentTime < new Date(sessionItem.dateTimeFrom);
-            const isCompleted = !sessionItem.isSessionActive || currentTime > new Date(sessionItem.dateTimeTo);
-
-            if (isLiveOpen) {
-                openCount++;
-            } else if (isUpcoming) {
-                upcomingCount++;
-            } else if (isCompleted) {
-                completedCount++;
-            }
+            if (status === 'Open') openCount++;
+            else if (status === 'Upcoming') upcomingCount++;
+            else if (status === 'Closed') completedCount++;
         });
 
         return {
@@ -75,24 +85,22 @@ const SetViewAll = ({ sessions = [], currentTime = new Date() }) => {
     ];
 
     if (backToDashboard) {
-        return <AdminDashboard/>
+        return <AdminDashboard />;
     }
 
     const filteredSessions = sessions.filter((session) => {
         if (!session) return false;
-        const isLiveOpen =
-            session.isSessionActive &&
-            currentTime >= new Date(session.dateTimeFrom) &&
-            currentTime <= new Date(session.dateTimeTo);
-        const isUpcoming = currentTime < new Date(session.dateTimeFrom);
-        const status = isLiveOpen ? 'Open' : isUpcoming ? 'Upcoming' : 'Closed';
-
+        
+        const status = getSessionStatus(session);
         const matchesFilter = activeFilter === 'All' || status === activeFilter;
         
+        const query = searchQuery.toLowerCase().trim();
         const matchesSearch =
-            (session.courseCode && session.courseCode.toLowerCase().includes(searchQuery.toLowerCase())) ||
-            (session.courseName && session.courseName.toLowerCase().includes(searchQuery.toLowerCase())) ||
-            (session.venue && session.venue.toLowerCase().includes(searchQuery.toLowerCase()));
+            !query ||
+            (session.courseCode && session.courseCode.toLowerCase().includes(query)) ||
+            (session.courseName && session.courseName.toLowerCase().includes(query)) ||
+            (session.venue && session.venue.toLowerCase().includes(query)) ||
+            (session.department && session.department.toLowerCase().includes(query));
 
         return matchesFilter && matchesSearch;
     });
@@ -102,7 +110,7 @@ const SetViewAll = ({ sessions = [], currentTime = new Date() }) => {
             {/* ── Action Back Header ────────────────────────── */}
             <div className="flex items-center gap-2 mb-6">
                 <button 
-                    onClick={() => setBackToDashboard(true)} // Takes them back to the Admin Dashboard route smoothly!
+                    onClick={() => setBackToDashboard(true)}
                     className="flex items-center gap-1.5 text-sm font-semibold text-[#0a643a] hover:underline cursor-pointer"
                 >
                     <span className="material-symbols-outlined text-sm">arrow_back</span>
@@ -179,25 +187,20 @@ const SetViewAll = ({ sessions = [], currentTime = new Date() }) => {
                     </div>
                 ) : (
                     filteredSessions.map((session) => {
-                        const isLiveOpen =
-                            session.isSessionActive &&
-                            currentTime >= new Date(session.dateTimeFrom) &&
-                            currentTime <= new Date(session.dateTimeTo);
-                        const isUpcoming = currentTime < new Date(session.dateTimeFrom);
-                        const status = isLiveOpen ? 'Open' : isUpcoming ? 'Upcoming' : 'Closed';
+                        const status = getSessionStatus(session);
                         
                         const displayTimeFrom = session.dateTimeFrom
-                            ? new Date(session.dateTimeFrom).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+                            ? new Date(session.dateTimeFrom).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                             : "09:00 AM";
                         const displayTimeTo = session.dateTimeTo
-                            ? new Date(session.dateTimeTo).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })
+                            ? new Date(session.dateTimeTo).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                             : "11:00 AM";
 
                         return (
                             <div
                                 key={session._id}
                                 className={`bg-white border border-gray-200 rounded-xl p-6 transition-all duration-300 hover:shadow-md flex flex-col md:flex-row items-center gap-8 ${
-                                    status === 'Closed' ? 'opacity-75' : ''
+                                    status === 'Closed' ? 'opacity-80' : ''
                                 }`}
                             >
                                 <div className={`w-16 h-16 rounded-xl flex items-center justify-center shrink-0 border ${
@@ -253,7 +256,10 @@ const SetViewAll = ({ sessions = [], currentTime = new Date() }) => {
 
                                     <div className="flex items-center justify-end">
                                         {status === 'Open' && (
-                                            <button className="w-full md:w-auto px-5 py-2 bg-[#0a643a] text-white rounded-lg font-bold text-sm hover:opacity-90 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                                            <button 
+                                                onClick={() => navigate(`/admin/monitor/${session._id}`)}
+                                                className="w-full md:w-auto px-5 py-2 bg-[#0a643a] text-white rounded-lg font-bold text-sm hover:opacity-90 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                                            >
                                                 View Monitor
                                                 <span className="material-symbols-outlined text-sm">open_in_new</span>
                                             </button>
