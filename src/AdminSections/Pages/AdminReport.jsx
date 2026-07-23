@@ -1,5 +1,26 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+const isTokenValid = (token) => {
+    if (!token || typeof token !== 'string') return false;
+
+    try {
+        const payloadBase64 = token.split('.')[1];
+        if (!payloadBase64) return false;
+
+        const decodedPayload = JSON.parse(atob(payloadBase64));
+
+        if (decodedPayload.exp) {
+            const currentTime = Math.floor(Date.now() / 1000);
+            if (decodedPayload.exp < currentTime) {
+                return false; // Token has expired
+            }
+        }
+        return true;
+    } catch (error) {
+        return false; // Token is corrupted or tampered with
+    }
+};
 
 const Reports = () => {
     // 🟢 UPDATED: Changed default states to match your actual database values
@@ -8,22 +29,34 @@ const Reports = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCourse, setSelectedCourse] = useState('CSC400'); // Changed from 'CS101'
     const [selectedSemester, setSelectedSemester] = useState('Second Semester'); // Changed from 'Fall 2023'
+    const navigate = useNavigate()
+    useEffect(() => {
+        const token = localStorage.getItem("adminToken");
+        if (!isTokenValid(token)) {
+            localStorage.removeItem("adminToken");
+            navigate('/signin');
+        }
+    }, [navigate]);
 
     // Fetch reports dynamically from backend API
     useEffect(() => {
         const fetchReport = async () => {
             setLoading(true);
             try {
-                const token = localStorage.getItem('adminToken');
-                
-                console.log("Fetching report for:", { selectedCourse, selectedSemester });
+                const token = localStorage.getItem("adminToken");
+                if (!token || !isTokenValid(token)) {
+                    localStorage.removeItem("adminToken");
+                    navigate('/signin');
+                    return;
+                }
+                // console.log("Fetching report for:", { selectedCourse, selectedSemester });
 
                 const res = await axios.get(
                     `https://smart-backend-1-q3fb.onrender.com/admin/reports?courseCode=${selectedCourse}&semester=${selectedSemester}`,
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
 
-                console.log("RAW BACKEND RESPONSE:", res.data); 
+                // console.log("RAW BACKEND RESPONSE:", res.data);
 
                 setStudents(res.data.students || res.data.data || []);
             } catch (err) {

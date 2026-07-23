@@ -38,8 +38,8 @@ const SignIn = () => {
             password: yup.string().required("This field is required").min(6, "min of 6 characters")
         })
     })
-    console.log(formik.errors)
-    console.log(formik.values);
+    // console.log(formik.errors)
+    // console.log(formik.values);
 
     const adminformik = useFormik({
         initialValues: {
@@ -66,7 +66,7 @@ const SignIn = () => {
             password: yup.string().required('Password is required').min(6, 'Min 6 characters'),
         })
     })
-    console.log(adminformik.values)
+    // console.log(adminformik.values)
 
     // const signin = () => {
     //     axios.post(loginUrl, formik.values)

@@ -68,6 +68,7 @@ const SignUp = () => {
             verifyToken: "",
         },
         onSubmit: async (values, { setSubmitting, setFieldError }) => {
+        
             setError('');
             try {
                 const response = await axios.post(adminRegisterUrl, values);
@@ -337,7 +338,7 @@ const SignUp = () => {
                             <div>
                                 <div>
                                     <label className='text-[#3f4941] text-lg'>Faculty</label>
-                                    <select name="faculty" className='w-full border border-outline p-3 bg-[#f0f4f1] rounded-lg focus:ring-0.5 focus:ring-[#0a643a] focus:ring-opacity-10 focus:border-[#0a643a] outline-none transition-all font-body-md text-body-md' onChange={formik.handleChange} value={formik.values.faculty} onBlur={formik.handleBlur}>
+                                    <select name="faculty" className='w-full border border-outline p-3 bg-[#f0f4f1] rounded-lg focus:ring-0.5 focus:ring-[#0a643a] focus:ring-opacity-10 focus:border-[#0a643a] outline-none transition-all font-body-md text-body-md' onChange={adminformik.handleChange} value={adminformik.values.faculty} onBlur={adminformik.handleBlur}>
                                         <option value="" disabled>Select Faculty</option>
                                         <option value="FET">Faculty of Engineering and Technology (FET)</option>
                                         <option value="FCI">Faculty of Computing and Informatics (FCI)</option>
@@ -353,20 +354,20 @@ const SignUp = () => {
                                         <option value="FBCS">Faculty of Basic Clinical Sciences (FBCS)</option>
                                         <option value="FCNS">Faculty of Clinical Nursing Sciences (FCNS)</option>
                                     </select>
-                                    <small className='block mb-3 text-[#ba1a1a] font-semibold'>{formik.touched.faculty && formik.errors.faculty}</small>
+                                    <small className='block mb-3 text-[#ba1a1a] font-semibold'>{adminformik.touched.faculty && adminformik.errors.faculty}</small>
                                 </div>
                             </div>
 
-                            {formik.values.faculty && facultyDepartments[formik.values.faculty] && (
+                            {adminformik.values.faculty && facultyDepartments[adminformik.values.faculty] && (
                                 <div className="mb-3">
                                     <label className='text-[#3f4941] text-lg'>Department</label>
-                                    <select name="department" className='w-full border border-outline p-3 bg-[#f0f4f1] rounded-lg focus:ring-0.5 focus:ring-[#0a643a] focus:ring-opacity-10 focus:border-[#0a643a] outline-none transition-all font-body-md text-body-md' onChange={formik.handleChange} value={formik.values.department} onBlur={formik.handleBlur}>
+                                    <select name="department" className='w-full border border-outline p-3 bg-[#f0f4f1] rounded-lg focus:ring-0.5 focus:ring-[#0a643a] focus:ring-opacity-10 focus:border-[#0a643a] outline-none transition-all font-body-md text-body-md' onChange={adminformik.handleChange} value={adminformik.values.department} onBlur={adminformik.handleBlur}>
                                         <option value="" disabled>Select Department</option>
-                                        {facultyDepartments[formik.values.faculty].map((dept) => (
+                                        {facultyDepartments[adminformik.values.faculty].map((dept) => (
                                             <option key={dept} value={dept}>{dept}</option>
                                         ))}
                                     </select>
-                                    <small className='block mb-3 text-[#ba1a1a] font-semibold'>{formik.touched.department && formik.errors.department}</small>
+                                    <small className='block mb-3 text-[#ba1a1a] font-semibold'>{adminformik.touched.department && adminformik.errors.department}</small>
                                 </div>
                             )}
                             <div className='flex gap-4 mt-3'>

@@ -3,6 +3,7 @@ import FormSection from "./FormSection";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useNavigate } from "react-router-dom";
 
 const sessionURI = import.meta.env.VITE_SESSION_URL;
 
@@ -116,6 +117,28 @@ const getFormattedLocalDateTime = (offsetHours = 0) => {
   return `${year}-${month}-${day}T${hours}:${minutes}`;
 };
 
+// Helper function to validate JWT structure & expiration
+const isTokenValid = (token) => {
+  if (!token || typeof token !== 'string') return false;
+
+  try {
+    const payloadBase64 = token.split('.')[1];
+    if (!payloadBase64) return false;
+
+    const decodedPayload = JSON.parse(atob(payloadBase64));
+
+    if (decodedPayload.exp) {
+      const currentTime = Math.floor(Date.now() / 1000);
+      if (decodedPayload.exp < currentTime) {
+        return false; // Token has expired
+      }
+    }
+    return true;
+  } catch (error) {
+    return false; // Token is corrupted or tampered with
+  }
+};
+
 export default function CreateSessionForm() {
   const initialFormState = () => ({
     courseName: "",
@@ -175,13 +198,26 @@ export default function CreateSessionForm() {
     }));
   };
 
+  const navigate = useNavigate();
+
+  // Validate admin token on mount
+  useEffect(() => {
+    const token = localStorage.getItem("adminToken");
+    if (!isTokenValid(token)) {
+      localStorage.removeItem("adminToken");
+      navigate('/signin');
+      toast.error("Your session has expired or you are not authorized. Please log in again.");
+    }
+  }, [navigate]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
     const token = localStorage.getItem("adminToken");
     console.log("Token sent to header:", token);
-
-    if (!token) {
+    if (!token || !isTokenValid(token)) {
+      localStorage.removeItem("adminToken");
+      navigate('/signin');
       toast.error("Your session has expired or you are not authorized. Please log in again.");
       return;
     }
@@ -244,8 +280,14 @@ export default function CreateSessionForm() {
       })
       .catch((err) => {
         console.error("Session creation error:", err);
-        const errorMsg = err.response?.data?.message || "Failed to create session.";
-        toast.error(errorMsg);
+        if (err.response?.status === 401 || err.response?.status === 403) {
+          localStorage.removeItem("adminToken");
+          navigate('/signin');
+          toast.error("Your session has expired or you are not authorized. Please log in again.");
+        } else {
+          const errorMsg = err.response?.data?.message || "Failed to create session.";
+          toast.error(errorMsg);
+        }
       });
   };
 

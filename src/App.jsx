@@ -18,6 +18,9 @@ import NavbarBottom from './StudentSection/Components/NavbarBottom'
 import NavbarTopDashboard from './StudentSection/Components/NavbarTopDashboard'
 import SetViewAll from './AdminSections/Pages/SetViewAll'
 import AdminReport from './AdminSections/Pages/AdminReport'
+import StudentManagement from './AdminSections/Pages/StudentManagement'
+import CourseManagement from './AdminSections/Pages/CourseManagement'
+import StudentCourseRegistration from './StudentSection/Pages/CourseRegister'
 // import Adminsidebar from './AdminSections/Components/Adminsidebar'
 
 
@@ -53,11 +56,14 @@ const App = () => {
           <Route path='monitor' element={<SessionMonitor/>} />
           <Route path='viewall' element={<SetViewAll/>} />
           <Route path='reports' element={<AdminReport/>} />
+          <Route path='student-management' element={<StudentManagement/>} />
+          <Route path='course-management' element={<CourseManagement />} />
           <Route path="/admin/monitor/:id" element={<SessionMonitor />} />
         </Route>
         <Route path='/adminsidebar' element={<AdminSideBar />} />
         {/* <Route path='/adminsidebar' element={<Adminsidebar/>} /> */}
         <Route path='student-eligibility' element={<EligibilitySummary />} />
+        <Route path='register-course' element={<StudentCourseRegistration />} />
 
 
         <Route path='*' element={<NotFound />} />

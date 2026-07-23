@@ -16,6 +16,8 @@ const AdminSideBar = ({ isOpen }) => {
   const routeActiveMap = {
     "/admin-dashboard": "dashboard",
     "/reports": "reports",
+    "/student-management": "classes",
+    "/course-management": "course",
   };
 
   const activeBtn = routeActiveMap[currentPath] ?? localActiveBtn;
@@ -34,7 +36,11 @@ const AdminSideBar = ({ isOpen }) => {
   };
   const studentmanagementBtn = () => {
     setLocalActiveBtn("classes");
-    // navigate('/student-management')
+    navigate('/admin/student-management')
+  };
+  const coursemanagementBtn = () => {
+    setLocalActiveBtn("course");
+    navigate('/admin/course-management')
   };
   const iconStyle = {
     fontVariationSettings: '"FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24',
@@ -75,7 +81,7 @@ const AdminSideBar = ({ isOpen }) => {
 
             <button
               type="button"
-              className={`flex items-center gap-2 p-2 rounded-xl cursor-pointer text-left whitespace-nowrap transition-all duration-300 ${isOpen ? "" : "justify-center"} ${activeBtn === "eligibility" ? "bg-[#baeed9]" : "bg-transparent"}`}
+              className={`flex items-center gap-2 p-2 rounded-xl cursor-pointer text-left whitespace-nowrap transition-all duration-300 ${isOpen ? "" : "justify-center"} ${activeBtn === "reports" ? "bg-[#baeed9]" : "bg-transparent"}`}
               onClick={reportsBtn}
             >
               <span className="material-symbols-outlined">analytics</span>
@@ -89,6 +95,15 @@ const AdminSideBar = ({ isOpen }) => {
             >
               <span className="material-symbols-outlined">group</span>
               {isOpen && <span>Students Management</span>}
+            </button>
+
+            <button
+              type="button"
+              className={`flex items-center gap-2 p-2 rounded-xl cursor-pointer text-left whitespace-nowrap transition-all duration-300 ${isOpen ? "" : "justify-center"} ${activeBtn === "course" ? "bg-[#baeed9]" : "bg-transparent"}`}
+              onClick={coursemanagementBtn}
+            >
+              <span className="material-symbols-outlined">menu_book</span>
+              {isOpen && <span>Courses Management</span>}
             </button>
           </div>
         </div>
@@ -120,6 +135,7 @@ const AdminSideBar = ({ isOpen }) => {
                         <button type="button" className={`flex flex-col items-center gap-1 p-1 rounded-xl cursor-pointer text-center ${activeBtn === 'classes' ? 'bg-[#baeed9]' : 'bg-transparent'}`} onClick={studentmanagementBtn}><span className="material-symbols-outlined">
                             group
                         </span>Students Management</button>
+                        <button type="button" className={`flex flex-col items-center gap-1 p-1 rounded-xl cursor-pointer text-center ${activeBtn === 'course' ? 'bg-[#baeed9]' : 'bg-transparent'}`} onClick={coursemanagementBtn}><span className="material-symbols-outlined">menu_book</span>Courses Management</button>
                     </div>
                 </div>
       </div>

@@ -1,9 +1,31 @@
 import axios from 'axios';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Cards from '../Components/Cards';
 import SessionCard from '../Components/SessionCard';
 import { useNavigate } from 'react-router-dom';
 import SetViewAll from './SetViewAll';
+
+// Helper function to validate JWT structure & expiration
+const isTokenValid = (token) => {
+    if (!token || typeof token !== 'string') return false;
+
+    try {
+        const payloadBase64 = token.split('.')[1];
+        if (!payloadBase64) return false;
+
+        const decodedPayload = JSON.parse(atob(payloadBase64));
+
+        if (decodedPayload.exp) {
+            const currentTime = Math.floor(Date.now() / 1000);
+            if (decodedPayload.exp < currentTime) {
+                return false; // Token has expired
+            }
+        }
+        return true;
+    } catch (error) {
+        return false; // Token is corrupted or tampered with
+    }
+};
 
 const AdminDashboard = () => {
     const [generating, setGenerating] = useState(false);
@@ -27,66 +49,98 @@ const AdminDashboard = () => {
     const adminInviteUrl = import.meta.env.VITE_ADMIN_INVITE_URL;
     const sessionURI = import.meta.env.VITE_SESSIONALL_URL;
     const admindashboardUrl = import.meta.env.VITE_ADMINDASHBOARD_URL;
-    const token = localStorage.getItem('adminToken');
 
-    // 1. Clock Tracker Lifecycle Hook
+    // Helper to clear session & eject user to login
+    const handleUnauthorized = useCallback(() => {
+        localStorage.removeItem('adminToken');
+        navigate('/signin', { replace: true });
+    }, [navigate]);
+
+    // 1. Monitor real-time localStorage changes (if user edits/deletes token in DevTools or another tab)
     useEffect(() => {
-        const timer = setInterval(() => setCurrentTime(new Date()), 30000);
-        return () => clearInterval(timer);
-    }, []);
+        const handleStorageChange = (e) => {
+            if (e.key === 'adminToken') {
+                if (!e.newValue || !isTokenValid(e.newValue)) {
+                    handleUnauthorized();
+                }
+            }
+        };
 
-    // 2. Validate Protected Dashboard Route
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
+    }, [handleUnauthorized]);
+
+    // 2. Initial Auth & Token Sanity Check on Mount
     useEffect(() => {
-        if (token) {
-            axios.get(`${sessionURI}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            })
-                .then((res) => {
-                    console.log("SESSION API RESPONSE:", res.data); // 👈 ADD THIS LOG
+        const currentToken = localStorage.getItem('adminToken');
 
-                    // Check if res.data is directly the array, OR if it's nested inside something else!
-                    const data = res.data.sessions || res.data.data || res.data;
-
-                    setSessions(Array.isArray(data) ? data : []);
-                })
-        } else {
-            navigate('/signin');
-        }
-    }, [token, admindashboardUrl, navigate]);
-
-    // 3. Fetch All Sessions Lifecycle Hook
-    useEffect(() => {
-        if (!token) {
-            navigate('/signin');
+        if (!isTokenValid(currentToken)) {
+            handleUnauthorized();
             return;
         }
+
+        axios.get(admindashboardUrl, {
+            headers: { Authorization: `Bearer ${currentToken}` }
+        })
+        .then((res) => {
+            console.log("Admin Dashboard API Response:", res.data);
+            const data = res.data.sessions || res.data.data || res.data;
+            setSessions(Array.isArray(data) ? data : []);
+        })
+        .catch((err) => {
+            console.error("Failed to fetch admin dashboard:", err);
+            if (err.response?.status === 401 || err.response?.status === 403) {
+                handleUnauthorized();
+            } else {
+                setError(err.response?.data?.message || 'Failed to retrieve admin dashboard.');
+            }
+        })
+        .finally(() => {
+            setLoadingSessions(false);
+        });
+    }, [admindashboardUrl, handleUnauthorized]);
+
+    // 3. Fetch All Sessions Feed
+    useEffect(() => {
+        const currentToken = localStorage.getItem('adminToken');
+        if (!isTokenValid(currentToken)) return;
 
         setLoadingSessions(true);
         axios.get(`${sessionURI}`, {
             headers: {
-                Authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${currentToken}`,
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             }
         })
             .then((res) => {
-                // FIXED: Support both res.data.sessions AND res.data.data so state is never lost
                 const fetchedSessions = res.data?.sessions || res.data?.data || res.data || [];
                 setSessions(Array.isArray(fetchedSessions) ? fetchedSessions : []);
             })
             .catch((err) => {
                 console.error("Failed to fetch dashboard sessions:", err);
-                setError(err.response?.data?.message || 'Failed to retrieve sessions.');
+                if (err.response?.status === 401 || err.response?.status === 403) {
+                    handleUnauthorized();
+                } else {
+                    setError(err.response?.data?.message || 'Failed to retrieve sessions.');
+                }
             })
             .finally(() => {
                 setLoadingSessions(false);
             });
 
-    }, [token, navigate, sessionURI]);
+    }, [sessionURI, handleUnauthorized]);
+
+    // 4. Clock Tracker Lifecycle Hook
+    useEffect(() => {
+        const timer = setInterval(() => setCurrentTime(new Date()), 30000);
+        return () => clearInterval(timer);
+    }, []);
 
     const handleGenerateToken = async () => {
-        if (!token) {
-            navigate('/signin');
+        const currentToken = localStorage.getItem('adminToken');
+        if (!isTokenValid(currentToken)) {
+            handleUnauthorized();
             return;
         }
 
@@ -98,15 +152,19 @@ const AdminDashboard = () => {
             const response = await axios.post(
                 `${adminInviteUrl}?hours=${hours}`,
                 {},
-                { headers: { Authorization: `Bearer ${token}` } }
+                { headers: { Authorization: `Bearer ${currentToken}` } }
             );
             setInvite({
                 token: response.data.token,
                 expiresAt: new Date(response.data.expiresAt).toLocaleString(),
             });
         } catch (err) {
-            const msg = err.response?.data?.message || 'Failed to generate token. Are you logged in?';
-            setError(msg);
+            if (err.response?.status === 401 || err.response?.status === 403) {
+                handleUnauthorized();
+            } else {
+                const msg = err.response?.data?.message || 'Failed to generate token. Are you logged in?';
+                setError(msg);
+            }
         } finally {
             setGenerating(false);
         }
@@ -120,19 +178,30 @@ const AdminDashboard = () => {
     };
 
     const handleRevoke = async () => {
-        if (!invite?.token || !token) return;
+        const currentToken = localStorage.getItem('adminToken');
+        if (!invite?.token || !currentToken) return;
+        
+        if (!isTokenValid(currentToken)) {
+            handleUnauthorized();
+            return;
+        }
+
         setRevoking(true);
         setError('');
         try {
             await axios.delete(adminInviteUrl, {
                 data: { token: invite.token },
-                headers: { Authorization: `Bearer ${token}` },
+                headers: { Authorization: `Bearer ${currentToken}` },
             });
             setInvite((prev) => ({ ...prev, revoked: true }));
             setTimeout(() => setInvite(null), 2000);
         } catch (err) {
-            const msg = err.response?.data?.message || 'Failed to revoke token.';
-            setError(msg);
+            if (err.response?.status === 401 || err.response?.status === 403) {
+                handleUnauthorized();
+            } else {
+                const msg = err.response?.data?.message || 'Failed to revoke token.';
+                setError(msg);
+            }
         } finally {
             setRevoking(false);
         }
