@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import NavBarTop from '../Components/NavBarTop';
 import Navbar from '../Components/Navbar';
@@ -40,10 +40,10 @@ export default function StudentCourseRegistration() {
 
             // 1. Fetch available courses and existing user registrations concurrently
             const [coursesRes, myRegsRes] = await Promise.all([
-                axios.get('http://localhost:3000/courses', {
+                axios.get('https://smart-backend-1-q3fb.onrender.com/courses', {
                     headers: { Authorization: `Bearer ${token}` }
                 }),
-                axios.get('http://localhost:3000/my-courses', {
+                axios.get('https://smart-backend-1-q3fb.onrender.com/my-courses', {
                     headers: { Authorization: `Bearer ${token}` }
                 }).catch(() => ({ data: { data: [] } })) // Fallback if no registrations exist yet
             ]);
@@ -131,7 +131,7 @@ export default function StudentCourseRegistration() {
             };
 
             const response = await axios.post(
-                'http://localhost:3000/submit-course-registration',
+                'https://smart-backend-1-q3fb.onrender.com/submit-course-registration',
                 payload,
                 {
                     headers: {

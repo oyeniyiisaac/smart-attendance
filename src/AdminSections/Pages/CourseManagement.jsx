@@ -64,7 +64,7 @@ const CourseManagement = () => {
                 department: formData.department
             };
 
-            const res = await axios.post('http://localhost:3000/admin/create-course', payload, {
+            const res = await axios.post('https://smart-backend-1-q3fb.onrender.com/admin/create-course', payload, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }

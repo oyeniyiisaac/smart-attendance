@@ -24,7 +24,7 @@ export default function EnrolCourses() {
 
                 // 2. Fetch registered courses from your backend
                 const response = await axios.get(
-                    'http://localhost:3000/get-student-registrations',
+                    'https://smart-backend-1-q3fb.onrender.com/get-student-registrations',
                     {
                         headers: {
                             Authorization: `Bearer ${token}`,
