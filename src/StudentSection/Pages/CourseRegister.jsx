@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import NavBarTop from '../Components/NavBarTop';
 import Navbar from '../Components/Navbar';
+import { useNavigate } from 'react-router-dom';
 
 const departments = [
     'All Departments',
@@ -13,7 +14,10 @@ const departments = [
 ];
 
 export default function StudentCourseRegistration() {
+    const navigate = useNavigate();
+
     const [courses, setCourses] = useState([]);
+    const [registeredStatusMap, setRegisteredStatusMap] = useState({}); // { courseId: 'Approved' | 'Pending' }
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
@@ -21,20 +25,44 @@ export default function StudentCourseRegistration() {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCourseIds, setSelectedCourseIds] = useState([]);
 
-    // ── Fetch Courses ──────────────────────────────────────────────────────
-    const fetchCourses = async () => {
+    // ── Fetch Courses and Student's Existing Registrations ─────────────────
+    const fetchCoursesAndStatus = async () => {
         setLoading(true);
         setError('');
         try {
-            const token = localStorage.getItem('token') || localStorage.getItem('studentToken');
-            const response = await axios.get('https://smart-backend-1-q3fb.onrender.com/admin/courses', {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
+            const token = localStorage.getItem('studentToken') || localStorage.getItem('token');
+
+            if (!token) {
+                setError('Authentication error: Please log in again.');
+                setLoading(false);
+                return;
+            }
+
+            // 1. Fetch available courses and existing user registrations concurrently
+            const [coursesRes, myRegsRes] = await Promise.all([
+                axios.get('http://localhost:3000/courses', {
+                    headers: { Authorization: `Bearer ${token}` }
+                }),
+                axios.get('http://localhost:3000/my-courses', {
+                    headers: { Authorization: `Bearer ${token}` }
+                }).catch(() => ({ data: { data: [] } })) // Fallback if no registrations exist yet
+            ]);
+
+            const courseData = coursesRes.data.courses || coursesRes.data || [];
+            const myRegistrations = myRegsRes.data.data || [];
+
+            // 2. Build a map of courseId -> registration status
+            const statusMap = {};
+            myRegistrations.forEach((reg) => {
+                const status = reg.status || 'Pending';
+                reg.courses?.forEach((c) => {
+                    const id = c.courseId || c._id;
+                    if (id) statusMap[id] = status;
+                });
             });
 
-            const courseData = response.data.courses || response.data;
             setCourses(courseData);
+            setRegisteredStatusMap(statusMap);
         } catch (err) {
             console.error('Failed to fetch courses:', err);
             setError(err.response?.data?.message || 'Failed to load courses from database.');
@@ -44,11 +72,14 @@ export default function StudentCourseRegistration() {
     };
 
     useEffect(() => {
-        fetchCourses();
+        fetchCoursesAndStatus();
     }, []);
 
     // ── Selection Logic ───────────────────────────────────────────────────
     const toggleCourseSelect = (courseId) => {
+        // Prevent selection if already registered or pending
+        if (registeredStatusMap[courseId]) return;
+
         if (selectedCourseIds.includes(courseId)) {
             setSelectedCourseIds(selectedCourseIds.filter((id) => id !== courseId));
         } else {
@@ -71,21 +102,67 @@ export default function StudentCourseRegistration() {
         return matchesDept && matchesSearch;
     });
 
+    // ── Handle Submit Registration ────────────────────────────────────────
+    const handleRegister = async () => {
+        try {
+            const token = localStorage.getItem('studentToken') || localStorage.getItem('token');
+
+            if (!token) {
+                alert('Authentication error: Please log in again.');
+                return;
+            }
+
+            const selectedCoursesData = courses.filter((c) => selectedCourseIds.includes(c._id));
+
+            if (selectedCoursesData.length === 0) {
+                alert('Please select at least one course to register.');
+                return;
+            }
+
+            const payload = {
+                academicSession: '2025/2026',
+                semester: 'First Semester',
+                courses: selectedCoursesData.map((course) => ({
+                    courseId: course._id,
+                    courseCode: course.courseCode,
+                    courseTitle: course.courseTitle,
+                    unit: Number(course.unit) || Number(course.units) || 3,
+                })),
+            };
+
+            const response = await axios.post(
+                'http://localhost:3000/submit-course-registration',
+                payload,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
+
+            console.log('Registration Success:', response.data);
+            navigate('/registration-success', { state: { registration: response.data.data } });
+
+        } catch (err) {
+            console.error('Failed to register courses:', err);
+            const errorMessage = err.response?.data?.message || 'Failed to register courses';
+            alert(errorMessage);
+        }
+    };
+
     const selectedCoursesList = courses.filter((c) => selectedCourseIds.includes(c._id));
     const totalUnits = selectedCoursesList.reduce((sum, c) => sum + (Number(c.unit) || Number(c.units) || 0), 0);
 
     return (
         <div className="min-h-screen bg-[#f3f7f5] font-sans text-[#2d3748] relative flex flex-col">
             
-            {/* ── Top Navbar Container ──────────────────────────────────── */}
+            {/* Top Navbar */}
             <div className="fixed top-0 left-0 right-0 z-50 bg-white">
                 <NavBarTop />
             </div>
 
-            {/* ── Main Page Content ───────────────────────────────────────────
-                💡 Added pt-24 (6rem) to clear the top bar 
-                💡 Added pb-48 (12rem) to ensure cards clear the bottom floating bar
-            */}
+            {/* Main Content Area */}
             <main className="max-w-7xl mx-auto w-full px-6 pt-24 pb-48 space-y-6 flex-grow">
 
                 {/* Search Bar */}
@@ -143,6 +220,7 @@ export default function StudentCourseRegistration() {
                         {filteredCourses.map((course) => {
                             const courseId = course._id;
                             const isSelected = selectedCourseIds.includes(courseId);
+                            const registrationStatus = registeredStatusMap[courseId]; // "Approved", "Pending", or undefined
 
                             const enrolled = course.enrolled ?? 0;
                             const capacity = course.capacity ?? 60;
@@ -156,6 +234,10 @@ export default function StudentCourseRegistration() {
                                     className={`bg-white rounded-2xl border transition-all flex flex-col justify-between overflow-hidden shadow-sm ${
                                         isSelected
                                             ? 'border-[#0a643a] ring-2 ring-[#0a643a]/20'
+                                            : registrationStatus === 'Approved'
+                                            ? 'border-emerald-200 bg-emerald-50/20'
+                                            : registrationStatus === 'Pending'
+                                            ? 'border-amber-200 bg-amber-50/20'
                                             : 'border-gray-200'
                                     }`}
                                 >
@@ -164,9 +246,21 @@ export default function StudentCourseRegistration() {
                                             <span className="text-xs font-bold text-gray-400 tracking-wider">
                                                 {course.courseCode}
                                             </span>
+                                            
+                                            {/* Top Status Badge */}
                                             {isSelected && (
                                                 <span className="bg-[#0a643a] text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full tracking-wider uppercase">
                                                     SELECTED
+                                                </span>
+                                            )}
+                                            {registrationStatus === 'Approved' && (
+                                                <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full tracking-wider uppercase">
+                                                    REGISTERED
+                                                </span>
+                                            )}
+                                            {registrationStatus === 'Pending' && (
+                                                <span className="bg-amber-100 text-amber-800 border border-amber-300 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full tracking-wider uppercase">
+                                                    PENDING
                                                 </span>
                                             )}
                                         </div>
@@ -222,8 +316,29 @@ export default function StudentCourseRegistration() {
                                         </div>
                                     </div>
 
+                                    {/* Action Buttons */}
                                     <div>
-                                        {isFull ? (
+                                        {registrationStatus === 'Approved' ? (
+                                            <button
+                                                disabled
+                                                className="w-full bg-emerald-50 text-emerald-800 border-t border-emerald-200 py-3 text-xs font-bold flex items-center justify-center gap-1.5 cursor-default"
+                                            >
+                                                <span className="material-symbols-outlined text-base text-emerald-600">
+                                                    check_circle
+                                                </span>
+                                                Course Registered
+                                            </button>
+                                        ) : registrationStatus === 'Pending' ? (
+                                            <button
+                                                disabled
+                                                className="w-full bg-amber-500 text-white py-3 text-xs font-bold flex items-center justify-center gap-1.5 cursor-not-allowed"
+                                            >
+                                                <span className="material-symbols-outlined text-base">
+                                                    schedule
+                                                </span>
+                                                Registration Pending
+                                            </button>
+                                        ) : isFull ? (
                                             <button
                                                 disabled
                                                 className="w-full bg-gray-100 text-gray-400 py-3 text-xs font-semibold flex items-center justify-center gap-2 cursor-not-allowed border-t border-gray-100"
@@ -231,7 +346,7 @@ export default function StudentCourseRegistration() {
                                                 <span className="material-symbols-outlined text-sm">
                                                     hourglass_empty
                                                 </span>
-                                                Registration Pending
+                                                Class Full
                                             </button>
                                         ) : isSelected ? (
                                             <button
@@ -259,9 +374,7 @@ export default function StudentCourseRegistration() {
                 )}
             </main>
 
-            {/* ── Floating Summary Bar ─────────────────────────────────────────
-                💡 Increased from bottom-20 to bottom-24 so it sits completely ABOVE the bottom nav
-            */}
+            {/* Floating Summary Bar */}
             <div className="fixed bottom-24 left-1/2 -translate-x-1/2 w-[92%] max-w-5xl bg-[#2a3437] text-white rounded-2xl p-3 shadow-2xl flex items-center justify-between border border-gray-700/50 z-30">
                 <div className="flex items-center gap-3">
                     <div className="bg-[#0a643a] p-2.5 rounded-xl flex items-center justify-center">
@@ -288,13 +401,13 @@ export default function StudentCourseRegistration() {
                         View Cart
                     </button>
 
-                    <button className="px-5 py-2 rounded-xl text-xs font-bold bg-[#6ee7b7] hover:bg-[#5ee0ad] text-[#0d1f18] transition-colors cursor-pointer shadow-sm">
+                    <button onClick={handleRegister} className="px-5 py-2 rounded-xl text-xs font-bold bg-[#6ee7b7] hover:bg-[#5ee0ad] text-[#0d1f18] transition-colors cursor-pointer shadow-sm">
                         Finalize Registration
                     </button>
                 </div>
             </div>
 
-            {/* ── Bottom App Navbar ─────────────────────────────────────────── */}
+            {/* Bottom Navbar */}
             <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200">
                 <Navbar />
             </div>

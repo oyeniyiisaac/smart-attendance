@@ -54,8 +54,8 @@ const CourseManagement = () => {
         setError('');
         setSuccess('');
 
+        const token = localStorage.getItem('adminToken');
         try {
-            const token = localStorage.getItem('token') || localStorage.getItem('adminToken');
 
             // Include default/fallback faculty and department if needed
             const payload = {

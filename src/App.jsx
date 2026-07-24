@@ -21,6 +21,9 @@ import AdminReport from './AdminSections/Pages/AdminReport'
 import StudentManagement from './AdminSections/Pages/StudentManagement'
 import CourseManagement from './AdminSections/Pages/CourseManagement'
 import StudentCourseRegistration from './StudentSection/Pages/CourseRegister'
+import RegistrationSuccess from './StudentSection/Pages/RegristrationSuccess'
+import EnrolCourses from './StudentSection/Pages/EnrolCourse'
+import LandingPage from '../LandingPage'
 // import Adminsidebar from './AdminSections/Components/Adminsidebar'
 
 
@@ -38,7 +41,8 @@ const App = () => {
   return (
     <>
       <Routes>
-        <Route path='/' element={<SignUp />} />
+        <Route path='/' element={<LandingPage />} />
+        <Route path='/signup' element={<SignUp />} />
         <Route path='/signin' element={<SignIn />} />
         <Route path='/navbarbottom' element={<NavbarBottom />} />
         <Route path='/student' element={<>
@@ -64,6 +68,8 @@ const App = () => {
         {/* <Route path='/adminsidebar' element={<Adminsidebar/>} /> */}
         <Route path='student-eligibility' element={<EligibilitySummary />} />
         <Route path='register-course' element={<StudentCourseRegistration />} />
+        <Route path='/registration-success' element={<RegistrationSuccess />} />
+        <Route path='/enrol-courses' element={<EnrolCourses />} />
 
 
         <Route path='*' element={<NotFound />} />

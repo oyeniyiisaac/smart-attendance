@@ -1,36 +1,39 @@
-import React, { useState } from 'react'
+import  { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 
 const Navbar = () => {
-    const [activeBtn, setActiveBtn] = useState('eligibility')
+    const [activeBtn, setActiveBtn] = useState('')
+    const navigate = useNavigate();
 
     const dashboardBtn = () => {
         setActiveBtn('dashboard')
         navigate('/student/dashboard')
     }
     const coursesBtn = () => {
-        setActiveBtn('courses')
+        setActiveBtn('enrol-courses')
+        navigate('/enrol-courses')
     }
     const eligibilityBtn = () => {
-        setActiveBtn('eligibility')
+        setActiveBtn('student-eligibility')
+        navigate('/student-eligibility')
     }
     const profileBtn = () => {
         setActiveBtn('profile')
     }
     const spanDashboardBtn = () => {
         return {
-            fontVariationSettings: activeBtn === 'dashboard' ? "'FILL' 1" : "'FILL' 0"
+            fontVariationSettings: activeBtn === 'student/dashboard' ? "'FILL' 1" : "'FILL' 0"
         }
     }
     const spanCoursesBtn = () => {
         return {
-            fontVariationSettings: activeBtn === 'courses' ? "'FILL' 1" : "'FILL' 0"
+            fontVariationSettings: activeBtn === 'enrol-courses' ? "'FILL' 1" : "'FILL' 0"
         }
     }
     const spanEligibilityBtn = () => {
         return {
-            fontVariationSettings: activeBtn === 'eligibility' ? "'FILL' 1" : "'FILL' 0"
+            fontVariationSettings: activeBtn === 'student-eligibility' ? "'FILL' 1" : "'FILL' 0"
         }
     }
     const spanProfileBtn = () => {
@@ -50,13 +53,13 @@ const Navbar = () => {
                             Dashboard
                         </button>
                     </Link>
-                    <button onClick={coursesBtn} className={`flex flex-col items-center ${activeBtn === 'courses' ? 'text-[#0a643a] bg-[#baeed9] p-1 font-medium rounded-lg' : 'text-gray-500'}`}>
+                    <button onClick={coursesBtn} className={`flex flex-col items-center ${activeBtn === 'enrol-courses' ? 'text-[#0a643a] bg-[#baeed9] p-1 font-medium rounded-lg' : 'text-gray-500'}`}>
                         <span style={spanCoursesBtn()} className="material-symbols-outlined">
                             menu_book
                         </span>
                         Courses
                     </button>
-                    <button onClick={eligibilityBtn} className={`flex flex-col items-center ${activeBtn === 'eligibility' ? 'text-[#0a643a] bg-[#baeed9] p-1 font-medium rounded-lg' : 'text-gray-500'}`}>
+                    <button onClick={eligibilityBtn} className={`flex flex-col items-center ${activeBtn === 'student-eligibility' ? 'text-[#0a643a] bg-[#baeed9] p-1 font-medium rounded-lg' : 'text-gray-500'}`}>
                         <span style={spanEligibilityBtn()} className="material-symbols-outlined">
                             verified
                         </span>
