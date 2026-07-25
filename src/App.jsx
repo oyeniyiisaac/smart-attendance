@@ -24,6 +24,7 @@ import StudentCourseRegistration from './StudentSection/Pages/CourseRegister'
 import RegistrationSuccess from './StudentSection/Pages/RegristrationSuccess'
 import EnrolCourses from './StudentSection/Pages/EnrolCourse'
 import LandingPage from '../LandingPage'
+import StudentProfileSettings from './StudentSection/Pages/StudentProfileSettings'
 // import Adminsidebar from './AdminSections/Components/Adminsidebar'
 
 
@@ -70,6 +71,7 @@ const App = () => {
         <Route path='register-course' element={<StudentCourseRegistration />} />
         <Route path='/registration-success' element={<RegistrationSuccess />} />
         <Route path='/enrol-courses' element={<EnrolCourses />} />
+        <Route path='student-profile-settings' element={<StudentProfileSettings />} />
 
 
         <Route path='*' element={<NotFound />} />

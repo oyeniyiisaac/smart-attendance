@@ -52,6 +52,8 @@ const StudentDashboard = () => {
                             Authorization: `Bearer ${token}`
                         }
                     })
+                }else{
+                    navigate('/signin')
                 }
             })
             .then((res) => {
@@ -189,7 +191,7 @@ const StudentDashboard = () => {
                 <div className='pt-8 px-4 lg:px-8 w-full pb-20 max-w-7xl mx-auto'>
                     
                     {/* Header Welcome Section */}
-                    <div className='flex flex-col md:flex-row md:items-center justify-between bg-white p-6 rounded-xl border border-[#bfc9bf] shadow-sm gap-4'>
+                    <div className='flex flex-col md:flex-row md:items-center justify-between bg-white p-6 rounded-xl border border-[#bfc9bf] shadow-sm gap-4 mt-12 lg:mt-2'>
                         <div>
                             <div className='flex items-center gap-2 mb-1'>
                                 <h1 className='text-2xl md:text-3xl font-bold text-slate-800'>Welcome back, {firstname || "Student"}! 👋</h1>
@@ -342,7 +344,7 @@ const StudentDashboard = () => {
                         <div className='space-y-4'>
                             <h2 className='text-lg font-bold text-slate-800'>Class Announcements</h2>
                             
-                            <div className='bg-white border border-[#bfc9bf] rounded-xl p-5 shadow-sm space-y-4'>
+                            <div className='bg-white border border-[#bfc9bf] rounded-xl p-5 shadow-sm space-y-4 mb-6'>
                                 <div className='border-b border-gray-100 pb-3'>
                                     <span className='text-[10px] font-bold text-[#0a643a] bg-[#e2e9ec] px-2 py-0.5 rounded uppercase tracking-wider'>Important</span>
                                     <h4 className='text-xs font-bold text-slate-800 mt-1.5'>Geofence Attendance Verification</h4>

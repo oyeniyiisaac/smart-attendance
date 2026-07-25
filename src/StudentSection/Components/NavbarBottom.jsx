@@ -35,7 +35,7 @@ const NavbarBottom = () => {
     return (
         <>
             <div >
-                <div className="bg-[#eef5f7] fixed bottom-0 w-[100%] sm:w-[100%] md:w-[100%] lg:hidden px-6 py-3 border-r-1 border-[#bfc9bf]">
+                <div className="bg-[#eef5f7] fixed bottom-0 w-[100%] sm:w-[100%] md:w-[100%] lg:hidden px-6 py-3 border-t-1 border-[#ceddce]">
                     {/* <div className='flex items-center gap-2 mb-2'>
                     <img src={displayProfileImg} alt="profile" className="w-[60px] rounded-xl border-2 border-[#2e7d52] object-cover" />
                     <div >
