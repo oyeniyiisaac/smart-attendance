@@ -12,7 +12,7 @@ export default defineConfig({
         short_name: 'SmartAttendance',
         description: 'Institutional Attendance Tracking System',
         theme_color: '#0a643a',
-        background_color: '#ffffff',
+        background_color: '#5eeab4',
         display: 'standalone',
         orientation: 'portrait',
       icons: [
