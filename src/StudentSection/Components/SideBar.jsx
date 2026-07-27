@@ -33,6 +33,7 @@ const SideBar = () => {
             if (response.status === 200 || response.status === 201) {
                 console.log('🔍 SideBar profile data from API:', response.data.result)
                 setStudentData(response.data.result)
+                localStorage.setItem('profilePicture', response.data.result.profilePicture)
             }
         })
         .catch((err) => {
