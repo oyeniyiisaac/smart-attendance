@@ -302,7 +302,7 @@ export default function StudentProfileSettings() {
                     <ModalHeader className="bg-[#ffffff] border-0" />
                     <ModalBody className="bg-[#ffffff] border-0 ">
                         <div className="text-center">
-                            <HiOutlineExclamationCircle className="mx-auto mb-4 h-14 w-14 text-[#0a643a]" />
+                            <HiOutlineExclamationCircle className="mx-auto mb-4 h-14 w-14 text-[#b91c1c]" />
                             <h3 className="mb-5 text-lg font-bold text-black">
                                 Are you sure you want to Logout?
                             </h3>
