@@ -20,6 +20,7 @@ const Navbar = () => {
     }
     const profileBtn = () => {
         setActiveBtn('profile')
+        navigate('/student-profile-settings')
     }
     const spanDashboardBtn = () => {
         return {

@@ -53,6 +53,10 @@ const App = () => {
         </>}>
           <Route path='dashboard' element={<StudentDashboard />} />
           <Route path='history' element={<AttendanceHistroy />} />
+          <Route path='profile-settings' element={<StudentProfileSettings />} />
+          <Route path='eligibility' element={<EligibilitySummary />} />
+          <Route path='enrol-courses' element={<EnrolCourses />} />
+          <Route path='register-course' element={<StudentCourseRegistration />} />
         </Route>
         <Route path='/admin/login' element={<AdminLogin />} />
         <Route path='/admin' element={<NavBar />} >
@@ -67,11 +71,7 @@ const App = () => {
         </Route>
         <Route path='/adminsidebar' element={<AdminSideBar />} />
         {/* <Route path='/adminsidebar' element={<Adminsidebar/>} /> */}
-        <Route path='student-eligibility' element={<EligibilitySummary />} />
-        <Route path='register-course' element={<StudentCourseRegistration />} />
         <Route path='/registration-success' element={<RegistrationSuccess />} />
-        <Route path='/enrol-courses' element={<EnrolCourses />} />
-        <Route path='student-profile-settings' element={<StudentProfileSettings />} />
 
 
         <Route path='*' element={<NotFound />} />

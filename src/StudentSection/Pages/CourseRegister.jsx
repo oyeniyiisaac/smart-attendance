@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import NavBarTop from '../Components/NavBarTop';
-import Navbar from '../Components/Navbar';
+
 import { useNavigate } from 'react-router-dom';
 
 const departments = [
@@ -158,12 +157,12 @@ export default function StudentCourseRegistration() {
         <div className="min-h-screen bg-[#f3f7f5] font-sans text-[#2d3748] relative flex flex-col">
             
             {/* Top Navbar */}
-            <div className="fixed top-0 left-0 right-0 z-50 bg-white">
+            {/* <div className="fixed top-0 left-0 right-0 z-50 bg-white">
                 <NavBarTop />
-            </div>
+            </div> */}
 
             {/* Main Content Area */}
-            <main className="max-w-7xl mx-auto w-full px-6 pt-24 pb-48 space-y-6 flex-grow">
+            <main className="max-w-7xl mx-auto w-full px-6 pt-24 pb-48 space-y-6 flex-grow mb-10 lg:mt-[-3rem] mt-[-1rem]">
 
                 {/* Search Bar */}
                 <div className="relative max-w-2xl">
@@ -375,7 +374,7 @@ export default function StudentCourseRegistration() {
             </main>
 
             {/* Floating Summary Bar */}
-            <div className="fixed bottom-24 left-1/2 -translate-x-1/2 w-[92%] max-w-5xl bg-[#2a3437] text-white rounded-2xl p-3 shadow-2xl flex items-center justify-between border border-gray-700/50 z-30">
+            <div className="fixed bottom-26 lg:bottom-12 left-1/2 -translate-x-1/2 lg:-translate-x-2/5 w-[92%] max-w-3xl bg-[#2a3437] text-white rounded-2xl p-3 shadow-2xl flex items-center justify-between border border-gray-700/50 z-30">
                 <div className="flex items-center gap-3">
                     <div className="bg-[#0a643a] p-2.5 rounded-xl flex items-center justify-center">
                         <span className="material-symbols-outlined text-white text-lg">
@@ -408,9 +407,9 @@ export default function StudentCourseRegistration() {
             </div>
 
             {/* Bottom Navbar */}
-            <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200">
+            {/* <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200">
                 <Navbar />
-            </div>
+            </div> */}
         </div>
     );
 }

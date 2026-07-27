@@ -23,7 +23,7 @@ const NavbarTopDashboard = () => {
                         Smart Attendance
                     </div>
                 </div>
-                <div onClick={() => navigate('/student-profile-settings')} className='w-[30px] h-[30px] rounded-full border-2 border-[#2e7d52] overflow-hidden flex items-center justify-center'>
+                <div onClick={() => navigate('/student/profile-settings')} className='w-[30px] h-[30px] rounded-full border-2 border-[#2e7d52] overflow-hidden flex items-center justify-center'>
                     <img src={displayProfileImg} alt="profile" className="w-full h-full object-cover" />
                 </div>
             </div>

@@ -44,6 +44,7 @@ const SideBar = () => {
     const routeActiveMap = {
         '/student-dashboard': 'dashboard',
         '/attendance-history': 'history',
+        '/profile-settings': 'profile'
     }
 
     const activeBtn = routeActiveMap[currentPath] ?? localActiveBtn
@@ -58,10 +59,26 @@ const SideBar = () => {
     }
     const eligibilityBtn = () => {
         setLocalActiveBtn('eligibility')
-        navigate('/student-eligibility')
+        navigate('/student/eligibility')
     }
     const classesBtn = () => {
         setLocalActiveBtn('classes')
+    }
+    const profileBtn = () => {
+        setLocalActiveBtn('profile')
+        navigate('/student/profile-settings')
+    }
+    const logoutBtn = () => {
+        setLocalActiveBtn('logout')
+        localStorage.removeItem('token')
+        localStorage.removeItem('profilePicture')
+        localStorage.removeItem('course')
+        localStorage.removeItem('courseCode')
+        localStorage.removeItem('courseName')
+        localStorage.removeItem('courseCode')
+        localStorage.removeItem('courseCode')
+        localStorage.removeItem('courseCode')
+        navigate('/signin')
     }
     const iconStyle = {
         fontVariationSettings: '"FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24',
@@ -89,17 +106,23 @@ const SideBar = () => {
                     profileImg={studentData.profilePicture}
                 />
 
-                <div className='flex flex-col gap-6 mt-6 text-lg text-[#3f4941]'>
-                    <button className={`flex items-center gap-2 p-2 rounded-xl cursor-pointer text-left ${activeBtn === 'dashboard' ? 'bg-[#baeed9]' : 'bg-transparent'}`} onClick={dashboardBtn}><span className="material-symbols-rounded" style={iconStyle}>
+                <div className='flex flex-col gap-6 mt-6 text-md text-[#3f4941]'>
+                    <button className={`flex items-center gap-2 p-2 rounded-xl cursor-pointer font-semibold text-left ${activeBtn === 'dashboard' ? 'bg-[#baeed9]' : 'bg-transparent'}`} onClick={dashboardBtn}><span className="material-symbols-rounded" style={iconStyle}>
                         dashboard
                     </span>Dashboard</button>
-                    <button className={`flex items-center gap-2 p-2 rounded-xl cursor-pointer text-left ${activeBtn === 'history' ? 'bg-[#baeed9]' : 'bg-transparent'}`} onClick={historyBtn}><span className="material-symbols-outlined">
+                    <button className={`flex items-center gap-2 p-2 rounded-xl cursor-pointer font-semibold text-left ${activeBtn === 'history' ? 'bg-[#baeed9]' : 'bg-transparent'}`} onClick={historyBtn}><span className="material-symbols-outlined">
                         history
                     </span>Attendance History</button>
-                    <button type="button" className={`flex items-center gap-2 p-2 rounded-xl cursor-pointer text-left ${activeBtn === 'eligibility' ? 'bg-[#baeed9]' : 'bg-transparent'}`} onClick={eligibilityBtn}><span className="material-symbols-outlined">fact_check</span>Eligibility</button>
-                    <button type="button" className={`flex items-center gap-2 p-2 rounded-xl cursor-pointer text-left ${activeBtn === 'classes' ? 'bg-[#baeed9]' : 'bg-transparent'}`} onClick={classesBtn}><span className="material-symbols-outlined">
+                    <button type="button" className={`flex items-center gap-2 p-2 rounded-xl cursor-pointer font-semibold text-left ${activeBtn === 'eligibility' ? 'bg-[#baeed9]' : 'bg-transparent'}`} onClick={eligibilityBtn}><span className="material-symbols-outlined">fact_check</span>Eligibility</button>
+                    <button type="button" className={`flex items-center gap-2 p-2 rounded-xl cursor-pointer font-semibold text-left ${activeBtn === 'classes' ? 'bg-[#baeed9]' : 'bg-transparent'}`} onClick={classesBtn}><span className="material-symbols-outlined">
                         video_camera_front
                     </span>Online Classes</button>
+                    <button type="button" className={`flex items-center gap-2 p-2 rounded-xl cursor-pointer font-semibold text-left ${activeBtn === 'profile' ? 'bg-[#baeed9]' : 'bg-transparent'}`} onClick={profileBtn}><span className="material-symbols-outlined">
+                        account_circle
+                    </span>Profile Settings</button>
+                    <button type="button" className={`flex items-center gap-2 p-2 rounded-xl cursor-pointer font-semibold text-left ${activeBtn === 'logout' ? 'bg-[#baeed9]' : 'bg-transparent'}`} onClick={logoutBtn}><span className="material-symbols-outlined">
+                        logout
+                    </span>Logout</button>
                 </div>
             </div>
             <div className="lg:ml-[300px] min-h-screen">

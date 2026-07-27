@@ -1,7 +1,7 @@
 import EligibleCardError from '../Components/EligibleCardError';
 import EligibleCard from '../Components/EligibleCardGood';
-import NavBarTop from '../Components/NavBarTop';
-import Navbar from '../Components/Navbar';
+// import NavBarTop from '../Components/NavBarTop';
+// import Navbar from '../Components/Navbar';
 
 const EligibilitySummary = () => {
     const iconStyle = {
@@ -9,9 +9,9 @@ const EligibilitySummary = () => {
     }
     return (
         <>
-            <div className='mb-[10rem] mt-[5rem]'>
-                <NavBarTop />
-                <div className='my-4 mx-6'>
+            <div className='mb-[10rem] mt-[5rem] lg:mt-[0] '>
+                {/* <NavBarTop /> */}
+                <div className='py-4 mx-6 '>
                     <div className='bg-[#ffdad6] p-3 rounded-md border-1 border-[#f7cac7] '>
                         <span className='pl-8 text-[16px] flex items-center gap-4 text-[#ba1a1a] font-semibold'><span class="material-symbols-outlined" style={iconStyle}>
                             warning
@@ -43,7 +43,7 @@ const EligibilitySummary = () => {
                             <button type="button" className='bg-[#0a643a] text-white py-2 px-4 rounded-sm w-full mt-4 cursor-pointer'>Request Attendance Correction</button></div>
                     </div>
                 </div>
-                <Navbar />
+                {/* <Navbar /> */}
             </div>
         </>
     )

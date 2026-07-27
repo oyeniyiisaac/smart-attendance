@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { data, useNavigate } from 'react-router-dom';
 import { Button, Modal, ModalBody, ModalHeader } from "flowbite-react";
 import { HiOutlineExclamationCircle } from "react-icons/hi";
 
@@ -93,7 +93,7 @@ export default function StudentProfileSettings() {
 
 
     return (
-        <div className="min-h-screen bg-[#f3f7f8] pt-24 pb-12 px-4 flex justify-center text-[#1c2a2b] font-sans">
+        <div className="min-h-screen bg-[#f3f7f8] pt-24 lg:pt-12 pb-12 px-4 flex justify-center text-[#1c2a2b] font-sans">
             <div className="w-full max-w-2xl space-y-6">
 
                 {/* ── 1. USER PROFILE HEADER CARD ─────────────────────────────────── */}
@@ -129,10 +129,10 @@ export default function StudentProfileSettings() {
 
                         <div className="space-y-0.5">
                             <h2 className="text-xl font-extrabold text-[#11221c] tracking-tight">
-                                Alex Rivers
+                                
                             </h2>
                             <p className="text-xs font-semibold text-gray-500">
-                                Student ID: <span className="text-gray-700">2024-8832</span>
+                                Student ID: <span className="text-gray-700">{data.data}</span>
                             </p>
                             <p className="text-[11px] font-bold text-[#0b6238] uppercase tracking-wider">
                                 Computer Science Department
@@ -180,7 +180,7 @@ export default function StudentProfileSettings() {
                     <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm divide-y divide-gray-100 overflow-hidden">
 
                         {/* Course Registration History */}
-                        <button className="w-full px-5 py-4 flex items-center justify-between hover:bg-gray-50/80 transition-colors text-left cursor-pointer">
+                        <button onClick={()=> navigate('/student/enrol-courses')} className="w-full px-5 py-4 flex items-center justify-between hover:bg-gray-50/80 transition-colors text-left cursor-pointer">
                             <div className="flex items-center gap-3">
                                 <span className="text-gray-500 text-lg material-symbols-outlined">menu_book</span>
                                 <div>

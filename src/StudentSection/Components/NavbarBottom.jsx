@@ -24,7 +24,7 @@ const NavbarBottom = () => {
     }
     const eligibilityBtn = () => {
         setLocalActiveBtn('eligibility')
-        navigate('/student-eligibility')
+        navigate('/student/eligibility')
     }
     const classesBtn = () => {
         setLocalActiveBtn('classes')
