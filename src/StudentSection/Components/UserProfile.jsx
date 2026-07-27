@@ -1,7 +1,12 @@
+import { useState } from "react"
 
-const profile = ({ department, profileImg, profileName, studentId}) => {
+const Profile = ({ department, profileImg, profileName, studentId}) => {
     const fallbackProfileImg = 'https://imgs.search.brave.com/Jopvk0MWzfaYi1h8ZX8btE8nIJgelXumRnIDVQKFXI8/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pLnBp/bmltZy5jb20vb3Jp/Z2luYWxzL2M2LzU2/L2VkL2M2NTZlZDAy/MDdjMDViZTc5ZGI2/ZDdkYTQxZDdhNmZk/LmpwZw'
-    const displayProfileImg = profileImg || fallbackProfileImg
+    const [profileImga, setProfileImga] = useState(() => {
+        return localStorage.getItem('profilePicture') || fallbackProfileImg
+    })
+
+    const displayProfileImg = profileImga
 
     return (
         <>
@@ -20,4 +25,4 @@ const profile = ({ department, profileImg, profileName, studentId}) => {
     )
 }
 
-export default profile
+export default Profile
