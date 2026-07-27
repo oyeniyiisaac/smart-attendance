@@ -1,5 +1,6 @@
 import axios from 'axios';
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function StudentProfileSettings() {
     const [notifications, setNotifications] = useState({
@@ -12,44 +13,107 @@ export default function StudentProfileSettings() {
     const toggleNotification = (key) => {
         setNotifications((prev) => ({ ...prev, [key]: !prev[key] }));
     };
-    // const fallbackProfileImg = 'https://imgs.search.brave.com/Jopvk0MWzfaYi1h8ZX8btE8nIJgelXumRnIDVQKFXI8/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pLnBp/bmltZy5jb20vb3Jp/Z2luYWxzL2M2LzU2/L2VkL2M2NTZlZDAy/MDdjMDViZTc5ZGI2/ZDdkYTQxZDdhNmZk/LmpwZw'
-    // const displayProfileImg = fallbackProfileImg
-    const [profileImg, setProfileImg] = useState(
-        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=250'
-    );
+
+    const fallbackProfileImg = 'https://imgs.search.brave.com/Jopvk0MWzfaYi1h8ZX8btE8nIJgelXumRnIDVQKFXI8/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pLnBp/bmltZy5jb20vb3Jp/Z2luYWxzL2M2LzU2/L2VkL2M2NTZlZDAy/MDdjMDViZTc5ZGI2/ZDdkYTQxZDdhNmZk/LmpwZw'
+    const displayProfileImg = fallbackProfileImg
+    // const [profileImg, setProfileImg] = useState(displayProfileImg);
+    const [profileImg, setProfileImg] = useState(() => {
+    return localStorage.getItem('profilePicture') || displayProfileImg})
     const [uploading, setUploading] = useState(false);
+    // const handleImageChange = (event) => {
+    //     const file = event.target.files[0];
+
+    //     if (!file) return;
+
+    //     // 1. Create a FileReader to convert the image file to Base64
+    //     const reader = new FileReader();
+
+    //     reader.onloadend = async () => {
+    //         const base64Image = reader.result; // This holds 'data:image/png;base64,...'
+    //         setUploading(true);
+    //         try {
+    //             // 2. Send the Base64 string directly in a standard JSON request body
+    //             const response = await axios.post('http://localhost:3000/upload-profile-picture', {
+    //                 headers: {
+    //                     'Content-Type': 'application/json',
+    //                     'Authorization': `Bearer ${userToken}`, // Your JWT Token
+    //                 },
+    //                 body: JSON.stringify({ image: base64Image }),
+    //             });
+
+    //             const data = await response.json();
+
+    //             if (data.success) {
+    //                 console.log('Uploaded successfully!', data.data.profilePicture);
+    //                 setProfileImg(data.data.profilePicture);
+    //             } else {
+    //                 console.error('Upload failed:', data.message);
+    //             }
+    //         } catch (error) {
+    //             console.error('Network or server error:', error);
+    //         }
+    //     };
+
+    //     // Read file contents as Base64 Data URL
+    //     reader.readAsDataURL(file);
+    // };
 
     const handleImageChange = async (e) => {
-        const file = e.target.files[0];
+        const token = localStorage.getItem('token')
+        if (!token){
+            console.log('invalid or expired token')
+            return
+        }
+        const file = e.target.files[0]
         if (!file) return;
 
-        const formData = new FormData();
-        formData.append('profilePicture', file);
+        const reader = new FileReader()
+        reader.onload = async () => {
+            const base64Image = reader.result
+            console.log(base64Image)
 
-        const endpoint = import.meta.env.VITE_ENDPOINT;
-        // const baseUrl = endpoint ? endpoint.replace('/dashboard', '') : 'http://localhost:3000';
-
-        try {
-            setUploading(true);
-            const response = await axios.post(`http://localhost:3000/upload-avatar`, formData, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('token')}`,
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-
-            if (response.data && response.data.success) {
-                setProfileImg(response.data.profilePicture);
-            } else {
-                alert(response.data?.message || 'Upload failed');
+            setProfileImg(base64Image) 
+            setUploading(true)
+            try {
+                const response = await axios.post('http://localhost:3000/upload-profile-picture', {image: base64Image}, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`, // Your JWT Token
+                    }
+                });
+                console.log(response.data)
+                const data = response.data
+                if (data.success) {
+                    setUploading(false)
+                    localStorage.setItem("profilePicture", data.profilePictureUrl);
+                } else {
+                    setUploading(false)
+                    console.error('Upload failed:', data.message);
+                }
+            } catch (error) {
+                setUploading(false)
+                console.error('Network or server error:', error);
             }
-        } catch (err) {
-            console.error(err);
-            alert(err.response?.data?.message || 'Error uploading image');
-        } finally {
-            setUploading(false);
         }
-    };
+        reader.onerror = (error) => {
+            console.log(error)
+            setUploading(false)
+        }
+        reader.readAsDataURL(file)
+    }
+    const navigate = useNavigate()
+    const handleLogout = () => {
+        localStorage.removeItem('token')
+        localStorage.removeItem('profilePicture')
+        localStorage.removeItem('course')
+        localStorage.removeItem('courseCode')
+        localStorage.removeItem('courseName')
+        localStorage.removeItem('courseCode')
+        localStorage.removeItem('courseCode')
+        localStorage.removeItem('courseCode')
+        navigate('/signin')
+    }
+
 
     return (
         <div className="min-h-screen bg-[#f3f7f8] pt-24 pb-12 px-4 flex justify-center text-[#1c2a2b] font-sans">
@@ -242,7 +306,7 @@ export default function StudentProfileSettings() {
 
                 {/* ── 6. LOG OUT ──────────────────────────────────────────────────── */}
                 <div className="pt-2">
-                    <button className="w-full py-3.5 bg-[#b91c1c] hover:bg-[#991b1b] text-white rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-colors shadow-md cursor-pointer">
+                    <button onClick={handleLogout} className="w-full py-3.5 bg-[#b91c1c] hover:bg-[#991b1b] text-white rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-colors shadow-md cursor-pointer">
                         <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
                             <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" />
                         </svg>

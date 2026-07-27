@@ -12,7 +12,8 @@ const SideBar = () => {
         lastname: '',
         matricno: '',
         department: '',
-        faculty: ''
+        faculty: '',
+        profilePicture: ''
     })
 
     const token = localStorage.getItem('token')
