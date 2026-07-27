@@ -85,7 +85,7 @@ const SideBar = () => {
                     studentId={studentData.matricno}
                     faculty={studentData.faculty || ''}
                     department={studentData.department || ''}
-                    profileImg={studentData.profilePicture ? `http://localhost:3000${studentData.profilePicture}` : ''}
+                    profileImg={studentData.profilePicture}
                 />
 
                 <div className='flex flex-col gap-6 mt-6 text-lg text-[#3f4941]'>
