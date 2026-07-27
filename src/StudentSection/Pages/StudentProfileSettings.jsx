@@ -75,7 +75,7 @@ export default function StudentProfileSettings() {
             setProfileImg(base64Image) 
             setUploading(true)
             try {
-                const response = await axios.post('http://localhost:3000/upload-profile-picture', {image: base64Image}, {
+                const response = await axios.post('https://smart-backend-1-q3fb.onrender.com/upload-profile-picture', {image: base64Image}, {
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`, // Your JWT Token
