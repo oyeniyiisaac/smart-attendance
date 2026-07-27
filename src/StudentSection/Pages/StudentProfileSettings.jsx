@@ -1,6 +1,9 @@
 import axios from 'axios';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Button, Modal, ModalBody, ModalHeader } from "flowbite-react";
+import { HiOutlineExclamationCircle } from "react-icons/hi";
+
 
 export default function StudentProfileSettings() {
     const [notifications, setNotifications] = useState({
@@ -18,49 +21,14 @@ export default function StudentProfileSettings() {
     const displayProfileImg = fallbackProfileImg
     // const [profileImg, setProfileImg] = useState(displayProfileImg);
     const [profileImg, setProfileImg] = useState(() => {
-    return localStorage.getItem('profilePicture') || displayProfileImg})
+        return localStorage.getItem('profilePicture') || displayProfileImg
+    })
     const [uploading, setUploading] = useState(false);
-    // const handleImageChange = (event) => {
-    //     const file = event.target.files[0];
 
-    //     if (!file) return;
-
-    //     // 1. Create a FileReader to convert the image file to Base64
-    //     const reader = new FileReader();
-
-    //     reader.onloadend = async () => {
-    //         const base64Image = reader.result; // This holds 'data:image/png;base64,...'
-    //         setUploading(true);
-    //         try {
-    //             // 2. Send the Base64 string directly in a standard JSON request body
-    //             const response = await axios.post('http://localhost:3000/upload-profile-picture', {
-    //                 headers: {
-    //                     'Content-Type': 'application/json',
-    //                     'Authorization': `Bearer ${userToken}`, // Your JWT Token
-    //                 },
-    //                 body: JSON.stringify({ image: base64Image }),
-    //             });
-
-    //             const data = await response.json();
-
-    //             if (data.success) {
-    //                 console.log('Uploaded successfully!', data.data.profilePicture);
-    //                 setProfileImg(data.data.profilePicture);
-    //             } else {
-    //                 console.error('Upload failed:', data.message);
-    //             }
-    //         } catch (error) {
-    //             console.error('Network or server error:', error);
-    //         }
-    //     };
-
-    //     // Read file contents as Base64 Data URL
-    //     reader.readAsDataURL(file);
-    // };
 
     const handleImageChange = async (e) => {
         const token = localStorage.getItem('token')
-        if (!token){
+        if (!token) {
             console.log('invalid or expired token')
             return
         }
@@ -72,10 +40,10 @@ export default function StudentProfileSettings() {
             const base64Image = reader.result
             console.log(base64Image)
 
-            setProfileImg(base64Image) 
+            setProfileImg(base64Image)
             setUploading(true)
             try {
-                const response = await axios.post('https://smart-backend-1-q3fb.onrender.com/upload-profile-picture', {image: base64Image}, {
+                const response = await axios.post('https://smart-backend-1-q3fb.onrender.com/upload-profile-picture', { image: base64Image }, {
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`, // Your JWT Token
@@ -103,6 +71,7 @@ export default function StudentProfileSettings() {
     }
     const navigate = useNavigate()
     const handleLogout = () => {
+
         localStorage.removeItem('token')
         localStorage.removeItem('profilePicture')
         localStorage.removeItem('course')
@@ -113,6 +82,14 @@ export default function StudentProfileSettings() {
         localStorage.removeItem('courseCode')
         navigate('/signin')
     }
+    
+
+    "use client";
+
+    
+    const [openModal, setOpenModal] = useState(false);
+
+    
 
 
     return (
@@ -306,7 +283,7 @@ export default function StudentProfileSettings() {
 
                 {/* ── 6. LOG OUT ──────────────────────────────────────────────────── */}
                 <div className="pt-2">
-                    <button onClick={handleLogout} className="w-full py-3.5 bg-[#b91c1c] hover:bg-[#991b1b] text-white rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-colors shadow-md cursor-pointer">
+                    <button onClick={() => setOpenModal(true)} className="w-full py-3.5 bg-[#b91c1c] hover:bg-[#991b1b] text-white rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-colors shadow-md cursor-pointer">
                         <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
                             <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" />
                         </svg>
@@ -319,6 +296,28 @@ export default function StudentProfileSettings() {
                 </div>
 
             </div>
+
+
+                <Modal show={openModal}  size="md" onClose={() => setOpenModal(false)} popup>
+                    <ModalHeader className="bg-[#ffffff] border-0" />
+                    <ModalBody className="bg-[#ffffff] border-0 ">
+                        <div className="text-center">
+                            <HiOutlineExclamationCircle className="mx-auto mb-4 h-14 w-14 text-[#0a643a]" />
+                            <h3 className="mb-5 text-lg font-bold text-black">
+                                Are you sure you want to Logout?
+                            </h3>
+                            <div className="flex justify-center gap-4">
+                                <Button color="red" onClick={() => handleLogout()}>
+                                    Yes, I'm sure
+                                </Button>
+                                <Button color="green" onClick={() => setOpenModal(false)}>
+                                    No, cancel
+                                </Button>
+                            </div>
+                        </div>
+                    </ModalBody>
+                </Modal>
+
         </div>
     );
 }
