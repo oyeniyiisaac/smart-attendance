@@ -98,7 +98,7 @@ const SignIn = () => {
     // }
     return (
         <>
-            <div className='bg-[#f5f5f5] h-screen flex items-center justify-center'>
+            <div className='bg-[#f5f5f5] h-screen flex items-center justify-center font-sans'>
                 <div className='container mx-auto py-0 w-[450px] border-1 border-gray-300 rounded-lg'>
                     <div className='bg-[#f0f4f1] p-6 rounded-lg flex flex-col items-center justify-center gap-2'>
                         <div className="bg-[#0a643a] rounded-xl p-4 my-4 w-[20%] text-center flex items-center justify-center"><span className="material-symbols-outlined block text-[#ceffdb]" style={{ fontSize: '3rem', lineHeight: 1 }}>

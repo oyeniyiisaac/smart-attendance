@@ -3,12 +3,13 @@
 @source "../.flowbite-react/class-list.json";
 
 body {
-    font-family: 'Arimo', sans-serif;
+    font-family: 'Roboto', sans-serif;
 }
 
 .blink-colors {
     animation: blinkColors 5s infinite ease-in-out;
 }
+
 
 @keyframes blinkColors {
     0%, 100% {

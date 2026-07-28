@@ -187,7 +187,7 @@ const StudentDashboard = () => {
     return (
         <>
             <ToastContainer />
-            <div className='bg-[#f4f2fd] min-h-screen'>
+            <div className='bg-[#f4f2fd] min-h-screen font-sans'>
                 <div className='pt-8 px-4 lg:px-8 w-full pb-20 max-w-7xl mx-auto'>
                     
                     {/* Header Welcome Section */}
