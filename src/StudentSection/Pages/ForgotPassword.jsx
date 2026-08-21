@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import api from '../../Utils/api';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const ForgotPassword = () => {
+    const [searchParams] = useSearchParams();
     const [userType, setUserType] = useState('student'); // 'student' | 'admin'
     const [step, setStep] = useState(1); // 1: Request OTP, 2: Enter OTP & New Password
     const [identifier, setIdentifier] = useState('');
@@ -12,10 +13,32 @@ const ForgotPassword = () => {
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
-    const [demoOtp, setDemoOtp] = useState('');
+    const [emailSentTo, setEmailSentTo] = useState('');
 
     const navigate = useNavigate();
 
+    // ── Check if User Clicked Direct Reset Link from Email ──────────────────
+    useEffect(() => {
+        const urlEmail = searchParams.get('email');
+        const urlOtp = searchParams.get('otp');
+        const urlType = searchParams.get('type');
+
+        if (urlEmail) {
+            setIdentifier(urlEmail);
+            setEmailSentTo(urlEmail);
+        }
+        if (urlOtp) {
+            setOtp(urlOtp);
+            setStep(2);
+        }
+        if (urlType === 'admin') {
+            setUserType('admin');
+        } else if (urlType === 'student') {
+            setUserType('student');
+        }
+    }, [searchParams]);
+
+    // ── STEP 1: REQUEST OTP VIA EMAIL ───────────────────────────────────────
     const handleRequestOTP = async (e) => {
         e.preventDefault();
         const cleanIdentifier = identifier.trim();
@@ -51,11 +74,8 @@ const ForgotPassword = () => {
             }
 
             if (res && res.data && res.data.success) {
-                toast.success(res.data.message || 'OTP generated successfully!');
-                if (res.data.otp) {
-                    setDemoOtp(res.data.otp);
-                    setOtp(res.data.otp); // Pre-fill for seamless recovery experience
-                }
+                setEmailSentTo(res.data.email || cleanIdentifier);
+                toast.success(res.data.message || 'Verification OTP sent to your email!');
                 setStep(2);
             }
         } catch (err) {
@@ -66,13 +86,14 @@ const ForgotPassword = () => {
                 ? err.response.data
                 : null;
 
-            const msg = serverMsg || `Account not found for "${cleanIdentifier}". Please check your email or ensure your latest backend code is pushed to Render.`;
+            const msg = serverMsg || `Account not found for "${cleanIdentifier}". Please check your email or ensure your latest backend updates are deployed to Render.`;
             toast.error(msg);
         } finally {
             setLoading(false);
         }
     };
 
+    // ── STEP 2: VERIFY OTP & SET NEW PASSWORD ───────────────────────────────
     const handleResetPassword = async (e) => {
         e.preventDefault();
         const cleanIdentifier = identifier.trim();
@@ -114,11 +135,15 @@ const ForgotPassword = () => {
             }
         } catch (err) {
             console.error("Reset password submission error:", err);
-            const msg = err.response?.data?.message || 'Failed to reset password. Please verify your OTP code.';
+            const msg = err.response?.data?.message || 'Failed to reset password. Please check your 6-digit OTP code.';
             toast.error(msg);
         } finally {
             setLoading(false);
         }
+    };
+
+    const openGmail = () => {
+        window.open('https://mail.google.com', '_blank');
     };
 
     return (
@@ -133,7 +158,7 @@ const ForgotPassword = () => {
                     </div>
                     <h1 className="text-xl font-bold">Reset Password</h1>
                     <p className="text-xs text-emerald-100 mt-1">
-                        {step === 1 ? 'Enter your details to receive a 6-digit OTP code' : 'Enter OTP and set your new password'}
+                        {step === 1 ? 'Enter your registered email to receive a secure OTP' : 'Check your email for the 6-digit OTP code'}
                     </p>
                 </div>
 
@@ -170,13 +195,13 @@ const ForgotPassword = () => {
                         <form onSubmit={handleRequestOTP} className="space-y-4">
                             <div>
                                 <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                                    {userType === 'student' ? 'Matric Number or Student Email' : 'Staff / Admin Email'}
+                                    {userType === 'student' ? 'Student Email or Matric Number' : 'Staff / Admin Email'}
                                 </label>
                                 <input
                                     type={userType === 'admin' ? 'email' : 'text'}
                                     value={identifier}
                                     onChange={(e) => setIdentifier(e.target.value)}
-                                    placeholder={userType === 'student' ? 'e.g. 2021001234 or student@gmail.com' : 'e.g. admin@uni.edu or gmail.com'}
+                                    placeholder={userType === 'student' ? 'e.g. yourname@gmail.com or 2021001234' : 'e.g. lecturer@gmail.com'}
                                     className="w-full border border-gray-300 rounded-xl p-3 text-sm outline-none focus:border-[#0a643a] focus:ring-1 focus:ring-[#0a643a] transition-all"
                                     required
                                 />
@@ -187,7 +212,7 @@ const ForgotPassword = () => {
                                 disabled={loading}
                                 className="w-full bg-[#0a643a] hover:bg-[#084f2e] disabled:opacity-60 text-white font-bold text-sm py-3 rounded-xl transition-colors shadow-sm cursor-pointer mt-2"
                             >
-                                {loading ? 'Checking Account...' : 'Send Verification OTP'}
+                                {loading ? 'Sending to your Email...' : 'Send Reset Link & OTP to Email'}
                             </button>
 
                             <div className="text-center pt-2">
@@ -198,23 +223,35 @@ const ForgotPassword = () => {
                         </form>
                     ) : (
                         <form onSubmit={handleResetPassword} className="space-y-4">
-                            {demoOtp && (
-                                <div className="bg-emerald-50 border border-emerald-200 p-3 rounded-xl text-xs text-emerald-800 flex items-center justify-between">
-                                    <span>Verification Code: <strong className="font-mono text-sm">{demoOtp}</strong></span>
-                                    <span className="text-[10px] bg-emerald-200 text-emerald-900 font-bold px-2 py-0.5 rounded">Valid 15m</span>
+                            {/* Email Sent Notice & Direct Gmail Shortcut Button */}
+                            <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-xl text-center space-y-2.5">
+                                <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-[#0a643a]">
+                                    <span className="material-symbols-outlined text-base">mark_email_read</span>
+                                    <span>OTP Sent to Your Email!</span>
                                 </div>
-                            )}
+                                <p className="text-xs text-slate-600 leading-relaxed">
+                                    We sent a 6-digit code to <strong>{emailSentTo || identifier}</strong>. Check your inbox or spam folder.
+                                </p>
+                                <button
+                                    type="button"
+                                    onClick={openGmail}
+                                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#0a643a] hover:bg-[#084f2e] text-white text-xs font-bold rounded-xl transition-colors cursor-pointer shadow-sm"
+                                >
+                                    <span className="material-symbols-outlined text-sm">open_in_new</span>
+                                    <span>Open Gmail Inbox</span>
+                                </button>
+                            </div>
 
                             <div>
                                 <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                                    6-Digit Verification OTP
+                                    Enter 6-Digit OTP From Email
                                 </label>
                                 <input
                                     type="text"
                                     maxLength="6"
                                     value={otp}
                                     onChange={(e) => setOtp(e.target.value)}
-                                    placeholder="Enter OTP (e.g. 481920)"
+                                    placeholder="Enter OTP (e.g. 504908)"
                                     className="w-full border border-gray-300 rounded-xl p-3 text-sm font-mono tracking-widest text-center outline-none focus:border-[#0a643a] focus:ring-1 focus:ring-[#0a643a]"
                                     required
                                 />
@@ -262,7 +299,7 @@ const ForgotPassword = () => {
                                     onClick={() => setStep(1)}
                                     className="text-xs text-slate-500 hover:text-slate-800 font-medium cursor-pointer"
                                 >
-                                    Change Email / Credential
+                                    Resend Code / Change Email
                                 </button>
                                 <Link to="/signin" className="text-xs text-[#0a643a] font-bold hover:underline">
                                     Cancel & Sign In
