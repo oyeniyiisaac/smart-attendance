@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import QRScannerModal from '../Components/QRScannerModal'
 
 const StudentDashboard = () => {
     const [activeBtn, setActiveBtn] = useState('dashboard')
@@ -16,8 +17,9 @@ const StudentDashboard = () => {
 
     // Modal States for Student Selection
     const [isModalOpen, setIsModalOpen] = useState(false)
+    const [isQRScannerOpen, setIsQRScannerOpen] = useState(false)
     const [selectedSession, setSelectedSession] = useState(null)
-    const [chosenMethod, setChosenMethod] = useState('')
+    const [chosenMethod, setChosenMethod] = useState('qr')
     const [verifying, setVerifying] = useState(false)
 
     const navigate = useNavigate()
@@ -59,12 +61,29 @@ const StudentDashboard = () => {
 
     useEffect(() => {
         fetchDashboardData()
-    }, [token, endpoint, navigate])
+    }, [navigate])
 
     const openVerificationModal = (sessionItem) => {
         setSelectedSession(sessionItem)
-        setChosenMethod('')
+        setChosenMethod('qr')
         setIsModalOpen(true)
+    }
+
+    const openDirectQRScanner = (sessionItem) => {
+        setSelectedSession(sessionItem)
+        setIsQRScannerOpen(true)
+    }
+
+    const handleQRScanSuccess = (scanPayload) => {
+        setIsQRScannerOpen(false)
+        sendToServer({
+            courseCode: scanPayload.courseCode || selectedSession?.courseCode,
+            sessionId: scanPayload.sessionId || selectedSession?._id,
+            slot: scanPayload.slot,
+            timestamp: scanPayload.timestamp,
+            rawQR: scanPayload.rawQR,
+            verificationMethodChosen: 'qr'
+        })
     }
 
     const handleVerificationSubmit = () => {
@@ -73,7 +92,10 @@ const StudentDashboard = () => {
             return
         }
 
-        if (chosenMethod === 'gps') {
+        if (chosenMethod === 'qr') {
+            setIsModalOpen(false)
+            setIsQRScannerOpen(true)
+        } else if (chosenMethod === 'gps') {
             handleGpsLookup()
         } else if (chosenMethod === 'wifi') {
             handleWifiLookup()
@@ -296,13 +318,22 @@ const StudentDashboard = () => {
                                                             </a>
                                                         )}
                                                     </div>
-                                                    <button
-                                                        onClick={() => openVerificationModal(sessionItem)}
-                                                        className='bg-[#0a643a] flex items-center justify-center text-white py-2.5 px-4 rounded-lg hover:bg-[#084d2c] gap-1 font-semibold transition-colors w-full text-sm mt-2 shadow-sm'
-                                                    >
-                                                        <span className="material-symbols-outlined text-[18px]">fingerprint</span>
-                                                        Mark Attendance
-                                                    </button>
+                                                    <div className="flex flex-col sm:flex-row gap-2 mt-2">
+                                                        <button
+                                                            onClick={() => openDirectQRScanner(sessionItem)}
+                                                            className='bg-[#0a643a] flex-1 flex items-center justify-center text-white py-2.5 px-4 rounded-lg hover:bg-[#084d2c] gap-1.5 font-bold transition-colors text-xs shadow-sm cursor-pointer'
+                                                        >
+                                                            <span className="material-symbols-outlined text-[18px]">qr_code_scanner</span>
+                                                            Scan Live QR
+                                                        </button>
+                                                        <button
+                                                            onClick={() => openVerificationModal(sessionItem)}
+                                                            className='bg-[#f0f4f1] border border-[#baeed9] flex items-center justify-center text-[#0a643a] py-2.5 px-3 rounded-lg hover:bg-[#baeed9]/60 gap-1 font-semibold transition-colors text-xs cursor-pointer'
+                                                        >
+                                                            <span className="material-symbols-outlined text-[16px]">tune</span>
+                                                            Options
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         );
@@ -318,9 +349,9 @@ const StudentDashboard = () => {
                             <div className='bg-white border border-[#bfc9bf] rounded-xl p-5 shadow-sm space-y-4 mb-6'>
                                 <div className='border-b border-gray-100 pb-3'>
                                     <span className='text-[10px] font-bold text-[#0a643a] bg-[#e2e9ec] px-2 py-0.5 rounded uppercase tracking-wider'>Important</span>
-                                    <h4 className='text-xs font-bold text-slate-800 mt-1.5'>Geofence Attendance Verification</h4>
+                                    <h4 className='text-xs font-bold text-slate-800 mt-1.5'>Anti-Proxy QR Verification</h4>
                                     <p className='text-xs text-[#3f4941] mt-1 leading-relaxed'>
-                                        Ensure location permissions are turned on in browser settings prior to verifying GPS coordinates.
+                                        Point your smartphone camera at the lecturer's projector screen to mark attendance in real time.
                                     </p>
                                 </div>
 
@@ -338,13 +369,22 @@ const StudentDashboard = () => {
                 </div>
             </div>
 
+            {/* 📷 CAMERA QR SCANNER MODAL */}
+            <QRScannerModal
+                isOpen={isQRScannerOpen}
+                onClose={() => setIsQRScannerOpen(false)}
+                onScanSuccess={handleQRScanSuccess}
+                courseCode={selectedSession?.courseCode}
+                expectedSessionId={selectedSession?._id}
+            />
+
             {/* SELECTION MODAL LAYER DRAWER */}
             {isModalOpen && selectedSession && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fadeIn">
                     <div className="bg-white rounded-xl max-w-md w-full p-5 shadow-xl border border-gray-100 flex flex-col max-h-[90vh]">
                         <div className="flex justify-between items-start mb-2">
                             <div>
-                                <h3 className="text-base font-bold text-slate-900">Verify Proximity</h3>
+                                <h3 className="text-base font-bold text-slate-900">Verify Attendance</h3>
                                 <p className="text-xs text-slate-500 mt-0.5 uppercase tracking-wide font-semibold">{selectedSession.courseCode} — {selectedSession.courseName}</p>
                             </div>
                             <button
@@ -360,6 +400,24 @@ const StudentDashboard = () => {
                         </p>
 
                         <div className="space-y-3 overflow-y-auto pr-1 flex-grow">
+                            <label className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition-all ${chosenMethod === 'qr' ? 'border-[#0a643a] bg-[#e2e9ec]/50 font-medium' : 'border-gray-200 hover:bg-slate-50'}`}>
+                                <input
+                                    type="radio"
+                                    name="verificationChannel"
+                                    value="qr"
+                                    checked={chosenMethod === 'qr'}
+                                    onChange={(e) => setChosenMethod(e.target.value)}
+                                    className="h-4 w-4 text-[#0a643a] border-gray-300 focus:ring-[#0a643a]"
+                                />
+                                <div>
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="block text-xs font-bold text-slate-800">Dynamic Anti-Proxy QR Code</span>
+                                        <span className="text-[9px] bg-[#baeed9] text-[#0a643a] px-1.5 py-0.2 rounded font-bold">Recommended</span>
+                                    </div>
+                                    <span className="block text-[10px] text-slate-500">Scan the live 20-second rotating code projected on the hall screen.</span>
+                                </div>
+                            </label>
+
                             <label className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition-all ${chosenMethod === 'gps' ? 'border-[#0a643a] bg-[#e2e9ec]/50 font-medium' : 'border-gray-200 hover:bg-slate-50'}`}>
                                 <input
                                     type="radio"
@@ -425,7 +483,7 @@ const StudentDashboard = () => {
                                 ) : (
                                     <>
                                         <span className="material-symbols-outlined text-[16px]">done_all</span>
-                                        Verify Attendance
+                                        Proceed
                                     </>
                                 )}
                             </button>

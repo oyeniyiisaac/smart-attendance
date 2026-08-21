@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import SessionHero from '../Components/SessionHero';
 import AttendanceRoster from '../Components/AttendanceRoster';
 import SessionInsights from '../Components/SessionInsights';
+import DynamicQRCodeCard from '../Components/DynamicQRCodeCard';
 import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../Utils/api';
 
 export default function SessionMonitor() {
     const { id } = useParams(); // Grabs the database ObjectId cleanly from the URL parameter
@@ -20,18 +21,8 @@ export default function SessionMonitor() {
             return;
         }
 
-        // Construct the full URL targeting your single-item backend route
-        const singleSessionUrl = `${import.meta.env.VITE_SINGLE_SESSION_BASE_URL}/${id}`;
-
-        axios.get(singleSessionUrl, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            }
-        })
+        api.get(`/monitor/${id}`)
             .then((res) => {
-                // Set the single object payload directly to state
                 setSessionData(res.data.data);
             })
             .catch((err) => {
@@ -50,24 +41,8 @@ export default function SessionMonitor() {
 
         setClosing(true);
         try {
-            // Target the update/close endpoint on your backend
-            // Note: If you don't have a custom `/close` endpoint, 
-            // you can send a PATCH directly to the session base url
-            const patchUrl = `${import.meta.env.VITE_SINGLE_SESSION_BASE_URL}/${id}`;
-            
-            await axios.patch(
-                patchUrl,
-                { isSessionActive: false },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        'Content-Type': 'application/json',
-                    }
-                }
-            );
-
+            await api.patch(`/monitor/${id}`, { isSessionActive: false });
             alert("Session closed successfully!");
-            // Redirect back to the overview dashboard smoothly!
             navigate('/admin/lecturer-dashboard'); 
         } catch (err) {
             console.error("Failed to close session:", err);
@@ -115,12 +90,17 @@ export default function SessionMonitor() {
             />
 
             {/* Main Grid Content Matrix Setup */}
-            <div className="flex flex-col lg:flex-row gap-6 items-stretch w-full">
-                {/* Left Aspect: Roster Sheet Module */}
-                <AttendanceRoster session={sessionData} />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start w-full">
+                {/* Column 1 & 2: Roster Sheet Module */}
+                <div className="lg:col-span-2 space-y-6">
+                    <AttendanceRoster session={sessionData} />
+                </div>
 
-                {/* Right Aspect: Context Analytics Panels */}
-                <SessionInsights session={sessionData} />
+                {/* Column 3: Live Dynamic QR Code & Insights */}
+                <div className="space-y-6">
+                    <DynamicQRCodeCard session={sessionData} />
+                    <SessionInsights session={sessionData} />
+                </div>
             </div>
         </div>
     );
