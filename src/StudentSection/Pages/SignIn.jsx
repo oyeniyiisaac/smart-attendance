@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from '../../Utils/api';
 import { useFormik } from 'formik';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -8,8 +8,7 @@ const SignIn = () => {
     const navigate = useNavigate();
     const [activeForm, setActiveForm] = useState('student');
     const [studentAlert, setStudentAlert] = useState(false);
-    const loginUrl = import.meta.env.VITE_LOGIN_URL;
-    const adminLoginUrl = import.meta.env.VITE_ADMIN_LOGIN_URL
+
     const formik = useFormik({
         initialValues: {
             matricno: "",
@@ -18,7 +17,7 @@ const SignIn = () => {
 
         onSubmit: async (values, { setSubmitting }) => {
             try {
-                const response = await axios.post(loginUrl, values);
+                const response = await api.post('/login', values);
                 console.log(response);
                 if (response.status === 200 || response.status === 201) {
                     localStorage.token = response.data.token
@@ -26,7 +25,7 @@ const SignIn = () => {
                 }
             } catch (err) {
                 console.log(err);
-                if (err.response.status === 401) {
+                if (err.response?.status === 401) {
                     setStudentAlert(true);
                 }
             } finally {
@@ -38,8 +37,6 @@ const SignIn = () => {
             password: yup.string().required("This field is required").min(6, "min of 6 characters")
         })
     })
-    // console.log(formik.errors)
-    // console.log(formik.values);
 
     const adminformik = useFormik({
         initialValues: {
@@ -48,7 +45,7 @@ const SignIn = () => {
         },
         onSubmit: async (values, { setSubmitting, setStatus }) => {
             try {
-                const response = await axios.post(adminLoginUrl, values);
+                const response = await api.post('/admin/login', values);
                 if (response.status === 200) {
                     localStorage.setItem('adminToken', response.data.token);
                     localStorage.setItem('adminUser', JSON.stringify(response.data.admin));

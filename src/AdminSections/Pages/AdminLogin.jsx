@@ -1,11 +1,10 @@
-import axios from 'axios';
+import api from '../../Utils/api';
 import { useFormik } from 'formik';
 import { useNavigate } from 'react-router-dom';
 import * as yup from 'yup';
 
 const AdminLogin = () => {
     const navigate = useNavigate();
-    const adminLoginUrl = import.meta.env.VITE_ADMIN_LOGIN_URL;
 
     const formik = useFormik({
         initialValues: {
@@ -14,7 +13,7 @@ const AdminLogin = () => {
         },
         onSubmit: async (values, { setSubmitting, setStatus }) => {
             try {
-                const response = await axios.post(adminLoginUrl, values);
+                const response = await api.post('/admin/login', values);
                 if (response.status === 200) {
                     // Save the JWT so future requests can use it
                     localStorage.setItem('adminToken', response.data.token);

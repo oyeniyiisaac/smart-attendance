@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from '../../Utils/api';
 import { useFormik } from 'formik';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -9,8 +9,6 @@ const SignUp = () => {
     const navigate = useNavigate();
     const [activeForm, setActiveForm] = useState('student');
     const [error, setError] = useState('');
-    const registerUrl = import.meta.env.VITE_REGISTER_URL;
-    const adminRegisterUrl = import.meta.env.VITE_ADMIN_REGISTER_URL;
 
     const formik = useFormik({
         initialValues: {
@@ -28,7 +26,7 @@ const SignUp = () => {
         onSubmit: async (values, { setSubmitting, setFieldError }) => {
             setError('');
             try {
-                const response = await axios.post(registerUrl, values);
+                const response = await api.post('/register', values);
                 console.log(response);
                 if (response.status === 200 || response.status === 201) {
                     navigate('/signin');
@@ -72,17 +70,17 @@ const SignUp = () => {
             verifyToken: "",
         },
         onSubmit: async (values, { setSubmitting, setFieldError }) => {
-        
             setError('');
             try {
-                const response = await axios.post(adminRegisterUrl, values);
+                const response = await api.post('/admin/create', values);
                 console.log(response);
                 if (response.status === 200 || response.status === 201) {
+                    alert(response.data?.message || 'Admin account created successfully! Please sign in.');
                     navigate('/signin');
                 }
             } catch (err) {
-                console.log(err);
-                const msg = err.response?.data?.message || 'Registration failed. Please try again.';
+                console.error("Admin Registration Error:", err);
+                const msg = err.response?.data?.message || 'Registration failed. Please check backend connection and credentials.';
                 setError(msg);
                 if (msg.toLowerCase().includes('email')) {
                     setFieldError('email', msg);
@@ -98,11 +96,7 @@ const SignUp = () => {
             email: yup.string().required('This field is required').email('Invalid email').trim(),
             role: yup.string().required('Role is required'),
             faculty: yup.string().required('This field is required').trim(),
-            department: yup.string().when('role', {
-                is: (val) => val !== 'super_admin',
-                then: yup.string().required('This field is required').trim(),
-                otherwise: yup.string().notRequired(),
-            }),
+            department: yup.string().nullable(),
             password: yup.string().required('This field is required').min(6, 'Min of 6 characters'),
             confirmPassword: yup.string().required('This field is required').min(6, 'Min of 6 characters').oneOf([yup.ref('password'), null], 'Passwords must match'),
             verifyToken: yup.string().required('Verify token is required'),
