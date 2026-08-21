@@ -110,9 +110,16 @@ const AdminLogin = () => {
                             onBlur={formik.handleBlur}
                             value={formik.values.password}
                         />
-                        <small className="block mb-6 text-[#ba1a1a] font-semibold text-xs">
+                        <small className="block mb-2 text-[#ba1a1a] font-semibold text-xs">
                             {formik.touched.password && formik.errors.password}
                         </small>
+
+                        <div className="flex justify-between items-center mb-6">
+                            <span />
+                            <a href="/forgot-password" className="text-xs font-semibold text-[#0a643a] hover:underline">
+                                Forgot Password?
+                            </a>
+                        </div>
 
                         <button
                             type="submit"

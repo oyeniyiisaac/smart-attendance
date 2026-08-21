@@ -5,14 +5,14 @@ const CourseManagement = () => {
     const [courses, setCourses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
-    const [semesterFilter, setSemesterFilter] = useState('2025/2026 First Semester');
+    const [semesterFilter, setSemesterFilter] = useState('');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
     // New Course Form State
     const [formData, setFormData] = useState({
         courseCode: '',
         courseTitle: '',
-        semester: '2025/2026 First Semester',
+        semester: 'First Semester',
         unit: 3
     });
 
@@ -25,7 +25,10 @@ const CourseManagement = () => {
         setLoading(true);
         try {
             const res = await api.get('/admin/courses', {
-                params: { search: searchQuery, semester: semesterFilter }
+                params: { 
+                    search: searchQuery, 
+                    ...(semesterFilter ? { semester: semesterFilter } : {})
+                }
             });
             if (res.data.success) {
                 setCourses(res.data.courses);
@@ -126,6 +129,9 @@ const CourseManagement = () => {
                     onChange={(e) => setSemesterFilter(e.target.value)}
                     className="bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-[#0a643a] text-gray-700 shadow-sm"
                 >
+                    <option value="">All Semesters</option>
+                    <option value="First Semester">First Semester</option>
+                    <option value="Second Semester">Second Semester</option>
                     <option value="2025/2026 First Semester">2025/2026 First Semester</option>
                     <option value="2025/2026 Second Semester">2025/2026 Second Semester</option>
                 </select>

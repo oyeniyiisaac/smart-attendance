@@ -1,14 +1,40 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminDashboard from './AdminDashboard';
+import api from '../../Utils/api';
 
-const SetViewAll = ({ sessions = [], currentTime = new Date() }) => {
+const SetViewAll = ({ sessions: initialSessions = [], currentTime = new Date() }) => {
     const navigate = useNavigate();
+
+    const [loadedSessions, setLoadedSessions] = useState(initialSessions);
+    const [loading, setLoading] = useState(initialSessions.length === 0);
 
     // Search & Filter States
     const [searchQuery, setSearchQuery] = useState('');
     const [activeFilter, setActiveFilter] = useState('All');
-    const [backToDashboard, setBackToDashboard] = useState(false); 
+    const [backToDashboard, setBackToDashboard] = useState(false);
+
+    useEffect(() => {
+        if (initialSessions.length > 0) {
+            setLoadedSessions(initialSessions);
+            setLoading(false);
+            return;
+        }
+
+        api.get('/admin/sessions')
+            .then((res) => {
+                const data = res.data.sessions || res.data.data || res.data || [];
+                setLoadedSessions(Array.isArray(data) ? data : []);
+            })
+            .catch((err) => {
+                console.error("Failed to load sessions in SetViewAll:", err);
+            })
+            .finally(() => {
+                setLoading(false);
+            });
+    }, [initialSessions]);
+
+    const sessions = loadedSessions; 
 
     // Helper function to reliably compute status
     const getSessionStatus = (session) => {

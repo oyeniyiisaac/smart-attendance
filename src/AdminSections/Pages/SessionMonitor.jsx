@@ -21,7 +21,7 @@ export default function SessionMonitor() {
             return;
         }
 
-        api.get(`/monitor/${id}`)
+        api.get(`/admin/monitor/${id}`)
             .then((res) => {
                 setSessionData(res.data.data);
             })
@@ -41,7 +41,7 @@ export default function SessionMonitor() {
 
         setClosing(true);
         try {
-            await api.patch(`/monitor/${id}`, { isSessionActive: false });
+            await api.patch(`/admin/close-session/${id}`, { isSessionActive: false });
             alert("Session closed successfully!");
             navigate('/admin/lecturer-dashboard'); 
         } catch (err) {

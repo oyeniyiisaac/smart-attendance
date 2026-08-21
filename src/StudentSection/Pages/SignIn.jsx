@@ -135,9 +135,14 @@ const SignIn = () => {
 
                             <label className='text-[#3f4941] text-lg mt-4 block'>Password</label>
                             <input className="w-full border border-outline p-3 mt-2 rounded-lg focus:ring-0.5 focus:ring-[#0a643a] focus:ring-opacity-10 focus:border-[#0a643a] outline-none transition-all font-body-md text-body-md" placeholder="********" required="" type="password" id='studentPassword' name="password" onChange={formik.handleChange} onBlur={formik.handleBlur} value={formik.values.password} />
-                            <small className='block mb-3 text-[#ba1a1a] font-semibold'>{formik.touched.password && formik.errors.password}</small>
+                            <div className="flex justify-between items-center mt-1 mb-4">
+                                <span />
+                                <a href="/forgot-password" className="text-xs font-semibold text-[#0a643a] hover:underline">
+                                    Forgot Password?
+                                </a>
+                            </div>
 
-                            <div className='flex items-center justify-between mt-6'>
+                            <div className='flex items-center justify-between mt-2'>
                                 <button
                                     type='submit'
                                     disabled={formik.isSubmitting}
@@ -165,7 +170,14 @@ const SignIn = () => {
                             <input className="w-full border border-outline p-3 mt-2 rounded-lg focus:ring-0.5 focus:ring-[#0a643a] focus:ring-opacity-10 focus:border-[#0a643a] outline-none transition-all font-body-md text-body-md" placeholder="********" type="password" name="password" onChange={adminformik.handleChange} onBlur={adminformik.handleBlur} value={adminformik.values.password} />
                             <small className='block mb-3 text-[#ba1a1a] font-semibold'>{adminformik.touched.password && adminformik.errors.password}</small>
 
-                            <div className='flex items-center justify-between mt-6'>
+                            <div className="flex justify-between items-center mt-1 mb-4">
+                                <span />
+                                <a href="/forgot-password" className="text-xs font-semibold text-[#0a643a] hover:underline">
+                                    Forgot Password?
+                                </a>
+                            </div>
+
+                            <div className='flex items-center justify-between mt-2'>
                                 <button
                                     type='submit'
                                     disabled={adminformik.isSubmitting}

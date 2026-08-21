@@ -43,7 +43,7 @@ const AttendanceHistory = () => {
                 setLoading(false);
             }
         },
-        [selectedCourse, token],
+        [selectedCourse]
     );
 
     // Re-fetch when selected course or semester changes

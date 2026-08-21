@@ -25,26 +25,16 @@ import RegistrationSuccess from './StudentSection/Pages/RegristrationSuccess'
 import EnrolCourses from './StudentSection/Pages/EnrolCourse'
 import LandingPage from '../LandingPage'
 import StudentProfileSettings from './StudentSection/Pages/StudentProfileSettings'
-// import Adminsidebar from './AdminSections/Components/Adminsidebar'
-
+import ForgotPassword from './StudentSection/Pages/ForgotPassword'
 
 const App = () => {
-  // const currentPath = window.location.pathname
-
-  // const pages = {
-  //   '/signin': <SignIn />,
-  //   '/signup': <SignUp />,
-  //   '/student-dashboard': <StudentDashboard />,
-  //   '/attendance-history': <AttendanceHistroy />
-
-  // }
-
   return (
     <>
       <Routes>
         <Route path='/' element={<LandingPage />} />
         <Route path='/signup' element={<SignUp />} />
         <Route path='/signin' element={<SignIn />} />
+        <Route path='/forgot-password' element={<ForgotPassword />} />
         <Route path='/navbarbottom' element={<NavbarBottom />} />
         <Route path='/student' element={<>
           <NavbarTopDashboard className="lg:hidden z-50 "/>
@@ -67,7 +57,7 @@ const App = () => {
           <Route path='reports' element={<AdminReport/>} />
           <Route path='student-management' element={<StudentManagement/>} />
           <Route path='course-management' element={<CourseManagement />} />
-          <Route path="/admin/monitor/:id" element={<SessionMonitor />} />
+          <Route path="monitor/:id" element={<SessionMonitor />} />
         </Route>
         <Route path='/adminsidebar' element={<AdminSideBar />} />
         {/* <Route path='/adminsidebar' element={<Adminsidebar/>} /> */}

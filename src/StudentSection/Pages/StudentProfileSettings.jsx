@@ -5,7 +5,26 @@ import { Button, Modal, ModalBody, ModalHeader } from "flowbite-react";
 import { HiOutlineExclamationCircle } from "react-icons/hi";
 
 
+const getStudentProfile = () => {
+    try {
+        const token = localStorage.getItem('token') || localStorage.getItem('studentToken');
+        if (!token) return { name: 'Student', matricno: 'N/A', department: 'Computer Science', faculty: 'Faculty of Computing' };
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const name = payload.firstname && payload.lastname ? `${payload.firstname} ${payload.lastname}` : payload.name || payload.firstname || 'Student';
+        return {
+            name,
+            matricno: payload.matricno || payload.id || 'N/A',
+            department: payload.department || 'Computer Science',
+            faculty: payload.faculty || 'Faculty of Computing',
+            email: payload.email || ''
+        };
+    } catch {
+        return { name: 'Student', matricno: 'N/A', department: 'Computer Science', faculty: 'Faculty of Computing' };
+    }
+};
+
 export default function StudentProfileSettings() {
+    const studentProfile = getStudentProfile();
     const [notifications, setNotifications] = useState({
         push: true,
         email: true,
@@ -19,12 +38,10 @@ export default function StudentProfileSettings() {
 
     const fallbackProfileImg = 'https://imgs.search.brave.com/Jopvk0MWzfaYi1h8ZX8btE8nIJgelXumRnIDVQKFXI8/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pLnBp/bmltZy5jb20vb3Jp/Z2luYWxzL2M2LzU2/L2VkL2M2NTZlZDAy/MDdjMDViZTc5ZGI2/ZDdkYTQxZDdhNmZk/LmpwZw'
     const displayProfileImg = fallbackProfileImg
-    // const [profileImg, setProfileImg] = useState(displayProfileImg);
     const [profileImg, setProfileImg] = useState(() => {
         return localStorage.getItem('profilePicture') || displayProfileImg
     })
     const [uploading, setUploading] = useState(false);
-
 
     const handleImageChange = async (e) => {
         const file = e.target.files[0]
@@ -33,13 +50,11 @@ export default function StudentProfileSettings() {
         const reader = new FileReader()
         reader.onload = async () => {
             const base64Image = reader.result
-            console.log(base64Image)
 
             setProfileImg(base64Image)
             setUploading(true)
             try {
                 const response = await api.post('/upload-profile-picture', { image: base64Image });
-                console.log(response.data)
                 const data = response.data
                 if (data.success) {
                     setUploading(false)
@@ -61,26 +76,13 @@ export default function StudentProfileSettings() {
     }
     const navigate = useNavigate()
     const handleLogout = () => {
-
         localStorage.removeItem('token')
+        localStorage.removeItem('studentToken')
         localStorage.removeItem('profilePicture')
-        localStorage.removeItem('course')
-        localStorage.removeItem('courseCode')
-        localStorage.removeItem('courseName')
-        localStorage.removeItem('courseCode')
-        localStorage.removeItem('courseCode')
-        localStorage.removeItem('courseCode')
         navigate('/signin')
     }
-    
 
-    "use client";
-
-    
     const [openModal, setOpenModal] = useState(false);
-
-    
-
 
     return (
         <div className="min-h-screen bg-[#f3f7f8] pt-24 lg:pt-12 pb-12 px-4 flex justify-center text-[#1c2a2b] font-sans">
@@ -92,7 +94,7 @@ export default function StudentProfileSettings() {
                         <div className="relative">
                             <img
                                 src={profileImg}
-                                alt="Alex Rivers"
+                                alt={studentProfile.name}
                                 className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border border-gray-200"
                             />
                             <input
@@ -119,19 +121,22 @@ export default function StudentProfileSettings() {
 
                         <div className="space-y-0.5">
                             <h2 className="text-xl font-extrabold text-[#11221c] tracking-tight">
-                                
+                                {studentProfile.name}
                             </h2>
                             <p className="text-xs font-semibold text-gray-500">
-                                Student ID: <span className="text-gray-700">{data.data}</span>
+                                Student ID: <span className="text-gray-700 font-mono font-bold">{studentProfile.matricno}</span>
                             </p>
                             <p className="text-[11px] font-bold text-[#0b6238] uppercase tracking-wider">
-                                Computer Science Department
+                                {studentProfile.department}
                             </p>
                         </div>
                     </div>
 
-                    <button className="px-4 py-2 border border-[#0b6238] text-[#0b6238] hover:bg-emerald-50 rounded-xl text-xs font-bold transition-colors cursor-pointer border-dashed sm:border-solid">
-                        Edit Profile
+                    <button 
+                        onClick={() => setOpenModal(true)}
+                        className="px-4 py-2 border border-[#0b6238] text-[#0b6238] hover:bg-emerald-50 rounded-xl text-xs font-bold transition-colors cursor-pointer border-dashed sm:border-solid"
+                    >
+                        Sign Out
                     </button>
                 </div>
 
