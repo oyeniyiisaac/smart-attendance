@@ -275,6 +275,18 @@ const FACULTIES_DATA = {
         return;
       }
 
+      // Validation Guard: Ensure Course is selected
+      if (!formData.courseName || !formData.courseCode) {
+        toast.error("Please enter or select a Course Name and Course Code.");
+        return;
+      }
+
+      // Validation Guard: Ensure Academic Level is specified
+      if (!formData.academicLevel) {
+        toast.error("Please select an Academic Level (e.g., 100L, 200L, 300L, 400L, 500L).");
+        return;
+      }
+
       // Validation Guard: Ensure Faculty and Department are selected
       if (!formData.faculty || !formData.department) {
         toast.error("Please assign a Faculty and Department for this session.");

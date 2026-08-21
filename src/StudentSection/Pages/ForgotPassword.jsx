@@ -18,28 +18,55 @@ const ForgotPassword = () => {
 
     const handleRequestOTP = async (e) => {
         e.preventDefault();
-        if (!identifier.trim()) {
-            toast.error('Please enter your credential.');
+        const cleanIdentifier = identifier.trim();
+        if (!cleanIdentifier) {
+            toast.error('Please enter your email or matric number.');
             return;
         }
 
         setLoading(true);
         try {
             const endpoint = userType === 'student' ? '/forgot-password' : '/admin/forgot-password';
-            const payload = userType === 'student' ? { identifier: identifier.trim() } : { email: identifier.trim() };
-            const res = await api.post(endpoint, payload);
+            const payload = userType === 'student' ? { identifier: cleanIdentifier } : { email: cleanIdentifier };
 
-            if (res.data.success) {
+            let res;
+            try {
+                res = await api.post(endpoint, payload);
+            } catch (firstErr) {
+                // If not found in primary endpoint, auto-try the secondary endpoint (Admin <-> Student cross-lookup)
+                if (firstErr.response?.status === 404 || firstErr.response?.status === 400) {
+                    const fallbackEndpoint = userType === 'student' ? '/admin/forgot-password' : '/forgot-password';
+                    const fallbackPayload = userType === 'student' ? { email: cleanIdentifier } : { identifier: cleanIdentifier };
+
+                    try {
+                        res = await api.post(fallbackEndpoint, fallbackPayload);
+                        // Automatically switch tab to the account type that matched
+                        setUserType(userType === 'student' ? 'admin' : 'student');
+                    } catch (secondErr) {
+                        throw firstErr;
+                    }
+                } else {
+                    throw firstErr;
+                }
+            }
+
+            if (res && res.data && res.data.success) {
                 toast.success(res.data.message || 'OTP generated successfully!');
                 if (res.data.otp) {
                     setDemoOtp(res.data.otp);
-                    setOtp(res.data.otp); // Pre-fill for seamless user recovery experience
+                    setOtp(res.data.otp); // Pre-fill for seamless recovery experience
                 }
                 setStep(2);
             }
         } catch (err) {
             console.error("Forgot password request error:", err);
-            const msg = err.response?.data?.message || 'Failed to find account. Please check your credentials.';
+            const serverMsg = typeof err.response?.data?.message === 'string'
+                ? err.response.data.message
+                : typeof err.response?.data === 'string' && !err.response.data.includes('<')
+                ? err.response.data
+                : null;
+
+            const msg = serverMsg || `Account not found for "${cleanIdentifier}". Please check your email or ensure your latest backend code is pushed to Render.`;
             toast.error(msg);
         } finally {
             setLoading(false);
@@ -48,6 +75,7 @@ const ForgotPassword = () => {
 
     const handleResetPassword = async (e) => {
         e.preventDefault();
+        const cleanIdentifier = identifier.trim();
         if (!otp.trim() || !newPassword || !confirmPassword) {
             toast.error('Please fill in all fields.');
             return;
@@ -65,17 +93,28 @@ const ForgotPassword = () => {
         try {
             const endpoint = userType === 'student' ? '/reset-password' : '/admin/reset-password';
             const payload = userType === 'student'
-                ? { identifier: identifier.trim(), otp: otp.trim(), newPassword, confirmPassword }
-                : { email: identifier.trim(), otp: otp.trim(), newPassword, confirmPassword };
+                ? { identifier: cleanIdentifier, otp: otp.trim(), newPassword, confirmPassword }
+                : { email: cleanIdentifier, otp: otp.trim(), newPassword, confirmPassword };
 
-            const res = await api.post(endpoint, payload);
-            if (res.data.success) {
-                alert(res.data.message || 'Password reset successfully! Please log in with your new password.');
-                navigate('/signin');
+            let res;
+            try {
+                res = await api.post(endpoint, payload);
+            } catch (firstErr) {
+                const fallbackEndpoint = userType === 'student' ? '/admin/reset-password' : '/reset-password';
+                const fallbackPayload = userType === 'student'
+                    ? { email: cleanIdentifier, otp: otp.trim(), newPassword, confirmPassword }
+                    : { identifier: cleanIdentifier, otp: otp.trim(), newPassword, confirmPassword };
+
+                res = await api.post(fallbackEndpoint, fallbackPayload);
+            }
+
+            if (res && res.data && res.data.success) {
+                alert(res.data.message || 'Password reset successfully! Please sign in with your new password.');
+                navigate(userType === 'admin' ? '/admin/login' : '/signin');
             }
         } catch (err) {
             console.error("Reset password submission error:", err);
-            const msg = err.response?.data?.message || 'Failed to reset password. Please verify your OTP.';
+            const msg = err.response?.data?.message || 'Failed to reset password. Please verify your OTP code.';
             toast.error(msg);
         } finally {
             setLoading(false);
@@ -104,7 +143,7 @@ const ForgotPassword = () => {
                         <button
                             type="button"
                             onClick={() => setUserType('student')}
-                            className={`flex-1 py-3 text-xs font-bold transition-all ${
+                            className={`flex-1 py-3 text-xs font-bold transition-all cursor-pointer ${
                                 userType === 'student'
                                     ? 'border-b-2 border-[#0a643a] text-[#0a643a] bg-white'
                                     : 'text-slate-500 hover:text-slate-800'
@@ -115,7 +154,7 @@ const ForgotPassword = () => {
                         <button
                             type="button"
                             onClick={() => setUserType('admin')}
-                            className={`flex-1 py-3 text-xs font-bold transition-all ${
+                            className={`flex-1 py-3 text-xs font-bold transition-all cursor-pointer ${
                                 userType === 'admin'
                                     ? 'border-b-2 border-[#0a643a] text-[#0a643a] bg-white'
                                     : 'text-slate-500 hover:text-slate-800'
@@ -137,7 +176,7 @@ const ForgotPassword = () => {
                                     type={userType === 'admin' ? 'email' : 'text'}
                                     value={identifier}
                                     onChange={(e) => setIdentifier(e.target.value)}
-                                    placeholder={userType === 'student' ? 'e.g. 2021001234 or student@uni.edu' : 'e.g. admin@uni.edu'}
+                                    placeholder={userType === 'student' ? 'e.g. 2021001234 or student@gmail.com' : 'e.g. admin@uni.edu or gmail.com'}
                                     className="w-full border border-gray-300 rounded-xl p-3 text-sm outline-none focus:border-[#0a643a] focus:ring-1 focus:ring-[#0a643a] transition-all"
                                     required
                                 />
@@ -175,8 +214,8 @@ const ForgotPassword = () => {
                                     maxLength="6"
                                     value={otp}
                                     onChange={(e) => setOtp(e.target.value)}
-                                    placeholder="Enter 6-digit OTP"
-                                    className="w-full border border-gray-300 rounded-xl p-3 text-sm outline-none focus:border-[#0a643a] font-mono tracking-widest text-center font-bold"
+                                    placeholder="Enter OTP (e.g. 481920)"
+                                    className="w-full border border-gray-300 rounded-xl p-3 text-sm font-mono tracking-widest text-center outline-none focus:border-[#0a643a] focus:ring-1 focus:ring-[#0a643a]"
                                     required
                                 />
                             </div>
@@ -190,7 +229,7 @@ const ForgotPassword = () => {
                                     value={newPassword}
                                     onChange={(e) => setNewPassword(e.target.value)}
                                     placeholder="Minimum 6 characters"
-                                    className="w-full border border-gray-300 rounded-xl p-3 text-sm outline-none focus:border-[#0a643a]"
+                                    className="w-full border border-gray-300 rounded-xl p-3 text-sm outline-none focus:border-[#0a643a] focus:ring-1 focus:ring-[#0a643a]"
                                     required
                                 />
                             </div>
@@ -203,8 +242,8 @@ const ForgotPassword = () => {
                                     type="password"
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
-                                    placeholder="Repeat new password"
-                                    className="w-full border border-gray-300 rounded-xl p-3 text-sm outline-none focus:border-[#0a643a]"
+                                    placeholder="Re-enter new password"
+                                    className="w-full border border-gray-300 rounded-xl p-3 text-sm outline-none focus:border-[#0a643a] focus:ring-1 focus:ring-[#0a643a]"
                                     required
                                 />
                             </div>
@@ -214,19 +253,19 @@ const ForgotPassword = () => {
                                 disabled={loading}
                                 className="w-full bg-[#0a643a] hover:bg-[#084f2e] disabled:opacity-60 text-white font-bold text-sm py-3 rounded-xl transition-colors shadow-sm cursor-pointer mt-2"
                             >
-                                {loading ? 'Updating Password...' : 'Save New Password & Sign In'}
+                                {loading ? 'Resetting Password...' : 'Save New Password'}
                             </button>
 
-                            <div className="flex justify-between items-center pt-2 text-xs">
+                            <div className="flex justify-between items-center pt-2">
                                 <button
                                     type="button"
                                     onClick={() => setStep(1)}
-                                    className="text-slate-500 hover:text-slate-800 font-semibold"
+                                    className="text-xs text-slate-500 hover:text-slate-800 font-medium cursor-pointer"
                                 >
-                                    ← Change Email
+                                    Change Email / Credential
                                 </button>
-                                <Link to="/signin" className="text-[#0a643a] font-bold hover:underline">
-                                    Cancel
+                                <Link to="/signin" className="text-xs text-[#0a643a] font-bold hover:underline">
+                                    Cancel & Sign In
                                 </Link>
                             </div>
                         </form>

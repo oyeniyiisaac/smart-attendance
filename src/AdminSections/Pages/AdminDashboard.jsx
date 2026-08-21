@@ -202,7 +202,7 @@ const AdminDashboard = () => {
     }
 
     return (
-        <div className="min-h-screen px-4 lg:px-8 pb-24 lg:pb-8 pt-4">
+        <div className="min-h-screen px-4 lg:px-8 pb-24 lg:pb-8 pt-4 max-w-7xl mx-auto">
 
             {/* ── Role Banner & Header ─────────────────────────────── */}
             <div className="mb-6 bg-white border border-gray-200/80 rounded-2xl p-5 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -238,7 +238,7 @@ const AdminDashboard = () => {
             </div>
 
             {/* ── Stat Cards ──────────────────────────────── */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-5 mb-8">
                 <Cards icon="person" title="Total Students" value={loadingStats ? "..." : String(stats.totalStudents)} bgColor="bg-[#e8f0ec]" textColor="text-[#0a634a]" valueColor="text-[#0a634a]" />
                 <Cards icon="person_check" title="Present Today" value={loadingStats ? "..." : String(stats.presentToday)} bgColor="bg-[#baeed9]" textColor="text-[#0a634a]" valueColor="text-[#0a634a]" />
                 <Cards icon="person_remove" title="Absent Today" value={loadingStats ? "..." : String(stats.absentToday)} bgColor="bg-[#ffdad6]" textColor="text-[#ba1a1a]" valueColor="text-[#ba1a1a]" />
@@ -294,7 +294,7 @@ const AdminDashboard = () => {
                     No active or upcoming lecture sessions currently ongoing.
                 </div>
             ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6 mb-10">
                     {filteredSessions.slice(0, 4).map((sessionItem) => {
                         const isLiveOpen =
                             sessionItem.isSessionActive &&

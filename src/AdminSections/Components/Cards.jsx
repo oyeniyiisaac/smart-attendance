@@ -1,20 +1,25 @@
-import React from 'react'
+import React from 'react';
 
-const Cards = ({ icon, title, value, bgColor, textColor, valueColor }) => {
-
+const Cards = ({ icon, title, value, bgColor = 'bg-emerald-50', textColor = 'text-[#0a643a]', valueColor = 'text-slate-900' }) => {
     return (
-        <>
-            <div className="w-[280px] h-[150px] mt-[1rem] border-1 border-gray-300 text-black bg-white rounded-lg  shadow-sm p-4">
-                <div className="material-icons-outlined  text-4xl mb-2">
-                    <span className={`material-symbols-outlined ${bgColor} ${textColor} rounded-md p-2`}>
+        <div className="w-full bg-white border border-gray-200/80 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500 line-clamp-1">
+                    {title}
+                </span>
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${bgColor} ${textColor}`}>
+                    <span className="material-symbols-outlined text-lg">
                         {icon}
                     </span>
                 </div>
-                <h2 className="text-lg font-semibold mb-1 text-[#3f4941]">{title}</h2>
-                <p className={`text-2xl font-bold ${valueColor}`}>{value}</p>
             </div>
-        </>
-    )
-}
+            <div>
+                <p className={`text-2xl sm:text-3xl font-black tracking-tight ${valueColor}`}>
+                    {value}
+                </p>
+            </div>
+        </div>
+    );
+};
 
-export default Cards
+export default Cards;

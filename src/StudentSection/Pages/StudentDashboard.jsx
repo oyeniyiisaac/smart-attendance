@@ -115,48 +115,51 @@ const StudentDashboard = () => {
 
         navigator.geolocation.getCurrentPosition(
             (position) => {
-                const { latitude, longitude } = position.coords
+                const { latitude, longitude } = position.coords;
                 sendToServer({
-                    courseCode: selectedSession.courseCode,
+                    sessionId: selectedSession?._id,
+                    courseCode: selectedSession?.courseCode,
                     verificationMethodChosen: 'gps',
                     studentLatitude: latitude,
                     studentLongitude: longitude
-                })
+                });
             },
             (error) => {
-                console.error(error)
-                toast.error('Unable to retrieve location. Check device settings permissions.')
-                setVerifying(false)
+                console.error(error);
+                toast.error('Unable to retrieve location. Check device settings permissions.');
+                setVerifying(false);
             },
             { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-        )
-    }
+        );
+    };
 
     const handleWifiLookup = () => {
-        setVerifying(true)
-        toast.info('Scanning connected network configurations...')
+        setVerifying(true);
+        toast.info('Scanning connected network configurations...');
 
         sendToServer({
-            courseCode: selectedSession.courseCode,
+            sessionId: selectedSession?._id,
+            courseCode: selectedSession?.courseCode,
             verificationMethodChosen: 'wifi',
             studentLatitude: 0,
             studentLongitude: 0,
             scannedBssid: "54:1F:8D:2B:86:87"
-        })
-    }
+        });
+    };
 
     const handleBeaconLookup = () => {
-        setVerifying(true)
-        toast.info('Searching for local Bluetooth transmitter pulses...')
+        setVerifying(true);
+        toast.info('Searching for local Bluetooth transmitter pulses...');
 
         sendToServer({
-            courseCode: selectedSession.courseCode,
+            sessionId: selectedSession?._id,
+            courseCode: selectedSession?.courseCode,
             verificationMethodChosen: 'beacon',
             studentLatitude: 0,
             studentLongitude: 0,
             scannedUuid: "12345678-abcd-1234-abcd-123456789abc"
-        })
-    }
+        });
+    };
 
     const sendToServer = async (payloadData) => {
         try {
