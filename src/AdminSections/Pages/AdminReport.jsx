@@ -1,6 +1,7 @@
-import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../../Utils/api';
+
 const isTokenValid = (token) => {
     if (!token || typeof token !== 'string') return false;
 
@@ -23,13 +24,14 @@ const isTokenValid = (token) => {
 };
 
 const Reports = () => {
-    // 🟢 UPDATED: Changed default states to match your actual database values
     const [students, setStudents] = useState([]);
+    const [courses, setCourses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedCourse, setSelectedCourse] = useState('CSC400'); // Changed from 'CS101'
-    const [selectedSemester, setSelectedSemester] = useState('Second Semester'); // Changed from 'Fall 2023'
-    const navigate = useNavigate()
+    const [selectedCourse, setSelectedCourse] = useState('');
+    const [selectedSemester, setSelectedSemester] = useState('Second Semester');
+    const navigate = useNavigate();
+
     useEffect(() => {
         const token = localStorage.getItem("adminToken");
         if (!isTokenValid(token)) {
@@ -38,26 +40,30 @@ const Reports = () => {
         }
     }, [navigate]);
 
+    // Fetch Available Courses Dynamically
+    useEffect(() => {
+        api.get('/admin/courses')
+            .then((res) => {
+                if (res.data.success && Array.isArray(res.data.courses)) {
+                    setCourses(res.data.courses);
+                    if (res.data.courses.length > 0) {
+                        setSelectedCourse(res.data.courses[0].courseCode);
+                    }
+                }
+            })
+            .catch((err) => {
+                console.error("Failed to load course list:", err);
+            });
+    }, []);
+
     // Fetch reports dynamically from backend API
     useEffect(() => {
+        if (!selectedCourse) return;
+
         const fetchReport = async () => {
             setLoading(true);
             try {
-                const token = localStorage.getItem("adminToken");
-                if (!token || !isTokenValid(token)) {
-                    localStorage.removeItem("adminToken");
-                    navigate('/signin');
-                    return;
-                }
-                // console.log("Fetching report for:", { selectedCourse, selectedSemester });
-
-                const res = await axios.get(
-                    `https://smart-backend-1-q3fb.onrender.com/admin/reports?courseCode=${selectedCourse}&semester=${selectedSemester}`,
-                    { headers: { Authorization: `Bearer ${token}` } }
-                );
-
-                // console.log("RAW BACKEND RESPONSE:", res.data);
-
+                const res = await api.get(`/admin/reports?courseCode=${selectedCourse}&semester=${selectedSemester}`);
                 setStudents(res.data.students || res.data.data || []);
             } catch (err) {
                 console.error("Failed to load reports:", err);
@@ -79,6 +85,32 @@ const Reports = () => {
         );
     });
 
+    const handleExportCSV = () => {
+        if (filteredStudents.length === 0) return;
+        const headers = ["Student Name", "Matric Number", "Total Classes", "Attended", "Attendance %", "Eligibility Status"];
+        const rows = filteredStudents.map(s => [
+            `"${s.name || ''}"`,
+            `"${s.matric || ''}"`,
+            s.totalClasses || 0,
+            s.attended || 0,
+            `${s.percentage || 0}%`,
+            s.isEligible ? "Eligible" : "At Risk"
+        ]);
+
+        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `Attendance_Report_${selectedCourse}_${selectedSemester.replace(/\s+/g, '_')}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    const handleExportPDF = () => {
+        window.print();
+    };
+
     return (
         <div className="min-h-screen bg-[#f8faf8] p-6 lg:p-8 font-sans text-[#1a1c1a]">
             {/* ── Page Header ─────────────────────────────────────── */}
@@ -99,8 +131,15 @@ const Reports = () => {
                             onChange={(e) => setSelectedCourse(e.target.value)}
                             className="w-full border border-gray-300 rounded-xl px-3.5 py-2.5 text-sm outline-none focus:border-[#0a643a] focus:ring-1 focus:ring-[#0a643a] bg-white transition-all cursor-pointer font-medium text-gray-700"
                         >
-                            <option value="CSC400">CSC400 - Computer Science</option>
-                            <option value="INS202">INS202 - Information Systems</option>
+                            {courses.length === 0 ? (
+                                <option value="">No Courses Found</option>
+                            ) : (
+                                courses.map((c) => (
+                                    <option key={c._id} value={c.courseCode}>
+                                        {c.courseCode} - {c.courseTitle}
+                                    </option>
+                                ))
+                            )}
                         </select>
                     </div>
 
@@ -147,11 +186,17 @@ const Reports = () => {
                 </p>
 
                 <div className="flex items-center gap-3">
-                    <button className="flex items-center gap-1.5 border border-gray-300 bg-white text-[#0a643a] font-semibold text-xs px-4 py-2 rounded-xl shadow-sm hover:bg-gray-50 transition-colors cursor-pointer">
+                    <button
+                        onClick={handleExportCSV}
+                        className="flex items-center gap-1.5 border border-gray-300 bg-white text-[#0a643a] font-semibold text-xs px-4 py-2 rounded-xl shadow-sm hover:bg-gray-50 transition-colors cursor-pointer"
+                    >
                         <span className="material-symbols-outlined text-base">download</span>
                         Export CSV
                     </button>
-                    <button className="flex items-center gap-1.5 border border-gray-300 bg-white text-[#0a643a] font-semibold text-xs px-4 py-2 rounded-xl shadow-sm hover:bg-gray-50 transition-colors cursor-pointer">
+                    <button
+                        onClick={handleExportPDF}
+                        className="flex items-center gap-1.5 border border-gray-300 bg-white text-[#0a643a] font-semibold text-xs px-4 py-2 rounded-xl shadow-sm hover:bg-gray-50 transition-colors cursor-pointer"
+                    >
                         <span className="material-symbols-outlined text-base">picture_as_pdf</span>
                         Export PDF
                     </button>

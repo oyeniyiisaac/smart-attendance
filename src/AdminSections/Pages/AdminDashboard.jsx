@@ -27,6 +27,8 @@ const isTokenValid = (token) => {
     }
 };
 
+import api from '../../Utils/api';
+
 const AdminDashboard = () => {
     const [generating, setGenerating] = useState(false);
     const [revoking, setRevoking] = useState(false);
@@ -37,6 +39,14 @@ const AdminDashboard = () => {
 
     const [sessions, setSessions] = useState([]);
     const [loadingSessions, setLoadingSessions] = useState(true);
+
+    const [stats, setStats] = useState({
+        totalStudents: 0,
+        presentToday: 0,
+        absentToday: 0,
+        flaggedLowAttendance: 0
+    });
+    const [loadingStats, setLoadingStats] = useState(true);
 
     // Toggle state to swap between Overview dashboard and Full-Screen Session lists
     const [viewAll, setViewAll] = useState(false);
@@ -131,7 +141,26 @@ const AdminDashboard = () => {
 
     }, [sessionURI, handleUnauthorized]);
 
-    // 4. Clock Tracker Lifecycle Hook
+    // 4. Fetch Dashboard Stat Cards Metrics
+    useEffect(() => {
+        const currentToken = localStorage.getItem('adminToken');
+        if (!isTokenValid(currentToken)) return;
+
+        api.get('/admin/dashboard-stats')
+            .then((res) => {
+                if (res.data.success && res.data.stats) {
+                    setStats(res.data.stats);
+                }
+            })
+            .catch((err) => {
+                console.error("Failed to fetch dashboard stats:", err);
+            })
+            .finally(() => {
+                setLoadingStats(false);
+            });
+    }, []);
+
+    // 5. Clock Tracker Lifecycle Hook
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 30000);
         return () => clearInterval(timer);
@@ -225,10 +254,10 @@ const AdminDashboard = () => {
 
             {/* ── Stat Cards ──────────────────────────────── */}
             <div className="flex flex-wrap md:flex-nowrap justify-center items-center gap-4 mb-6">
-                <Cards icon="person" title="Total Students" value="150" bgColor="bg-[#e8f0ec]" textColor="text-[#0a634a]" valueColor="text-[#0a634a]" />
-                <Cards icon="person_check" title="Present Today" value="120" bgColor="bg-[#baeed9]" textColor="text-[#0a634a]" valueColor="text-[#0a634a]" />
-                <Cards icon="person_remove" title="Absent Today" value="30" bgColor="bg-[#ffdad6]" textColor="text-[#ba1a1a]" valueColor="text-[#ba1a1a]" />
-                <Cards icon="warning" title="Flagged < 70%" value="15" bgColor="bg-[#e2e3e3]" textColor="text-[#535856]" valueColor="text-[#535856]" />
+                <Cards icon="person" title="Total Students" value={loadingStats ? "..." : String(stats.totalStudents)} bgColor="bg-[#e8f0ec]" textColor="text-[#0a634a]" valueColor="text-[#0a634a]" />
+                <Cards icon="person_check" title="Present Today" value={loadingStats ? "..." : String(stats.presentToday)} bgColor="bg-[#baeed9]" textColor="text-[#0a634a]" valueColor="text-[#0a634a]" />
+                <Cards icon="person_remove" title="Absent Today" value={loadingStats ? "..." : String(stats.absentToday)} bgColor="bg-[#ffdad6]" textColor="text-[#ba1a1a]" valueColor="text-[#ba1a1a]" />
+                <Cards icon="warning" title="Flagged < 70%" value={loadingStats ? "..." : String(stats.flaggedLowAttendance)} bgColor="bg-[#e2e3e3]" textColor="text-[#535856]" valueColor="text-[#535856]" />
             </div>
 
             {/* ── Today's Sessions ────────────────────────── */}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../Utils/api';
 
 const CourseManagement = () => {
     const [courses, setCourses] = useState([]);
@@ -20,16 +20,12 @@ const CourseManagement = () => {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
-    // const coursesApiUrl = import.meta.env.VITE_COURSES_URL || '/api/courses';
-    const token = localStorage.getItem('adminToken');
-
     // Fetch Courses
     const fetchCourses = async () => {
         setLoading(true);
         try {
-            const res = await axios.get("https://smart-backend-1-q3fb.onrender.com/admin/courses", {
-                params: { search: searchQuery, semester: semesterFilter },
-                headers: { Authorization: `Bearer ${token}` }
+            const res = await api.get('/admin/courses', {
+                params: { search: searchQuery, semester: semesterFilter }
             });
             if (res.data.success) {
                 setCourses(res.data.courses);
@@ -53,30 +49,29 @@ const CourseManagement = () => {
         e.preventDefault();
         setError('');
         setSuccess('');
+        setFormLoading(true);
 
-        const token = localStorage.getItem('adminToken');
         try {
-
-            // Include default/fallback faculty and department if needed
             const payload = {
                 ...formData,
                 faculty: formData.faculty,
                 department: formData.department
             };
 
-            const res = await axios.post('https://smart-backend-1-q3fb.onrender.com/admin/create-course', payload, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
+            const res = await api.post('/admin/create-course', payload);
 
             if (res.data.success) {
                 setSuccess('Course added successfully!');
                 fetchCourses();
-                setTimeout(() => setIsAddModalOpen(false), 1200);
+                setTimeout(() => {
+                    setIsAddModalOpen(false);
+                    setSuccess('');
+                }, 1200);
             }
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to add course.');
+        } finally {
+            setFormLoading(false);
         }
     };
 
@@ -85,9 +80,7 @@ const CourseManagement = () => {
         if (!window.confirm('Are you sure you want to delete this course?')) return;
 
         try {
-            await axios.delete(`https://smart-backend-1-q3fb.onrender.com/admin/delete-course/${courseId}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await api.delete(`/admin/delete-course/${courseId}`);
             fetchCourses();
         } catch (err) {
             alert(err.response?.data?.message || 'Failed to delete course.');
