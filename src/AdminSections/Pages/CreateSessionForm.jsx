@@ -221,6 +221,38 @@ const FACULTIES_DATA = {
 
   const navigate = useNavigate();
 
+  const [coursesList, setCoursesList] = useState([]);
+  const [selectedCourseId, setSelectedCourseId] = useState("");
+
+  // Fetch created courses from backend for selection
+  useEffect(() => {
+    api.get("/admin/courses")
+      .then((res) => {
+        if (res.data && res.data.courses) {
+          setCoursesList(res.data.courses);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load courses for selection:", err);
+      });
+  }, []);
+
+  const handleCourseSelect = (e) => {
+    const courseId = e.target.value;
+    setSelectedCourseId(courseId);
+
+    const found = coursesList.find((c) => c._id === courseId);
+    if (found) {
+      setFormData((prev) => ({
+        ...prev,
+        courseName: found.courseTitle,
+        courseCode: found.courseCode,
+        courseId: found._id,
+        semester: found.semester || prev.semester,
+      }));
+    }
+  };
+
   // Validate admin token on mount
   useEffect(() => {
     const token = localStorage.getItem("adminToken");
@@ -313,6 +345,41 @@ const FACULTIES_DATA = {
         {/* SECTION 1: Course Information */}
         <FormSection title="Course Information">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+            {/* 🎯 Quick Course Selector from Course Management */}
+            <div className="col-span-1 md:col-span-2 bg-[#f0f4f1] p-3.5 rounded-xl border border-[#baeed9]">
+              <label className="block text-xs font-bold text-[#0a643a] mb-1.5 flex items-center justify-between">
+                <span>Select Departmental Course Offering</span>
+                <span className="text-[10px] text-[#0a643a] bg-[#baeed9] px-2 py-0.5 rounded-full font-bold">
+                  {coursesList.length} Created Courses
+                </span>
+              </label>
+              <select
+                value={selectedCourseId}
+                onChange={handleCourseSelect}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#0a643a] bg-white text-slate-800 font-semibold shadow-sm outline-none"
+              >
+                <option value="">-- Choose a course created in Course Management --</option>
+                {coursesList
+                  .filter((c) => {
+                    if (formData.department && c.department) {
+                      if (c.department.toLowerCase() !== formData.department.toLowerCase()) return false;
+                    }
+                    if (formData.academicLevel) {
+                      const levelDigit = formData.academicLevel.replace(/[^0-9]/g, "")[0];
+                      const codeDigits = (c.courseCode || "").replace(/[^0-9]/g, "");
+                      if (levelDigit && codeDigits && !codeDigits.startsWith(levelDigit)) return false;
+                    }
+                    return true;
+                  })
+                  .map((courseItem) => (
+                    <option key={courseItem._id} value={courseItem._id}>
+                      {courseItem.courseCode} — {courseItem.courseTitle} ({courseItem.semester})
+                    </option>
+                  ))}
+              </select>
+            </div>
+
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-2">Course Name</label>
               <input

@@ -63,9 +63,11 @@ const SignUp = () => {
         initialValues: {
             fullName: "",
             email: "",
-            password: "",
+            role: "admin",
             faculty: "",
             department: "",
+            level: "100L",
+            password: "",
             confirmPassword: "",
             verifyToken: "",
         },
@@ -94,8 +96,13 @@ const SignUp = () => {
         validationSchema: yup.object({
             fullName: yup.string().required('This field is required').trim(),
             email: yup.string().required('This field is required').email('Invalid email').trim(),
+            role: yup.string().required('Role is required'),
             faculty: yup.string().required('This field is required').trim(),
-            department: yup.string().required('This field is required').trim(),
+            department: yup.string().when('role', {
+                is: (val) => val !== 'super_admin',
+                then: yup.string().required('This field is required').trim(),
+                otherwise: yup.string().notRequired(),
+            }),
             password: yup.string().required('This field is required').min(6, 'Min of 6 characters'),
             confirmPassword: yup.string().required('This field is required').min(6, 'Min of 6 characters').oneOf([yup.ref('password'), null], 'Passwords must match'),
             verifyToken: yup.string().required('Verify token is required'),
@@ -345,6 +352,28 @@ const SignUp = () => {
                             <label className='text-[#3f4941] text-lg'>Full Name</label>
                             <input className="w-full border border-outline p-3 my-3 rounded-lg focus:ring-0.5 focus:ring-[#0a643a] focus:ring-opacity-10 focus:border-[#0a643a] outline-none transition-all font-body-md text-body-md" name="fullName" placeholder="John Doe" type="text" onChange={adminformik.handleChange} value={adminformik.values.fullName} onBlur={adminformik.handleBlur} />
                             <small className='block mb-3 text-[#ba1a1a] font-semibold'>{adminformik.touched.fullName && adminformik.errors.fullName}</small>
+
+                            <div className="mb-3">
+                                <label className='text-[#3f4941] text-lg'>Role / Designation</label>
+                                <select name="role" className='w-full border border-outline p-3 bg-[#f0f4f1] rounded-lg focus:ring-0.5 focus:ring-[#0a643a] focus:ring-opacity-10 focus:border-[#0a643a] outline-none transition-all font-body-md text-body-md' onChange={adminformik.handleChange} value={adminformik.values.role} onBlur={adminformik.handleBlur}>
+                                    <option value="admin">Department Admin / Lecturer</option>
+                                    <option value="super_admin">Faculty Super Admin</option>
+                                    <option value="course_rep">Course Representative</option>
+                                </select>
+                            </div>
+
+                            {adminformik.values.role === 'course_rep' && (
+                                <div className="mb-3">
+                                    <label className='text-[#3f4941] text-lg'>Academic Level</label>
+                                    <select name="level" className='w-full border border-outline p-3 bg-[#f0f4f1] rounded-lg focus:ring-0.5 focus:ring-[#0a643a] focus:ring-opacity-10 focus:border-[#0a643a] outline-none transition-all font-body-md text-body-md' onChange={adminformik.handleChange} value={adminformik.values.level} onBlur={adminformik.handleBlur}>
+                                        <option value="100L">100 Level</option>
+                                        <option value="200L">200 Level</option>
+                                        <option value="300L">300 Level</option>
+                                        <option value="400L">400 Level</option>
+                                        <option value="500L">500 Level</option>
+                                    </select>
+                                </div>
+                            )}
 
                             <label className='text-[#3f4941] text-lg'>Institution Email</label>
                             <input className="w-full border border-outline p-3 mt-2 rounded-lg focus:ring-0.5 focus:ring-[#0a643a] focus:ring-opacity-10 focus:border-[#0a643a] outline-none transition-all font-body-md text-body-md" name="email" placeholder="john.doe@university.edu" type="email" onChange={adminformik.handleChange} value={adminformik.values.email} onBlur={adminformik.handleBlur} />
