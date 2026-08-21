@@ -1,6 +1,6 @@
-import axios from 'axios';
+import api from '../../Utils/api';
 import { useState } from 'react';
-import { data, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button, Modal, ModalBody, ModalHeader } from "flowbite-react";
 import { HiOutlineExclamationCircle } from "react-icons/hi";
 
@@ -27,11 +27,6 @@ export default function StudentProfileSettings() {
 
 
     const handleImageChange = async (e) => {
-        const token = localStorage.getItem('token')
-        if (!token) {
-            console.log('invalid or expired token')
-            return
-        }
         const file = e.target.files[0]
         if (!file) return;
 
@@ -43,12 +38,7 @@ export default function StudentProfileSettings() {
             setProfileImg(base64Image)
             setUploading(true)
             try {
-                const response = await axios.post('https://smart-backend-1-q3fb.onrender.com/upload-profile-picture', { image: base64Image }, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`, // Your JWT Token
-                    }
-                });
+                const response = await api.post('/upload-profile-picture', { image: base64Image });
                 console.log(response.data)
                 const data = response.data
                 if (data.success) {

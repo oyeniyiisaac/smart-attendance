@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from '../../Utils/api';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -21,20 +21,9 @@ const SessionCard = ({
     const closeSession = async (sessionId) => {
     try {
         setLoading(true);
-        const token = localStorage.getItem('adminToken');
-
-        // Make sure sessionId is a string, not the full session object!
         const idString = typeof sessionId === 'object' ? sessionId._id : sessionId;
 
-        const response = await axios.post(
-            `https://smart-backend-1-q3fb.onrender.com/admin/end-session/${idString}`,
-            {},
-            {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            }
-        );
+        const response = await api.post(`/admin/end-session/${idString}`, {});
 
         if (response.data && response.data.success) {
             alert(response.data.message || "Session closed successfully!");

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../Utils/api';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -39,12 +39,8 @@ export default function StudentCourseRegistration() {
 
             // 1. Fetch available courses and existing user registrations concurrently
             const [coursesRes, myRegsRes] = await Promise.all([
-                axios.get('https://smart-backend-1-q3fb.onrender.com/courses', {
-                    headers: { Authorization: `Bearer ${token}` }
-                }),
-                axios.get('https://smart-backend-1-q3fb.onrender.com/my-courses', {
-                    headers: { Authorization: `Bearer ${token}` }
-                }).catch(() => ({ data: { data: [] } })) // Fallback if no registrations exist yet
+                api.get('/courses'),
+                api.get('/my-courses').catch(() => ({ data: { data: [] } })) // Fallback if no registrations exist yet
             ]);
 
             const courseData = coursesRes.data.courses || coursesRes.data || [];
@@ -129,15 +125,9 @@ export default function StudentCourseRegistration() {
                 })),
             };
 
-            const response = await axios.post(
-                'https://smart-backend-1-q3fb.onrender.com/submit-course-registration',
-                payload,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        'Content-Type': 'application/json',
-                    },
-                }
+            const response = await api.post(
+                '/submit-course-registration',
+                payload
             );
 
             console.log('Registration Success:', response.data);

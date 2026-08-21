@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import axios from "axios";
+import api from "../../Utils/api";
 import AttendanceTable from "../Components/AttendanceTable";
-// import { search } from '../../../../smart_backend/routes/student.route'
 
 const AttendanceHistory = () => {
     const iconStyle = {
@@ -16,23 +15,17 @@ const AttendanceHistory = () => {
     const [selectedSemester, setSelectedSemester] = useState("Rain 2025/2026");
     const [page, setPage] = useState(1);
 
-    const token = localStorage.getItem("token");
-
     const fetchStudentAttendance = useCallback(
         async (pageNumber = 1) => {
-            if (!token) return;
             setLoading(true);
             try {
-                const response = await axios.get(
-                    "https://smart-backend-1-q3fb.onrender.com/my-attendance",
+                const response = await api.get(
+                    "/my-attendance",
                     {
                         params: {
                             page: pageNumber,
                             limit: 5,
                             ...(selectedCourse ? { courseCode: selectedCourse } : {}),
-                        },
-                        headers: {
-                            Authorization: `Bearer ${token}`,
                         },
                     },
                 );

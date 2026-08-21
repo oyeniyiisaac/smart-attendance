@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../Utils/api';
 import { useNavigate } from 'react-router-dom';
 import NavBarTop from '../Components/NavBarTop';
 import Navbar from '../Components/Navbar';
@@ -13,24 +13,8 @@ export default function EnrolCourses() {
     useEffect(() => {
         const fetchCourses = async () => {
             try {
-                // 1. Get student token from local storage
-                const token = localStorage.getItem('studentToken') || localStorage.getItem('token');
-
-                if (!token) {
-                    setError('Authentication token missing. Please log in again.');
-                    setLoading(false);
-                    return;
-                }
-
-                // 2. Fetch registered courses from your backend
-                const response = await axios.get(
-                    'https://smart-backend-1-q3fb.onrender.com/get-student-registrations',
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }
-                );
+                // Fetch registered courses from backend
+                const response = await api.get('/get-student-registrations');
 
                 // Assuming response.data.data returns the array of registration records
                 setRegistrations(response.data.data || []);

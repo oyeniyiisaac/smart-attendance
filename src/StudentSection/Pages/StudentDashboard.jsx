@@ -1,5 +1,5 @@
-import axios from 'axios'
-import  { useState, useEffect } from 'react'
+import api from '../../Utils/api'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -20,25 +20,12 @@ const StudentDashboard = () => {
     const [chosenMethod, setChosenMethod] = useState('')
     const [verifying, setVerifying] = useState(false)
 
-    const token = localStorage.getItem('token')
-    const endpoint = import.meta.env.VITE_ENDPOINT
     const navigate = useNavigate()
 
     const fetchDashboardData = () => {
-        if (!token) {
-            navigate('/signin')
-            return
-        }
-
         setLoading(true)
 
-        axios.get(endpoint, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-            },
-        })
+        api.get('/dashboard')
             .then((response) => {
                 if (response.status === 200 || response.status === 201) {
                     const data = response.data.result
@@ -47,12 +34,8 @@ const StudentDashboard = () => {
                     setFaculty(data.faculty || '')
                     setDepartment(data.department || '')
 
-                    return axios.get("https://smart-backend-1-q3fb.onrender.com/active-sessions", {
-                        headers: {
-                            Authorization: `Bearer ${token}`
-                        }
-                    })
-                }else{
+                    return api.get('/active-sessions')
+                } else {
                     navigate('/signin')
                 }
             })
@@ -156,19 +139,7 @@ const StudentDashboard = () => {
     const sendToServer = async (payloadData) => {
         try {
             setVerifying(true);
-            const token = localStorage.getItem('token');
-
-            if (!token) {
-                toast.error("No login token found. Please log out and sign back in.");
-                return;
-            }
-
-            const response = await axios.post("https://smart-backend-1-q3fb.onrender.com/verify-attendance", payloadData, {
-                headers: {
-                    'Authorization': 'Bearer ' + token,
-                    'Content-Type': 'application/json'
-                }
-            });
+            const response = await api.post('/verify-attendance', payloadData);
 
             if (response.data.verified) {
                 toast.success(response.data.message || "Attendance marked successfully! 🎉");
