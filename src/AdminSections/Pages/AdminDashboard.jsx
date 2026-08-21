@@ -236,6 +236,17 @@ const AdminDashboard = () => {
         }
     };
 
+    const userRole = (() => {
+        try {
+            const token = localStorage.getItem('adminToken');
+            if (!token) return 'admin';
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            return payload.role || 'admin';
+        } catch {
+            return 'admin';
+        }
+    })();
+
     // Render Full-Screen Sessions View when viewAll is enabled
     if (viewAll) {
         return (
@@ -248,7 +259,12 @@ const AdminDashboard = () => {
 
             {/* ── Page Header ─────────────────────────────── */}
             <div className="mb-4">
-                <h1 className="text-2xl font-bold text-[#1a1c1a]">Overview</h1>
+                <div className="flex items-center gap-2">
+                    <h1 className="text-2xl font-bold text-[#1a1c1a]">Overview</h1>
+                    <span className="bg-[#baeed9] text-[#0a643a] text-xs font-semibold px-2.5 py-1 rounded-full uppercase tracking-wider">
+                        {userRole === 'super_admin' ? 'Faculty Super Admin' : userRole === 'course_rep' ? 'Course Rep' : 'Department Admin'}
+                    </span>
+                </div>
                 <p className="text-[#3f4941] text-sm">Live metrics for today's attendance</p>
             </div>
 
@@ -323,109 +339,111 @@ const AdminDashboard = () => {
             )}
 
             {/* ── Invite Admin Panel ──────────────────────── */}
-            <div className="border border-gray-200 rounded-2xl bg-white shadow-sm overflow-hidden">
-                <div className="bg-[#f0f4f1] px-6 py-4 flex items-center gap-3 border-b border-gray-200">
-                    <span className="material-symbols-outlined text-[#0a643a] text-3xl">
-                        person_add
-                    </span>
-                    <div>
-                        <h2 className="font-bold text-[#1a1c1a] text-lg">Invite New Admin</h2>
-                        <p className="text-[#3f4941] text-sm">
-                            Generate a one-time invite token and share it with the new admin.
-                            They must use it before it expires.
-                        </p>
-                    </div>
-                </div>
-
-                <div className="px-6 py-6">
-                    <div className="flex flex-wrap items-end gap-4 mb-5">
+            {userRole !== 'course_rep' && (
+                <div className="border border-gray-200 rounded-2xl bg-white shadow-sm overflow-hidden">
+                    <div className="bg-[#f0f4f1] px-6 py-4 flex items-center gap-3 border-b border-gray-200">
+                        <span className="material-symbols-outlined text-[#0a643a] text-3xl">
+                            person_add
+                        </span>
                         <div>
-                            <label className="block text-sm font-medium text-[#3f4941] mb-1">
-                                Token valid for
-                            </label>
-                            <select
-                                value={hours}
-                                onChange={(e) => setHours(Number(e.target.value))}
-                                className="border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0a643a] transition-colors bg-white"
-                            >
-                                <option value={1}>1 hour</option>
-                                <option value={6}>6 hours</option>
-                                <option value={12}>12 hours</option>
-                                <option value={24}>24 hours</option>
-                                <option value={48}>48 hours</option>
-                            </select>
-                        </div>
-
-                        <button
-                            onClick={handleGenerateToken}
-                            disabled={generating}
-                            className="flex items-center gap-2 bg-[#0a643a] text-white px-5 py-2 rounded-lg font-semibold text-sm disabled:opacity-60 disabled:cursor-not-allowed transition-opacity cursor-pointer"
-                        >
-                            <span className="material-symbols-outlined text-base">token</span>
-                            {generating ? 'Generating...' : 'Generate Invite Token'}
-                        </button>
-                    </div>
-
-                    {error && (
-                        <div className="flex items-center gap-2 bg-[#fdecea] border border-[#ba1a1a] text-[#ba1a1a] rounded-lg px-4 py-3 text-sm mb-4">
-                            <span className="material-symbols-outlined text-base">error</span>
-                            {error}
-                        </div>
-                    )}
-
-                    {invite && (
-                        <div className={`border w-[100%] rounded-xl p-5 transition-colors ${invite.revoked ? 'bg-[#fff4f4] border-[#ba1a1a]' : 'bg-[#f0f4f1] border-[#baeed9]'}`}>
-                            <div className="flex items-center justify-between mb-2">
-                                <span className={`text-sm font-semibold flex items-center gap-1 ${invite.revoked ? 'text-[#ba1a1a]' : 'text-[#0a643a]'}`}>
-                                    <span className="material-symbols-outlined text-base">
-                                        {invite.revoked ? 'cancel' : 'check_circle'}
-                                    </span>
-                                    {invite.revoked ? 'Token revoked — it can no longer be used' : 'Token generated — share this with the new admin'}
-                                </span>
-                                <span className="text-xs text-[#535856] bg-[#e2e3e3] px-2 py-1 lg:rounded-full rounded-lg ml-auto">
-                                    Expires: {invite.expiresAt}
-                                </span>
-                            </div>
-
-                            <div className="lg:flex items-center w-[100%] gap-2 mt-3 bg-white border border-gray-200 rounded-lg px-4 py-3">
-                                <code className={`flex-1 text-sm break-all font-mono ${invite.revoked ? 'line-through text-[#9e9e9e]' : 'text-[#1a1c1a]'}`}>
-                                    {invite.token}
-                                </code>
-                                <div className="mt-2 lg:mt-0 flex items-center gap-2">
-                                    {!invite.revoked && (
-                                        <button
-                                            onClick={handleCopy}
-                                            title="Copy token"
-                                            className="flex items-center gap-1 text-sm text-[#0a643a] font-semibold border border-[#0a643a] px-3 py-1 rounded-lg hover:bg-[#baeed9] transition-colors whitespace-nowrap cursor-pointer"
-                                        >
-                                            <span className="material-symbols-outlined text-base">
-                                                {copied ? 'check' : 'content_copy'}
-                                            </span>
-                                            {copied ? 'Copied!' : 'Copy'}
-                                        </button>
-                                    )}
-                                    {!invite.revoked && (
-                                        <button
-                                            onClick={handleRevoke}
-                                            disabled={revoking}
-                                            title="Revoke token"
-                                            className="flex items-center gap-1 text-sm text-[#ba1a1a] font-semibold border border-[#ba1a1a] px-3 py-1 rounded-lg hover:bg-[#fdecea] disabled:opacity-60 disabled:cursor-not-allowed transition-colors whitespace-nowrap cursor-pointer"
-                                        >
-                                            <span className="material-symbols-outlined text-base">block</span>
-                                            {revoking ? 'Revoking...' : 'Revoke'}
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-
-                            <p className="text-xs text-[#535856] mt-3 flex items-center gap-1">
-                                <span className="material-symbols-outlined text-sm">info</span>
-                                This token is single-use and expires automatically. Generate a new one if needed.
+                            <h2 className="font-bold text-[#1a1c1a] text-lg">Invite New Admin / Course Rep</h2>
+                            <p className="text-[#3f4941] text-sm">
+                                Generate a one-time invite token and share it with the new admin or course rep.
+                                They must use it before it expires.
                             </p>
                         </div>
-                    )}
+                    </div>
+
+                    <div className="px-6 py-6">
+                        <div className="flex flex-wrap items-end gap-4 mb-5">
+                            <div>
+                                <label className="block text-sm font-medium text-[#3f4941] mb-1">
+                                    Token valid for
+                                </label>
+                                <select
+                                    value={hours}
+                                    onChange={(e) => setHours(Number(e.target.value))}
+                                    className="border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#0a643a] transition-colors bg-white"
+                                >
+                                    <option value={1}>1 hour</option>
+                                    <option value={6}>6 hours</option>
+                                    <option value={12}>12 hours</option>
+                                    <option value={24}>24 hours</option>
+                                    <option value={48}>48 hours</option>
+                                </select>
+                            </div>
+
+                            <button
+                                onClick={handleGenerateToken}
+                                disabled={generating}
+                                className="flex items-center gap-2 bg-[#0a643a] text-white px-5 py-2 rounded-lg font-semibold text-sm disabled:opacity-60 disabled:cursor-not-allowed transition-opacity cursor-pointer"
+                            >
+                                <span className="material-symbols-outlined text-base">token</span>
+                                {generating ? 'Generating...' : 'Generate Invite Token'}
+                            </button>
+                        </div>
+
+                        {error && (
+                            <div className="flex items-center gap-2 bg-[#fdecea] border border-[#ba1a1a] text-[#ba1a1a] rounded-lg px-4 py-3 text-sm mb-4">
+                                <span className="material-symbols-outlined text-base">error</span>
+                                {error}
+                            </div>
+                        )}
+
+                        {invite && (
+                            <div className={`border w-[100%] rounded-xl p-5 transition-colors ${invite.revoked ? 'bg-[#fff4f4] border-[#ba1a1a]' : 'bg-[#f0f4f1] border-[#baeed9]'}`}>
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className={`text-sm font-semibold flex items-center gap-1 ${invite.revoked ? 'text-[#ba1a1a]' : 'text-[#0a643a]'}`}>
+                                        <span className="material-symbols-outlined text-base">
+                                            {invite.revoked ? 'cancel' : 'check_circle'}
+                                        </span>
+                                        {invite.revoked ? 'Token revoked — it can no longer be used' : 'Token generated — share this with the user'}
+                                    </span>
+                                    <span className="text-xs text-[#535856] bg-[#e2e3e3] px-2 py-1 lg:rounded-full rounded-lg ml-auto">
+                                        Expires: {invite.expiresAt}
+                                    </span>
+                                </div>
+
+                                <div className="lg:flex items-center w-[100%] gap-2 mt-3 bg-white border border-gray-200 rounded-lg px-4 py-3">
+                                    <code className={`flex-1 text-sm break-all font-mono ${invite.revoked ? 'line-through text-[#9e9e9e]' : 'text-[#1a1c1a]'}`}>
+                                        {invite.token}
+                                    </code>
+                                    <div className="mt-2 lg:mt-0 flex items-center gap-2">
+                                        {!invite.revoked && (
+                                            <button
+                                                onClick={handleCopy}
+                                                title="Copy token"
+                                                className="flex items-center gap-1 text-sm text-[#0a643a] font-semibold border border-[#0a643a] px-3 py-1 rounded-lg hover:bg-[#baeed9] transition-colors whitespace-nowrap cursor-pointer"
+                                            >
+                                                <span className="material-symbols-outlined text-base">
+                                                    {copied ? 'check' : 'content_copy'}
+                                                </span>
+                                                {copied ? 'Copied!' : 'Copy'}
+                                            </button>
+                                        )}
+                                        {!invite.revoked && (
+                                            <button
+                                                onClick={handleRevoke}
+                                                disabled={revoking}
+                                                title="Revoke token"
+                                                className="flex items-center gap-1 text-sm text-[#ba1a1a] font-semibold border border-[#ba1a1a] px-3 py-1 rounded-lg hover:bg-[#fdecea] disabled:opacity-60 disabled:cursor-not-allowed transition-colors whitespace-nowrap cursor-pointer"
+                                            >
+                                                <span className="material-symbols-outlined text-base">block</span>
+                                                {revoking ? 'Revoking...' : 'Revoke'}
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <p className="text-xs text-[#535856] mt-3 flex items-center gap-1">
+                                    <span className="material-symbols-outlined text-sm">info</span>
+                                    This token is single-use and expires automatically. Generate a new one if needed.
+                                </p>
+                            </div>
+                        )}
+                    </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 };

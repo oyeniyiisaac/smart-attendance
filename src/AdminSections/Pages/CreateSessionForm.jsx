@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import FormSection from "./FormSection";
-import axios from "axios";
+import api from "../../Utils/api";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 
-const sessionURI = import.meta.env.VITE_SESSION_URL;
+export default function CreateSessionForm() {
 
 // 🏫 Dynamic Scale Mapping: 13 Faculties & 100+ Departments
 // Add or adjust these names to match your exact institutional database naming conventions!
@@ -266,14 +266,8 @@ export default function CreateSessionForm() {
       beaconUuid: formData.useBeaconVerification ? formData.beaconUuid : null,
     };
 
-    axios
-      .post(sessionURI, payload, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-      })
+    api
+      .post('/admin/createsession', payload)
       .then((res) => {
         toast.success(res.data.message || "Session created successfully! 🚀");
         setFormData(initialFormState());

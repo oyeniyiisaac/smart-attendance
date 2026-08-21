@@ -20,6 +20,7 @@ const SignUp = () => {
             matricno: "",
             faculty: "",
             department: "",
+            level: "100L",
             password: "",
             confirmpassword: "",
         },
@@ -52,6 +53,7 @@ const SignUp = () => {
             matricno: yup.string().required("This field is required").matches(/^\d+$/, "Matric number must be numeric").matches(/^\d{10}$/, "Matric number must be exactly 10 digits"),
             faculty: yup.string().required("This field is required"),
             department: yup.string().required("This field is required"),
+            level: yup.string().required("This field is required"),
             password: yup.string().required("This field is required").min(6, "min of 6 characters"),
             confirmpassword: yup.string().required("This field is required").min(6, "min of 6 characters").oneOf([yup.ref('password'), null], "Passwords must match"),
         })
@@ -286,6 +288,18 @@ const SignUp = () => {
                                     <small className='block mb-3 text-[#ba1a1a] font-semibold'>{formik.touched.department && formik.errors.department}</small>
                                 </div>
                             )}
+
+                            <div className="mb-3">
+                                <label className='text-[#3f4941] text-lg'>Level</label>
+                                <select name="level" className='w-full border border-outline p-3 bg-[#f0f4f1] rounded-lg focus:ring-0.5 focus:ring-[#0a643a] focus:ring-opacity-10 focus:border-[#0a643a] outline-none transition-all font-body-md text-body-md' onChange={formik.handleChange} value={formik.values.level} onBlur={formik.handleBlur}>
+                                    <option value="100L">100 Level</option>
+                                    <option value="200L">200 Level</option>
+                                    <option value="300L">300 Level</option>
+                                    <option value="400L">400 Level</option>
+                                    <option value="500L">500 Level</option>
+                                </select>
+                                <small className='block mb-3 text-[#ba1a1a] font-semibold'>{formik.touched.level && formik.errors.level}</small>
+                            </div>
                             <div className='flex gap-2'>
                                 <div>
                                     <label className='text-[#3f4941] text-lg'>Email</label>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../Utils/api';
 
 const StudentManagement = () => {
     // State management
@@ -13,22 +13,16 @@ const StudentManagement = () => {
     // Modal state for Add Student
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-    // const studentsApiUrl = import.meta.env.VITE_STUDENTS_URL || '/api/students';
-    const token = localStorage.getItem('adminToken');
-
     // Fetch students list from backend API
     useEffect(() => {
         const fetchStudents = async () => {
             setLoading(true);
             try {
-                const response = await axios.get('https://smart-backend-1-q3fb.onrender.com/admin/studentmanagement', {
+                const response = await api.get('/admin/studentmanagement', {
                     params: {
                         search: searchQuery,
                         page: currentPage,
                         limit: 5
-                    },
-                    headers: {
-                        Authorization: `Bearer ${token}`
                     }
                 });
 
@@ -49,7 +43,7 @@ const StudentManagement = () => {
         }, 300);
 
         return () => clearTimeout(debounceTimer);
-    }, [searchQuery, currentPage, token]);
+    }, [searchQuery, currentPage]);
 
     return (
         <div className="p-6 bg-[#f8faf9] min-h-screen font-sans">
