@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminDashboard from './AdminDashboard';
 import api from '../../Utils/api';
+import BackButton from '../../Components/BackButton';
 
 const SetViewAll = ({ sessions: initialSessions = [], currentTime = new Date() }) => {
     const navigate = useNavigate();
@@ -255,17 +256,11 @@ const SetViewAll = ({ sessions: initialSessions = [], currentTime = new Date() }
     }
 
     return (
-        <div className="pb-16 pt-4 px-4 lg:px-8 max-w-7xl mx-auto min-h-screen">
+        <div className="pb-16 pt-3 px-4 lg:px-8 max-w-7xl mx-auto min-h-screen">
             {/* ── Top Navigation Bar ────────────────────────────────────────── */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-gray-200">
                 <div className="flex items-center gap-3">
-                    <button
-                        onClick={() => setBackToDashboard(true)}
-                        className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors flex items-center justify-center cursor-pointer"
-                        title="Back to Dashboard"
-                    >
-                        <span className="material-symbols-outlined text-lg">arrow_back</span>
-                    </button>
+                    <BackButton to="/admin/lecturer-dashboard" label="Back to Admin Dashboard" />
                     <div>
                         <h1 className="text-2xl font-black text-slate-900 tracking-tight">
                             University Attendance History

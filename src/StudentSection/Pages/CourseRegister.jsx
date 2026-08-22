@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../Utils/api';
-
 import { useNavigate } from 'react-router-dom';
+import BackButton from '../../Components/BackButton';
 
 const departments = [
     'All Departments',
@@ -152,7 +152,11 @@ export default function StudentCourseRegistration() {
             </div> */}
 
             {/* Main Content Area */}
-            <main className="max-w-7xl mx-auto w-full px-6 pt-24 pb-48 space-y-6 flex-grow mb-10 lg:mt-[-3rem] mt-[-1rem]">
+            <main className="max-w-7xl mx-auto w-full px-6 pt-6 pb-24 space-y-6 flex-grow">
+
+                <div className="flex justify-between items-center">
+                    <BackButton to="/student/dashboard" label="Back to Student Dashboard" />
+                </div>
 
                 {/* Search Bar */}
                 <div className="relative max-w-2xl">

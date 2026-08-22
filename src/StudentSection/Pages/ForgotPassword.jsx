@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import api from '../../Utils/api';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import BackButton from '../../Components/BackButton';
 
 const ForgotPassword = () => {
     const [searchParams] = useSearchParams();
@@ -149,6 +150,10 @@ const ForgotPassword = () => {
     return (
         <div className="min-h-screen bg-[#f0f4f1] flex flex-col justify-center items-center p-4 font-sans text-slate-800">
             <ToastContainer />
+
+            <div className="w-full max-w-md mb-3 flex items-center justify-between">
+                <BackButton to="/signin" label="Back to Sign In" />
+            </div>
 
             <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
                 {/* Header */}

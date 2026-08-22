@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../Utils/api';
+import BackButton from '../../Components/BackButton';
 
 const isTokenValid = (token) => {
     if (!token || typeof token !== 'string') return false;
@@ -123,8 +124,12 @@ const Reports = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#f8faf8] p-4 lg:p-8 font-sans text-[#1a1c1a] print:bg-white print:p-0">
+        <div className="min-h-screen bg-[#f8faf8] px-4 lg:px-8 pt-3 pb-24 font-sans text-[#1a1c1a] print:bg-white print:p-0">
             
+            <div className="mb-3 print:hidden">
+                <BackButton to="/admin/lecturer-dashboard" label="Back to Admin Dashboard" />
+            </div>
+
             {/* ── Screen-Only Filter Controls Card ────────────────────────────── */}
             <div className="bg-white border border-gray-200/80 rounded-2xl p-5 shadow-sm mb-6 print:hidden">
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-gray-100 pb-4 mb-4">

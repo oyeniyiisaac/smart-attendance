@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../Utils/api';
+import BackButton from '../../Components/BackButton';
 
 const StudentManagement = () => {
     // State management
@@ -46,14 +47,15 @@ const StudentManagement = () => {
     }, [searchQuery, currentPage]);
 
     return (
-        <div className="p-6 bg-[#f8faf9] min-h-screen font-sans">
+        <div className="px-4 sm:px-6 pt-3 pb-24 bg-[#f8faf9] min-h-screen font-sans">
             
+            <div className="mb-3">
+                <BackButton to="/admin/lecturer-dashboard" label="Back to Admin Dashboard" />
+            </div>
+
             {/* ── Top Bar Header ─────────────────────────────── */}
             <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center gap-3">
-                    <span className="material-symbols-outlined text-gray-600 cursor-pointer lg:hidden">
-                        menu
-                    </span>
                     <h1 className="text-2xl font-bold text-[#0d1f18]">Student Management</h1>
                 </div>
 

@@ -26,7 +26,11 @@ const AdminProfile = ({ profileImg }) => {
     const displayName = getAdminName();
 
     return (
-        <div className="flex items-center gap-3">
+        <button
+            onClick={() => navigate('/admin/settings')}
+            className="flex items-center gap-3 hover:bg-black/5 p-1.5 rounded-2xl transition-colors cursor-pointer"
+            title="Admin Settings & Profile"
+        >
             {/* Name */}
             <span className="text-sm font-semibold text-[#1a1c1a] hidden sm:block">
                 {displayName}
@@ -36,10 +40,9 @@ const AdminProfile = ({ profileImg }) => {
             <img
                 src={displayImg}
                 alt="profile"
-                className="w-[42px] h-[42px] rounded-full border-2 border-[#2e7d52] object-cover"
+                className="w-[40px] h-[40px] rounded-full border-2 border-[#0a643a] object-cover"
             />
-
-        </div>
+        </button>
     );
 };
 

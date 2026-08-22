@@ -5,6 +5,7 @@ import SessionInsights from '../Components/SessionInsights';
 import DynamicQRCodeCard from '../Components/DynamicQRCodeCard';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../Utils/api';
+import BackButton from '../../Components/BackButton';
 
 export default function SessionMonitor() {
     const { id } = useParams(); // Grabs the database ObjectId cleanly from the URL parameter
@@ -75,7 +76,11 @@ export default function SessionMonitor() {
         : "N/A";
 
     return (
-        <div className="max-w-7xl mx-auto space-y-6 p-4">
+        <div className="max-w-7xl mx-auto space-y-5 px-4 pt-3 pb-24">
+            <div className="flex justify-between items-center">
+                <BackButton to="/admin/lecturer-dashboard" label="Back to Admin Dashboard" />
+            </div>
+
             {/* Pass handleCloseSession and closing state to your Hero section */}
             <SessionHero
                 key={sessionData._id}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../Utils/api';
+import BackButton from '../../Components/BackButton';
 
 const CourseManagement = () => {
     const [courses, setCourses] = useState([]);
@@ -91,7 +92,11 @@ const CourseManagement = () => {
     };
 
     return (
-        <div className="p-6 bg-[#f8faf9] min-h-screen font-sans">
+        <div className="px-4 sm:px-6 pt-3 pb-24 bg-[#f8faf9] min-h-screen font-sans">
+
+            <div className="mb-3">
+                <BackButton to="/admin/lecturer-dashboard" label="Back to Admin Dashboard" />
+            </div>
 
             {/* ── Header Bar ───────────────────────────────── */}
             <div className="flex justify-between items-center mb-6">

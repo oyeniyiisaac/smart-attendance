@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../Utils/api';
+import BackButton from '../../Components/BackButton';
 
 const getStudentProfile = () => {
     try {
@@ -71,7 +72,10 @@ const EligibilitySummary = () => {
     const isOverallEligible = courses.length > 0 && ineligibleCount === 0;
 
     return (
-        <div className="min-h-screen bg-[#fafdf4] p-4 lg:p-8 font-sans mt-[4rem] lg:mt-0 pb-24">
+        <div className="min-h-screen bg-[#fafdf4] pt-3 px-4 lg:px-8 pb-24 font-sans mt-6 lg:mt-0">
+            <div className="mb-3">
+                <BackButton to="/student/dashboard" label="Back to Student Dashboard" />
+            </div>
             
             {/* Warning Banner if Ineligible */}
             {ineligibleCount > 0 && (

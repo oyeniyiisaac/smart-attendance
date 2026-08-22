@@ -13,13 +13,13 @@ const NavBar = () => {
 
     return (
         <>
-            {/* 2. Adjusted margin-left (ml) so the navbar shifts nicely based on sidebar state */}
-            <nav className={`bg-[#f2f8fb] flex justify-between items-center p-1 px-4 shadow-sm fixed top-0 right-0 left-0 z-10 border-b-2 border-[#e4ebed] transition-all duration-300 ${sidebarOpen ? 'lg:ml-[300px]' : 'lg:ml-[80px]'}`}>
-                <div className='flex items-center gap-4 font-bold text-[24px] text-[#0a643a]'>
+            {/* 2. Top Navigation Bar with exact h-14 height */}
+            <nav className={`bg-[#f2f8fb] h-14 flex justify-between items-center px-4 shadow-xs fixed top-0 right-0 left-0 z-10 border-b border-[#e4ebed] transition-all duration-300 ${sidebarOpen ? 'lg:ml-[300px]' : 'lg:ml-[80px]'}`}>
+                <div className='flex items-center gap-4 font-bold text-[20px] text-[#0a643a]'>
                     <button onClick={toggleSidebar} className="material-symbols-outlined cursor-pointer" >
                         {sidebarOpen ? 'close' : 'menu'}
                     </button>
-                    <h1>University Admin</h1>
+                    <h1 className="text-lg font-bold">University Admin</h1>
                 </div>
                 <AdminProfile/>
             </nav>
@@ -27,8 +27,8 @@ const NavBar = () => {
             {/* 3. FIXED LINE: We ALWAYS render <SideBar />, but we pass the state as a prop */}
             <SideBar isOpen={sidebarOpen} />
 
-            {/* 4. Adjusted content area margin so it doesn't get covered by the sidebar */}
-            <div className={`pt-[4.5rem] transition-all duration-300 ${sidebarOpen ? 'lg:ml-[300px]' : 'lg:ml-[80px]'}`}>
+            {/* 4. Adjusted content area margin so it fits flush right below the h-14 navbar */}
+            <div className={`pt-14 transition-all duration-300 ${sidebarOpen ? 'lg:ml-[300px]' : 'lg:ml-[80px]'}`}>
                 <Outlet />
             </div>
         </>

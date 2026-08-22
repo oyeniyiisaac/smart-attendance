@@ -3,6 +3,7 @@ import api from '../../Utils/api';
 import { useNavigate } from 'react-router-dom';
 import NavBarTop from '../Components/NavBarTop';
 import Navbar from '../Components/Navbar';
+import BackButton from '../../Components/BackButton';
 
 export default function EnrolCourses() {
     const navigate = useNavigate();
@@ -66,13 +67,13 @@ export default function EnrolCourses() {
 
     return (
         <>
-            <div className="min-h-screen mb-20 lg:mb-3 bg-[#f3f7f5] p-6 md:p-12 font-sans">
-                {/* <div className="fixed top-0 left-0 right-0 z-50 bg-white">
-                <NavBarTop />
-            </div> */}
+            <div className="min-h-screen mb-20 lg:mb-3 bg-[#f3f7f5] pt-4 px-6 md:px-12 pb-12 font-sans">
+                <div className="mb-4">
+                    <BackButton to="/student/dashboard" label="Back to Student Dashboard" />
+                </div>
 
                 {/* Page Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-10 lg:mt-0 mb-10">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-2 lg:mt-0 mb-6">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-800 tracking-tight mb-1">
                             Enrolled Courses

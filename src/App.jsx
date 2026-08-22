@@ -26,6 +26,7 @@ import EnrolCourses from './StudentSection/Pages/EnrolCourse'
 import LandingPage from '../LandingPage'
 import StudentProfileSettings from './StudentSection/Pages/StudentProfileSettings'
 import ForgotPassword from './StudentSection/Pages/ForgotPassword'
+import AdminSettings from './AdminSections/Pages/AdminSettings'
 
 const App = () => {
   return (
@@ -58,6 +59,7 @@ const App = () => {
           <Route path='student-management' element={<StudentManagement/>} />
           <Route path='course-management' element={<CourseManagement />} />
           <Route path="monitor/:id" element={<SessionMonitor />} />
+          <Route path='settings' element={<AdminSettings />} />
         </Route>
         <Route path='/adminsidebar' element={<AdminSideBar />} />
         {/* <Route path='/adminsidebar' element={<Adminsidebar/>} /> */}

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import api from "../../Utils/api";
 import AttendanceTable from "../Components/AttendanceTable";
+import BackButton from "../../Components/BackButton";
 
 const AttendanceHistory = () => {
     const iconStyle = {
@@ -68,7 +69,10 @@ const AttendanceHistory = () => {
     return (
         <>
             <div className="bg-[#fafdf4] min-h-screen font-sans">
-                <div className="py-4 px-4 sm:px-6 lg:px-10 w-full pb-28 mt-[4rem] lg:mt-[0rem]">
+                <div className="pt-3 pb-28 px-4 sm:px-6 lg:px-10 w-full mt-6 lg:mt-0">
+                    <div className="mb-3">
+                        <BackButton to="/student/dashboard" label="Back to Student Dashboard" />
+                    </div>
                     <div className="flex flex-col">
                         {/* Header & Controls */}
                         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">

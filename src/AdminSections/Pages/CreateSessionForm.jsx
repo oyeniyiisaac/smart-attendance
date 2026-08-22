@@ -4,6 +4,7 @@ import api from "../../Utils/api";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
+import BackButton from "../../Components/BackButton";
 
 // 🏫 Dynamic Scale Mapping: 13 Faculties & 100+ Departments
 // Add or adjust these names to match your exact institutional database naming conventions!
@@ -351,8 +352,12 @@ const FACULTIES_DATA = {
     };
 
     return (
-      <form onSubmit={handleSubmit} className="space-y-6 p-4 max-h-[85vh] overflow-y-auto scrollbar-thin">
+      <form onSubmit={handleSubmit} className="space-y-5 px-4 pt-3 pb-24 max-h-[85vh] overflow-y-auto scrollbar-thin">
         <ToastContainer />
+
+        <div className="flex justify-between items-center pb-1">
+          <BackButton to="/admin/lecturer-dashboard" label="Back to Admin Dashboard" />
+        </div>
 
         {/* SECTION 1: Course Information */}
         <FormSection title="Course Information">

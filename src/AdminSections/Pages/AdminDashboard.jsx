@@ -202,7 +202,7 @@ const AdminDashboard = () => {
     }
 
     return (
-        <div className="min-h-screen px-4 lg:px-8 pb-24 lg:pb-8 pt-4 max-w-7xl mx-auto">
+        <div className="min-h-screen px-4 lg:px-8 pb-24 lg:pb-8 pt-3 max-w-7xl mx-auto">
 
             {/* ── Role Banner & Header ─────────────────────────────── */}
             <div className="mb-6 bg-white border border-gray-200/80 rounded-2xl p-5 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">

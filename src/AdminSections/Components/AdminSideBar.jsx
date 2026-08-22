@@ -20,6 +20,7 @@ const AdminSideBar = ({ isOpen }) => {
     "/admin/student-management": "classes",
     "/admin/course-management": "course",
     "/admin/viewall": "viewall",
+    "/admin/settings": "settings",
   };
 
   const activeBtn = routeActiveMap[currentPath] ?? localActiveBtn;
@@ -47,6 +48,10 @@ const AdminSideBar = ({ isOpen }) => {
   const viewallBtn = () => {
     setLocalActiveBtn("viewall");
     navigate('/admin/viewall');
+  };
+  const settingsBtn = () => {
+    setLocalActiveBtn("settings");
+    navigate('/admin/settings');
   };
   const iconStyle = {
     fontVariationSettings: '"FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24',
@@ -120,6 +125,15 @@ const AdminSideBar = ({ isOpen }) => {
               <span className="material-symbols-outlined">history</span>
               {isOpen && <span>All Sessions History</span>}
             </button>
+
+            <button
+              type="button"
+              className={`flex items-center gap-2 p-2 rounded-xl cursor-pointer text-left whitespace-nowrap transition-all duration-300 ${isOpen ? "" : "justify-center"} ${activeBtn === "settings" ? "bg-[#baeed9]" : "bg-transparent"}`}
+              onClick={settingsBtn}
+            >
+              <span className="material-symbols-outlined">settings</span>
+              {isOpen && <span>Settings</span>}
+            </button>
           </div>
         </div>
 
@@ -150,7 +164,7 @@ const AdminSideBar = ({ isOpen }) => {
                         <button type="button" className={`flex flex-col items-center gap-1 p-1 rounded-xl cursor-pointer text-center ${activeBtn === 'classes' ? 'bg-[#baeed9]' : 'bg-transparent'}`} onClick={studentmanagementBtn}><span className="material-symbols-outlined">
                             group
                         </span>Students</button>
-                        <button type="button" className={`flex flex-col items-center gap-1 p-1 rounded-xl cursor-pointer text-center ${activeBtn === 'course' ? 'bg-[#baeed9]' : 'bg-transparent'}`} onClick={coursemanagementBtn}><span className="material-symbols-outlined">menu_book</span>Courses</button>
+                        <button type="button" className={`flex flex-col items-center gap-1 p-1 rounded-xl cursor-pointer text-center ${activeBtn === 'settings' ? 'bg-[#baeed9]' : 'bg-transparent'}`} onClick={settingsBtn}><span className="material-symbols-outlined">settings</span>Settings</button>
                     </div>
                 </div>
       </div>
