@@ -14,6 +14,13 @@ const StudentDashboard = () => {
     
     const [sessions, setSessions] = useState([]) 
     const [loading, setLoading] = useState(true)
+    const [stats, setStats] = useState({
+        overallPercentage: 0,
+        classesAttended: 0,
+        totalClasses: 0,
+        isEligible: true,
+        eligibilityStatus: 'Eligible'
+    })
 
     // Modal States for Student Selection
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -35,6 +42,9 @@ const StudentDashboard = () => {
                     setMatricNo(data.matricno)
                     setFaculty(data.faculty || '')
                     setDepartment(data.department || '')
+                    if (data.stats) {
+                        setStats(data.stats)
+                    }
 
                     return api.get('/active-sessions')
                 } else {
@@ -169,6 +179,7 @@ const StudentDashboard = () => {
             if (response.data.verified) {
                 toast.success(response.data.message || "Attendance marked successfully! 🎉");
                 setIsModalOpen(false);
+                fetchDashboardData(); // Refresh DB stats and lecture feeds immediately
             }
 
         } catch (error) {
@@ -200,41 +211,65 @@ const StudentDashboard = () => {
 
                         <button 
                             onClick={fetchDashboardData}
-                            className='flex items-center gap-1.5 text-xs font-semibold text-[#0a643a] bg-[#e2e9ec] px-3.5 py-2 rounded-lg hover:bg-[#d0dbdf] transition-colors w-fit'
+                            className='flex items-center gap-1.5 text-xs font-semibold text-[#0a643a] bg-[#e2e9ec] px-3.5 py-2 rounded-lg hover:bg-[#d0dbdf] transition-colors w-fit cursor-pointer'
                         >
                             <span className="material-symbols-outlined text-[18px]">refresh</span>
                             Refresh Sessions
                         </button>
                     </div>
 
-                    {/* Stats Overview Grid */}
+                    {/* Stats Overview Grid (100% Dynamic from DB) */}
                     <div className='grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6'>
-                        <div className='bg-white border border-[#bfc9bf] p-4 rounded-xl shadow-sm flex items-center justify-between'>
+                        <div 
+                            onClick={() => navigate('/student/history')}
+                            className='bg-white border border-[#bfc9bf] hover:border-[#0a643a] p-4 rounded-xl shadow-sm flex items-center justify-between transition-all cursor-pointer'
+                            title="Click to view full Attendance History"
+                        >
                             <div>
                                 <span className='text-xs text-[#3f4941] font-semibold uppercase tracking-wider block mb-1'>Overall Attendance</span>
-                                <span className='text-2xl font-bold text-slate-800'>88%</span>
+                                <span className='text-2xl font-bold text-slate-800'>
+                                    {loading ? "..." : `${stats.overallPercentage}%`}
+                                </span>
                             </div>
                             <div className='w-10 h-10 rounded-full bg-[#e2e9ec] flex items-center justify-center text-[#0a643a]'>
                                 <span className="material-symbols-outlined">analytics</span>
                             </div>
                         </div>
 
-                        <div className='bg-white border border-[#bfc9bf] p-4 rounded-xl shadow-sm flex items-center justify-between'>
+                        <div 
+                            onClick={() => navigate('/student/history')}
+                            className='bg-white border border-[#bfc9bf] hover:border-[#0a643a] p-4 rounded-xl shadow-sm flex items-center justify-between transition-all cursor-pointer'
+                            title="Click to view attended sessions breakdown"
+                        >
                             <div>
                                 <span className='text-xs text-[#3f4941] font-semibold uppercase tracking-wider block mb-1'>Classes Attended</span>
-                                <span className='text-2xl font-bold text-slate-800'>24 Sessions</span>
+                                <span className='text-2xl font-bold text-slate-800'>
+                                    {loading ? "..." : `${stats.classesAttended} ${stats.classesAttended === 1 ? 'Session' : 'Sessions'}`}
+                                </span>
                             </div>
                             <div className='w-10 h-10 rounded-full bg-[#e2e9ec] flex items-center justify-center text-[#0a643a]'>
                                 <span className="material-symbols-outlined">fact_check</span>
                             </div>
                         </div>
 
-                        <div className='bg-white border border-[#bfc9bf] p-4 rounded-xl shadow-sm flex items-center justify-between'>
+                        <div 
+                            onClick={() => navigate('/student/eligibility')}
+                            className='bg-white border border-[#bfc9bf] hover:border-[#0a643a] p-4 rounded-xl shadow-sm flex items-center justify-between transition-all cursor-pointer'
+                            title="Click to view 75% Exam Clearance breakdown"
+                        >
                             <div>
                                 <span className='text-xs text-[#3f4941] font-semibold uppercase tracking-wider block mb-1'>Exam Eligibility</span>
-                                <span className='text-2xl font-bold text-emerald-700 flex items-center gap-1'>
-                                    Eligible <span className="material-symbols-outlined text-[18px]">verified</span>
-                                </span>
+                                {loading ? (
+                                    <span className='text-2xl font-bold text-slate-800'>...</span>
+                                ) : stats.isEligible ? (
+                                    <span className='text-2xl font-bold text-emerald-700 flex items-center gap-1'>
+                                        Eligible <span className="material-symbols-outlined text-[18px]">verified</span>
+                                    </span>
+                                ) : (
+                                    <span className='text-2xl font-bold text-red-600 flex items-center gap-1'>
+                                        At Risk <span className="material-symbols-outlined text-[18px]">warning</span>
+                                    </span>
+                                )}
                             </div>
                             <div className='w-10 h-10 rounded-full bg-[#e2e9ec] flex items-center justify-center text-[#0a643a]'>
                                 <span className="material-symbols-outlined">school</span>
