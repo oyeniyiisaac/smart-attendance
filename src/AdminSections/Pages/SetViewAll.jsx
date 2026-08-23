@@ -31,20 +31,41 @@ const SetViewAll = ({ sessions: initialSessions = [], currentTime = new Date() }
         fetchSessions();
     }, [initialSessions]);
 
-    const fetchSessions = () => {
+    const fetchSessions = async () => {
         setLoading(true);
-        api.get('/admin/sessions')
-            .then((res) => {
-                const data = res.data.sessions || res.data.data || res.data || [];
-                setLoadedSessions(Array.isArray(data) ? data : []);
-            })
-            .catch((err) => {
-                console.error("Failed to load sessions in SetViewAll:", err);
-            })
-            .finally(() => {
-                setLoading(false);
-            });
+        try {
+            let res;
+            try {
+                res = await api.get('/admin/sessions');
+            } catch {
+                res = await api.get('/admin/sessionall');
+            }
+            const data = res?.data?.sessions || res?.data?.data || res?.data || [];
+            setLoadedSessions(Array.isArray(data) ? data : []);
+        } catch (err) {
+            console.error("Failed to load sessions in SetViewAll:", err);
+            setLoadedSessions([]);
+        } finally {
+            setLoading(false);
+        }
     };
+
+    const resetFilters = () => {
+        setSelectedFaculty('All Faculties');
+        setSelectedDepartment('All Departments');
+        setSelectedCourse('All Courses');
+        setSelectedLevel('All Levels');
+        setActiveStatusFilter('All');
+        setSearchQuery('');
+    };
+
+    const hasActiveFilters =
+        selectedFaculty !== 'All Faculties' ||
+        selectedDepartment !== 'All Departments' ||
+        selectedCourse !== 'All Courses' ||
+        selectedLevel !== 'All Levels' ||
+        activeStatusFilter !== 'All' ||
+        Boolean(searchQuery.trim());
 
     const sessions = loadedSessions;
 
@@ -272,6 +293,16 @@ const SetViewAll = ({ sessions: initialSessions = [], currentTime = new Date() }
                 </div>
 
                 <div className="flex items-center gap-2">
+                    {hasActiveFilters && (
+                        <button
+                            onClick={resetFilters}
+                            className="px-3.5 py-2 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-xs font-bold text-amber-900 flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
+                            title="Reset all active academic filters"
+                        >
+                            <span className="material-symbols-outlined text-base">filter_alt_off</span>
+                            <span>Reset Filters</span>
+                        </button>
+                    )}
                     <button
                         onClick={fetchSessions}
                         className="px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-xs font-bold text-slate-700 flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
@@ -480,8 +511,25 @@ const SetViewAll = ({ sessions: initialSessions = [], currentTime = new Date() }
                     {viewMode === 'sessions' && (
                         <div className="space-y-3">
                             {filteredSessions.length === 0 ? (
-                                <div className="bg-white border border-dashed border-gray-300 rounded-2xl p-12 text-center text-slate-400 font-medium text-sm">
-                                    No attendance sessions match the selected academic filters.
+                                <div className="bg-white border border-dashed border-gray-300 rounded-2xl p-12 text-center">
+                                    <div className="w-12 h-12 rounded-full bg-emerald-50 text-[#0a643a] flex items-center justify-center mx-auto mb-3">
+                                        <span className="material-symbols-outlined text-2xl">event_busy</span>
+                                    </div>
+                                    <h3 className="text-sm font-bold text-slate-800 mb-1">No Attendance Records Found</h3>
+                                    <p className="text-xs text-slate-500 max-w-md mx-auto mb-4">
+                                        {hasActiveFilters
+                                            ? 'No attendance sessions match the selected academic level or status filter.'
+                                            : 'No class attendance sessions have been logged yet for your faculty or department.'}
+                                    </p>
+                                    {hasActiveFilters && (
+                                        <button
+                                            onClick={resetFilters}
+                                            className="px-4 py-2 bg-[#0a643a] hover:bg-[#084f2e] text-white text-xs font-bold rounded-xl transition-colors inline-flex items-center gap-1.5 cursor-pointer shadow-sm"
+                                        >
+                                            <span className="material-symbols-outlined text-base">filter_alt_off</span>
+                                            <span>Reset All Filters</span>
+                                        </button>
+                                    )}
                                 </div>
                             ) : (
                                 filteredSessions.map((session) => {
@@ -592,8 +640,25 @@ const SetViewAll = ({ sessions: initialSessions = [], currentTime = new Date() }
                     {viewMode === 'departments' && (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {departmentGroups.length === 0 ? (
-                                <div className="col-span-full bg-white border border-dashed border-gray-300 rounded-2xl p-12 text-center text-slate-400 font-medium text-sm">
-                                    No departmental attendance records found.
+                                <div className="col-span-full bg-white border border-dashed border-gray-300 rounded-2xl p-12 text-center">
+                                    <div className="w-12 h-12 rounded-full bg-emerald-50 text-[#0a643a] flex items-center justify-center mx-auto mb-3">
+                                        <span className="material-symbols-outlined text-2xl">corporate_fare</span>
+                                    </div>
+                                    <h3 className="text-sm font-bold text-slate-800 mb-1">No Departmental Records Found</h3>
+                                    <p className="text-xs text-slate-500 max-w-md mx-auto mb-4">
+                                        {hasActiveFilters
+                                            ? 'No departments match the selected academic level or status filter.'
+                                            : 'No department attendance records are currently registered.'}
+                                    </p>
+                                    {hasActiveFilters && (
+                                        <button
+                                            onClick={resetFilters}
+                                            className="px-4 py-2 bg-[#0a643a] hover:bg-[#084f2e] text-white text-xs font-bold rounded-xl transition-colors inline-flex items-center gap-1.5 cursor-pointer shadow-sm"
+                                        >
+                                            <span className="material-symbols-outlined text-base">filter_alt_off</span>
+                                            <span>Reset All Filters</span>
+                                        </button>
+                                    )}
                                 </div>
                             ) : (
                                 departmentGroups.map((group, idx) => (
@@ -651,8 +716,25 @@ const SetViewAll = ({ sessions: initialSessions = [], currentTime = new Date() }
                     {viewMode === 'courses' && (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {courseGroups.length === 0 ? (
-                                <div className="col-span-full bg-white border border-dashed border-gray-300 rounded-2xl p-12 text-center text-slate-400 font-medium text-sm">
-                                    No course attendance records found.
+                                <div className="col-span-full bg-white border border-dashed border-gray-300 rounded-2xl p-12 text-center">
+                                    <div className="w-12 h-12 rounded-full bg-emerald-50 text-[#0a643a] flex items-center justify-center mx-auto mb-3">
+                                        <span className="material-symbols-outlined text-2xl">menu_book</span>
+                                    </div>
+                                    <h3 className="text-sm font-bold text-slate-800 mb-1">No Course Records Found</h3>
+                                    <p className="text-xs text-slate-500 max-w-md mx-auto mb-4">
+                                        {hasActiveFilters
+                                            ? 'No course attendance logs match the selected academic level or status filter.'
+                                            : 'No courses have attendance activity recorded yet.'}
+                                    </p>
+                                    {hasActiveFilters && (
+                                        <button
+                                            onClick={resetFilters}
+                                            className="px-4 py-2 bg-[#0a643a] hover:bg-[#084f2e] text-white text-xs font-bold rounded-xl transition-colors inline-flex items-center gap-1.5 cursor-pointer shadow-sm"
+                                        >
+                                            <span className="material-symbols-outlined text-base">filter_alt_off</span>
+                                            <span>Reset All Filters</span>
+                                        </button>
+                                    )}
                                 </div>
                             ) : (
                                 courseGroups.map((cg, idx) => (

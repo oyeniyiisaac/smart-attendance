@@ -144,8 +144,10 @@ const StudentManagement = () => {
                                             {/* Status Badge */}
                                             <td className="py-4 px-6 text-center">
                                                 <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
-                                                    isEligible 
-                                                        ? 'bg-[#e3f6ed] text-[#0a643a]' 
+                                                    student.status?.toLowerCase() === 'eligible'
+                                                        ? 'bg-[#e3f6ed] text-[#0a643a]'
+                                                        : student.status?.toLowerCase() === 'not enrolled'
+                                                        ? 'bg-slate-100 text-slate-600'
                                                         : 'bg-[#fdecea] text-[#ba1a1a]'
                                                 }`}>
                                                     {student.status}

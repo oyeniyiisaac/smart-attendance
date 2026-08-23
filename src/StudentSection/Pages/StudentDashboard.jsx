@@ -28,6 +28,7 @@ const StudentDashboard = () => {
     const [selectedSession, setSelectedSession] = useState(null)
     const [chosenMethod, setChosenMethod] = useState('qr')
     const [verifying, setVerifying] = useState(false)
+    const [hasRegisteredCourses, setHasRegisteredCourses] = useState(true)
 
     const navigate = useNavigate()
 
@@ -54,6 +55,9 @@ const StudentDashboard = () => {
             .then((res) => {
                 if (res && res.data) {
                     setSessions(res.data.sessions || res.data.data || []);
+                    if (res.data.hasRegisteredCourses !== undefined) {
+                        setHasRegisteredCourses(res.data.hasRegisteredCourses);
+                    }
                 }
             })
             .catch((err) => {
@@ -185,8 +189,15 @@ const StudentDashboard = () => {
 
         } catch (error) {
             console.error("❌ Verification failed:", error);
-            const errorMsg = error.response?.data?.message || "Verification failed.";
+            const errorData = error.response?.data;
+            const errorMsg = errorData?.message || "Verification failed.";
             toast.error(errorMsg);
+
+            if (errorData?.requiresCourseRegistration) {
+                setTimeout(() => {
+                    navigate('/student/register-course');
+                }, 2000);
+            }
         } finally {
             setVerifying(false);
         }
@@ -298,23 +309,44 @@ const StudentDashboard = () => {
                                     Loading ongoing lectures...
                                 </div>
                             ) : sessions.length === 0 ? (
-                                <div className="bg-white border border-[#bfc9bf] rounded-xl p-8 text-center shadow-sm flex flex-col items-center justify-center gap-3">
-                                    <div className="w-12 h-12 rounded-full bg-[#e2e9ec] flex items-center justify-center text-[#3f4941]">
-                                        <span className="material-symbols-outlined text-2xl">event_busy</span>
+                                !hasRegisteredCourses ? (
+                                    <div className="bg-white border border-amber-200 rounded-xl p-8 text-center shadow-sm flex flex-col items-center justify-center gap-3">
+                                        <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-700 flex items-center justify-center">
+                                            <span className="material-symbols-outlined text-2xl">app_registration</span>
+                                        </div>
+                                        <div>
+                                            <h3 className="text-base font-bold text-slate-800">Course Registration Required</h3>
+                                            <p className="text-xs text-[#3f4941] mt-1 max-w-md">
+                                                You haven't registered your courses for this semester yet. Course registration is required to view and mark attendance for active lecture sessions.
+                                            </p>
+                                        </div>
+                                        <button 
+                                            onClick={() => navigate('/student/register-course')}
+                                            className="mt-2 text-xs font-bold text-white bg-[#0a643a] hover:bg-[#084f2e] px-5 py-2.5 rounded-xl transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+                                        >
+                                            <span className="material-symbols-outlined text-base">how_to_reg</span>
+                                            <span>Register Courses Now</span>
+                                        </button>
                                     </div>
-                                    <div>
-                                        <h3 className="text-base font-bold text-slate-800">No Active Lectures</h3>
-                                        <p className="text-xs text-[#3f4941] mt-1 max-w-sm">
-                                            There are no active check-in sessions running for your department at the moment.
-                                        </p>
+                                ) : (
+                                    <div className="bg-white border border-[#bfc9bf] rounded-xl p-8 text-center shadow-sm flex flex-col items-center justify-center gap-3">
+                                        <div className="w-12 h-12 rounded-full bg-[#e2e9ec] flex items-center justify-center text-[#3f4941]">
+                                            <span className="material-symbols-outlined text-2xl">event_busy</span>
+                                        </div>
+                                        <div>
+                                            <h3 className="text-base font-bold text-slate-800">No Active Lectures</h3>
+                                            <p className="text-xs text-[#3f4941] mt-1 max-w-sm">
+                                                There are no active check-in sessions running for your registered courses right now.
+                                            </p>
+                                        </div>
+                                        <button 
+                                            onClick={fetchDashboardData}
+                                            className="mt-2 text-xs font-semibold text-[#0a643a] bg-[#e2e9ec] hover:bg-[#d0dbdf] px-4 py-2 rounded-lg transition-colors cursor-pointer"
+                                        >
+                                            Check Again
+                                        </button>
                                     </div>
-                                    <button 
-                                        onClick={fetchDashboardData}
-                                        className="mt-2 text-xs font-semibold text-[#0a643a] bg-[#e2e9ec] hover:bg-[#d0dbdf] px-4 py-2 rounded-lg transition-colors"
-                                    >
-                                        Check Again
-                                    </button>
-                                </div>
+                                )
                             ) : (
                                 <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                                     {sessions.map((sessionItem) => {

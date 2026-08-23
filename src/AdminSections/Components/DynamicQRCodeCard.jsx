@@ -141,8 +141,8 @@ export function DynamicQRCodeCard({ session }) {
           <div className="bg-white p-6 rounded-3xl shadow-2xl border-4 border-emerald-500/40 mb-4">
             {qrSvg && (
               <div
-                className="w-72 h-72 sm:w-84 sm:h-84 flex items-center justify-center"
-                dangerouslySetInnerHTML={{ __html: qrSvg.replace('width="280"', 'width="340"').replace('height="280"', 'height="340"') }}
+                className="w-72 h-72 sm:w-84 sm:h-84 flex items-center justify-center overflow-hidden"
+                dangerouslySetInnerHTML={{ __html: qrSvg }}
               />
             )}
           </div>
