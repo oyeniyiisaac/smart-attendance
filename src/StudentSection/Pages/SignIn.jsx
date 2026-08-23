@@ -1,31 +1,33 @@
 import api from '../../Utils/api';
 import { useFormik } from 'formik';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import * as yup from 'yup';
 
 const SignIn = () => {
     const navigate = useNavigate();
     const [activeForm, setActiveForm] = useState('student');
     const [studentAlert, setStudentAlert] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const formik = useFormik({
         initialValues: {
             matricno: "",
             password: ""
         },
-
         onSubmit: async (values, { setSubmitting }) => {
+            setStudentAlert(false);
             try {
                 const response = await api.post('/login', values);
-                console.log(response);
                 if (response.status === 200 || response.status === 201) {
-                    localStorage.token = response.data.token
+                    localStorage.token = response.data.token;
                     navigate('/student/dashboard');
                 }
             } catch (err) {
-                console.log(err);
-                if (err.response?.status === 401) {
+                console.error("Student Login Error:", err);
+                if (err.response?.status === 401 || err.response?.status === 400) {
+                    setStudentAlert(true);
+                } else {
                     setStudentAlert(true);
                 }
             } finally {
@@ -33,15 +35,15 @@ const SignIn = () => {
             }
         },
         validationSchema: yup.object({
-            matricno: yup.string().required("This field is required").matches(/^\d+$/, "Matric number must be numeric").matches(/^\d{10}$/, "Matric number must be exactly 10 digits"),
-            password: yup.string().required("This field is required").min(6, "min of 6 characters")
+            matricno: yup.string().required("Matric number is required").matches(/^\d+$/, "Matric number must be numeric").matches(/^\d{10}$/, "Matric number must be exactly 10 digits"),
+            password: yup.string().required("Password is required").min(6, "Minimum 6 characters")
         })
-    })
+    });
 
     const adminformik = useFormik({
         initialValues: {
-            email: "",        // ✅ must match what the backend reads: req.body.email
-            password: "",     // ✅ must match what the backend reads: req.body.password
+            email: "",
+            password: "",
         },
         onSubmit: async (values, { setSubmitting, setStatus }) => {
             try {
@@ -52,147 +54,343 @@ const SignIn = () => {
                     navigate('/admin/lecturer-dashboard');
                 }
             } catch (err) {
-                const msg = err.response?.data?.message || 'Login failed. Check your credentials.';
+                const msg = err.response?.data?.message || 'Invalid email or password. Please try again.';
                 setStatus(msg);
             } finally {
                 setSubmitting(false);
             }
         },
         validationSchema: yup.object({
-            email: yup.string().required('Email is required').email('Enter a valid email'),
-            password: yup.string().required('Password is required').min(6, 'Min 6 characters'),
+            email: yup.string().required('Institutional email is required').email('Enter a valid email address'),
+            password: yup.string().required('Password is required').min(6, 'Minimum 6 characters'),
         })
-    })
-    // console.log(adminformik.values)
+    });
 
-    // const signin = () => {
-    //     axios.post(loginUrl, formik.values)
-    //         .then((response) => {
-    //             console.log(response);
-    //             if (response.status === 200 || response.status === 201) {
-    //                 navigate('/student-dashboard');
-    //             }
-    //         })
-    //         .catch((err) => {
-    //             console.log(err)
-    //         })
-    //     console.log(formik.values)
-    // }
-    const studentHandler = () => {
-        setActiveForm('student');
-    };
-
-    const lecturerHandler = () => {
-        setActiveForm('lecturer');
-    };
-    // const studentDashboard = () => {
-    //     console.log('open to student dashboard');
-    //     window.location.href = '/student-dashboard';
-    // }
-    // const lecturerDashboard = () => {
-    //     console.log('open to dashboard');
-    //     window.location.href = '/admin/lecturer-dashboard';
-    // }
     return (
-        <>
-            <div className='bg-[#f5f5f5] min-h-screen flex items-center justify-center font-sans p-4'>
-                <div className='container mx-auto py-0 w-[450px] max-w-full border border-gray-300 rounded-2xl shadow-lg overflow-hidden' data-aos="zoom-in" data-aos-duration="500">
-                    <div className='bg-[#f0f4f1] p-6 flex flex-col items-center justify-center gap-2'>
-                        <div className="bg-[#0a643a] rounded-xl p-4 my-4 w-[20%] text-center flex items-center justify-center"><span className="material-symbols-outlined block text-[#ceffdb]" style={{ fontSize: '3rem', lineHeight: 1 }}>
-                            school
-                        </span></div>
-                        <h1 className="text-[#0a643a] text-[2rem] font-bold leading-[0.5]">Smart Attendance</h1>
-                        <span className='text-[#3f4941] text-md'>Institutional Access Portal</span>
+        <div className="min-h-screen w-full flex bg-[#f8faf9] font-sans antialiased text-[#1a2e26]">
+            
+            {/* ── LEFT SIDE: BRANDED PRESENTATION PANEL (Side View) ─── */}
+            <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#062617] via-[#093521] to-[#04190f] text-white p-12 flex-col justify-between relative overflow-hidden select-none">
+                
+                {/* Floating Geometric Decorative Elements */}
+                <div className="absolute inset-0 pointer-events-none">
+                    <div className="absolute top-10 left-10 w-24 h-24 bg-white/5 rounded-3xl border border-white/10 rotate-12"></div>
+                    <div className="absolute top-1/4 right-12 w-32 h-32 bg-white/5 rounded-3xl border border-white/10 -rotate-6"></div>
+                    <div className="absolute bottom-20 left-16 w-28 h-28 bg-white/5 rounded-3xl border border-white/10 rotate-45"></div>
+                    <div className="absolute bottom-1/3 right-1/4 w-20 h-20 bg-white/5 rounded-2xl border border-white/10 -rotate-12"></div>
+                    <div className="absolute top-1/2 left-1/3 w-16 h-16 bg-emerald-400/10 rounded-2xl border border-emerald-400/20 rotate-12"></div>
+                </div>
+
+                {/* Top Corner Header / Brand */}
+                <div className="relative z-10 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center backdrop-blur-md">
+                        <span className="material-symbols-outlined text-2xl text-emerald-300">school</span>
                     </div>
-                    <hr className='text-gray-300' />
-                    <div className='bg-white p-6'>
-                        <span className='text-[#3f4941] font-bold text-md m-3'>User Role </span>
-                        <div className='bg-[#e2e9ec] w-full flex justify-between border-2 border-[#bfc9bf] rounded-md space-x-4 mt-2 mb-3 p-1'>
-                            <button
-                                type='button'
-                                className={`text-black py-2 px-4 rounded-sm w-[48%] ${activeForm === 'student' ? 'bg-[#0a643a] text-white' : 'bg-transparent text-black'}`}
-                                onClick={studentHandler}
-                                id='studentBtn'
-                            >
-                                Student
-                            </button>
-                            <button
-                                type='button'
-                                className={`text-black py-2 px-4 rounded-sm w-[48%] ${activeForm === 'lecturer' ? 'bg-[#0a643a] text-white' : 'bg-transparent text-black'}`}
-                                onClick={lecturerHandler}
-                                id='lecturerBtn'
-                            >
-                                Lecturer
-                            </button>
-                        </div>
-                        <div className={`p-4 mb-4 text-md text-[#ba1a1a] rounded-md bg-[#fcebeb]     ${studentAlert ? 'block' : 'hidden'}`} role="alert">
-                            <span className="font-medium">Invalid Credentials!</span> Please check your credentials and try again.
-                        </div>
-                        <form id='studentForm' onSubmit={formik.handleSubmit} style={{ display: activeForm === 'student' ? 'block' : 'none' }}>
-                            <label className='text-[#3f4941] text-lg'>Matric No</label>
-                            <input className="w-full border border-outline p-3 mt-2 rounded-lg focus:ring-0.5 focus:ring-[#0a643a] focus:ring-opacity-10 focus:border-[#0a643a] outline-none transition-all font-body-md text-body-md" placeholder="2022001234" required="" type="string" id='studentEmail' name="matricno" onChange={formik.handleChange} onBlur={formik.handleBlur} value={formik.values.matricno} />
-                            <small className='block mb-3 text-[#ba1a1a] font-semibold'>{formik.touched.matricno && formik.errors.matricno}</small>
+                    <div>
+                        <span className="font-extrabold text-sm tracking-wider uppercase text-emerald-200 block leading-tight">
+                            Smart Attendance
+                        </span>
+                        <span className="text-[10px] text-gray-300 tracking-widest uppercase">
+                            Higher Education System
+                        </span>
+                    </div>
+                </div>
 
-                            <label className='text-[#3f4941] text-lg mt-4 block'>Password</label>
-                            <input className="w-full border border-outline p-3 mt-2 rounded-lg focus:ring-0.5 focus:ring-[#0a643a] focus:ring-opacity-10 focus:border-[#0a643a] outline-none transition-all font-body-md text-body-md" placeholder="********" required="" type="password" id='studentPassword' name="password" onChange={formik.handleChange} onBlur={formik.handleBlur} value={formik.values.password} />
-                            <div className="flex justify-between items-center mt-1 mb-4">
-                                <span />
-                                <a href="/forgot-password" className="text-xs font-semibold text-[#0a643a] hover:underline">
-                                    Forgot Password?
-                                </a>
-                            </div>
+                {/* Center Hero Banner */}
+                <div className="relative z-10 max-w-md mx-auto text-center space-y-6">
+                    
+                    {/* Institution Logo Card */}
+                    <div className="inline-flex flex-col items-center justify-center bg-white p-4 rounded-3xl shadow-2xl mx-auto">
+                        <div className="w-14 h-14 rounded-2xl bg-[#0a643a] flex items-center justify-center text-white shadow-inner">
+                            <span className="material-symbols-outlined text-3xl text-emerald-100">
+                                verified_user
+                            </span>
+                        </div>
+                    </div>
 
-                            <div className='flex items-center justify-between mt-2'>
-                                <button
-                                    type='submit'
-                                    disabled={formik.isSubmitting}
-                                    className='bg-[#0a643a] text-white py-2 px-4 rounded-sm w-full disabled:opacity-60 disabled:cursor-not-allowed'
-                                >
-                                    {formik.isSubmitting ? 'Signing in...' : 'Sign In to Dashboard'}
-                                </button>
-                            </div>
-                        </form>
-                        <form id='lecturerForm' onSubmit={adminformik.handleSubmit} style={{ display: activeForm === 'lecturer' ? 'block' : 'none' }}>
-                            {/* Server error banner */}
-                            {adminformik.status && (
-                                <div className='bg-[#fdecea] border border-[#ba1a1a] text-[#ba1a1a] rounded-lg px-4 py-2 text-sm mb-3'>
-                                    {adminformik.status}
+                    <div className="space-y-3">
+                        <span className="text-xs font-bold uppercase tracking-widest text-emerald-300 block">
+                            Institutional Access Portal
+                        </span>
+                        <h1 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight text-white">
+                            Welcome to Smart Attendance Portal
+                        </h1>
+                        <div className="w-20 h-1.5 bg-emerald-400 rounded-full mx-auto"></div>
+                    </div>
+
+                    <p className="text-xs sm:text-sm text-emerald-100/80 leading-relaxed font-normal">
+                        Secure, real-time presence validation with rotating cryptographic QR codes, geo-fenced GPS check-ins, and automated 75% exam clearance tracking.
+                    </p>
+                </div>
+
+                {/* Left Bottom Footer / Contact Support */}
+                <div className="relative z-10 flex items-center justify-between text-xs text-emerald-200/70 border-t border-white/10 pt-6">
+                    <span className="flex items-center gap-1.5">
+                        <span className="material-symbols-outlined text-base text-emerald-300">support_agent</span>
+                        <span>Need help? Contact ICT Support</span>
+                    </span>
+                    <span className="font-mono text-[11px]">📞 08106096112</span>
+                </div>
+            </div>
+
+            {/* ── RIGHT SIDE: AUTHENTICATION FORM CANVAS ─────────────── */}
+            <div className="w-full lg:w-1/2 flex flex-col justify-between p-6 sm:p-12 lg:p-16 bg-white overflow-y-auto">
+                
+                {/* Mobile Header (Shown on small screens only) */}
+                <div className="lg:hidden flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+                    <div className="w-9 h-9 rounded-xl bg-[#0a643a] flex items-center justify-center text-white font-bold shadow-sm">
+                        <span className="material-symbols-outlined text-xl">school</span>
+                    </div>
+                    <div>
+                        <span className="font-extrabold text-base text-[#0a643a] tracking-tight block leading-tight">
+                            Smart Attendance
+                        </span>
+                        <span className="text-[10px] text-gray-500 font-semibold tracking-wider uppercase">
+                            Institutional Access Portal
+                        </span>
+                    </div>
+                </div>
+
+                {/* Form Container */}
+                <div className="max-w-md w-full mx-auto my-auto space-y-6">
+                    
+                    {/* Header Copy */}
+                    <div className="text-left space-y-1">
+                        <h2 className="text-2xl sm:text-3xl font-black text-[#0d2319] tracking-tight">
+                            Login
+                        </h2>
+                        <p className="text-xs sm:text-sm text-gray-500 font-normal">
+                            Enter your credentials to access your attendance account
+                        </p>
+                    </div>
+
+                    {/* User Role Switcher Tabs */}
+                    <div className="bg-[#f0f4f1] p-1.5 rounded-2xl flex gap-1.5 border border-gray-200/80">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setActiveForm('student');
+                                setStudentAlert(false);
+                            }}
+                            className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                                activeForm === 'student'
+                                    ? 'bg-[#0a643a] text-white shadow-md'
+                                    : 'text-gray-600 hover:text-gray-900'
+                            }`}
+                        >
+                            <span className="material-symbols-outlined text-[16px]">person</span>
+                            <span>Student</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setActiveForm('lecturer');
+                                if (adminformik.status) adminformik.setStatus(null);
+                            }}
+                            className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                                activeForm === 'lecturer'
+                                    ? 'bg-[#0a643a] text-white shadow-md'
+                                    : 'text-gray-600 hover:text-gray-900'
+                            }`}
+                        >
+                            <span className="material-symbols-outlined text-[16px]">shield_person</span>
+                            <span>Lecturer / Staff</span>
+                        </button>
+                    </div>
+
+                    {/* ── Student Login Form ── */}
+                    {activeForm === 'student' && (
+                        <form onSubmit={formik.handleSubmit} className="space-y-4">
+                            {studentAlert && (
+                                <div className="flex items-center gap-2.5 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-xs font-medium animate-pulse">
+                                    <span className="material-symbols-outlined text-base">error</span>
+                                    <span>Invalid Matric number or password. Please verify and retry.</span>
                                 </div>
                             )}
 
-                            <label className='text-[#3f4941] text-lg'>Institutional Email</label>
-                            {/* name="email" matches adminformik.initialValues.email */}
-                            <input className="w-full border border-outline p-3 mt-2 rounded-lg focus:ring-0.5 focus:ring-[#0a643a] focus:ring-opacity-10 focus:border-[#0a643a] outline-none transition-all font-body-md text-body-md" placeholder="john.doe@university.edu" type="email" name="email" onChange={adminformik.handleChange} onBlur={adminformik.handleBlur} value={adminformik.values.email} />
-                            <small className='block mb-3 text-[#ba1a1a] font-semibold'>{adminformik.touched.email && adminformik.errors.email}</small>
-
-                            <label className='text-[#3f4941] text-lg mt-4 block'>Password</label>
-                            {/* name="password" matches adminformik.initialValues.password */}
-                            <input className="w-full border border-outline p-3 mt-2 rounded-lg focus:ring-0.5 focus:ring-[#0a643a] focus:ring-opacity-10 focus:border-[#0a643a] outline-none transition-all font-body-md text-body-md" placeholder="********" type="password" name="password" onChange={adminformik.handleChange} onBlur={adminformik.handleBlur} value={adminformik.values.password} />
-                            <small className='block mb-3 text-[#ba1a1a] font-semibold'>{adminformik.touched.password && adminformik.errors.password}</small>
-
-                            <div className="flex justify-between items-center mt-1 mb-4">
-                                <span />
-                                <a href="/forgot-password" className="text-xs font-semibold text-[#0a643a] hover:underline">
-                                    Forgot Password?
-                                </a>
+                            <div>
+                                <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wider">
+                                    Matric Number
+                                </label>
+                                <div className="relative">
+                                    <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-lg">
+                                        badge
+                                    </span>
+                                    <input
+                                        type="text"
+                                        name="matricno"
+                                        placeholder="e.g. 2022001234 (10 digits)"
+                                        value={formik.values.matricno}
+                                        onChange={formik.handleChange}
+                                        onBlur={formik.handleBlur}
+                                        className="w-full bg-[#f8faf9] border border-gray-300 rounded-xl pl-10 pr-4 py-3 text-xs outline-none focus:border-[#0a643a] focus:bg-white text-slate-800 transition-all font-medium"
+                                    />
+                                </div>
+                                {formik.touched.matricno && formik.errors.matricno && (
+                                    <span className="text-[11px] text-red-600 font-semibold mt-1 block">
+                                        {formik.errors.matricno}
+                                    </span>
+                                )}
                             </div>
 
-                            <div className='flex items-center justify-between mt-2'>
-                                <button
-                                    type='submit'
-                                    disabled={adminformik.isSubmitting}
-                                    className='bg-[#0a643a] text-white py-2 px-4 rounded-sm w-full disabled:opacity-60 disabled:cursor-not-allowed'
-                                >
-                                    {adminformik.isSubmitting ? 'Signing in...' : 'Sign In to Dashboard'}
-                                </button>
+                            <div>
+                                <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wider">
+                                    Password
+                                </label>
+                                <div className="relative">
+                                    <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-lg">
+                                        lock
+                                    </span>
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        name="password"
+                                        placeholder="••••••••"
+                                        value={formik.values.password}
+                                        onChange={formik.handleChange}
+                                        onBlur={formik.handleBlur}
+                                        className="w-full bg-[#f8faf9] border border-gray-300 rounded-xl pl-10 pr-10 py-3 text-xs outline-none focus:border-[#0a643a] focus:bg-white text-slate-800 transition-all font-medium"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                                    >
+                                        <span className="material-symbols-outlined text-lg">
+                                            {showPassword ? "visibility_off" : "visibility"}
+                                        </span>
+                                    </button>
+                                </div>
+                                {formik.touched.password && formik.errors.password && (
+                                    <span className="text-[11px] text-red-600 font-semibold mt-1 block">
+                                        {formik.errors.password}
+                                    </span>
+                                )}
                             </div>
+
+                            <div className="flex justify-end items-center pt-0.5">
+                                <Link to="/forgot-password" className="text-xs font-bold text-[#0a643a] hover:underline">
+                                    Forgot password?
+                                </Link>
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={formik.isSubmitting}
+                                className="w-full py-3.5 bg-[#0a643a] hover:bg-[#08522f] disabled:opacity-60 text-white font-bold text-xs rounded-xl transition-all shadow-md hover:shadow-lg cursor-pointer flex items-center justify-center gap-2"
+                            >
+                                <span>{formik.isSubmitting ? "Signing In..." : "Sign In"}</span>
+                                <span>&rarr;</span>
+                            </button>
                         </form>
-                        <p className='text-[#3f4941] text-sm mt-4 text-center'>Don't have an account? <a href="/signup" className='text-[#0a643a] hover:underline'><strong>Sign up</strong></a></p>
-                    </div>
-                </div>
-            </div>
-        </>
-    )
-}
+                    )}
 
-export default SignIn
+                    {/* ── Lecturer / Staff Login Form ── */}
+                    {activeForm === 'lecturer' && (
+                        <form onSubmit={adminformik.handleSubmit} className="space-y-4">
+                            {adminformik.status && (
+                                <div className="flex items-center gap-2.5 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-xs font-medium animate-pulse">
+                                    <span className="material-symbols-outlined text-base">error</span>
+                                    <span>{adminformik.status}</span>
+                                </div>
+                            )}
+
+                            <div>
+                                <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wider">
+                                    Institutional Email
+                                </label>
+                                <div className="relative">
+                                    <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-lg">
+                                        mail
+                                    </span>
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        placeholder="lecturer@university.edu"
+                                        value={adminformik.values.email}
+                                        onChange={adminformik.handleChange}
+                                        onBlur={adminformik.handleBlur}
+                                        className="w-full bg-[#f8faf9] border border-gray-300 rounded-xl pl-10 pr-4 py-3 text-xs outline-none focus:border-[#0a643a] focus:bg-white text-slate-800 transition-all font-medium"
+                                    />
+                                </div>
+                                {adminformik.touched.email && adminformik.errors.email && (
+                                    <span className="text-[11px] text-red-600 font-semibold mt-1 block">
+                                        {adminformik.errors.email}
+                                    </span>
+                                )}
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-gray-700 mb-1.5 uppercase tracking-wider">
+                                    Password
+                                </label>
+                                <div className="relative">
+                                    <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-lg">
+                                        lock
+                                    </span>
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        name="password"
+                                        placeholder="••••••••"
+                                        value={adminformik.values.password}
+                                        onChange={adminformik.handleChange}
+                                        onBlur={adminformik.handleBlur}
+                                        className="w-full bg-[#f8faf9] border border-gray-300 rounded-xl pl-10 pr-10 py-3 text-xs outline-none focus:border-[#0a643a] focus:bg-white text-slate-800 transition-all font-medium"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                                    >
+                                        <span className="material-symbols-outlined text-lg">
+                                            {showPassword ? "visibility_off" : "visibility"}
+                                        </span>
+                                    </button>
+                                </div>
+                                {adminformik.touched.password && adminformik.errors.password && (
+                                    <span className="text-[11px] text-red-600 font-semibold mt-1 block">
+                                        {adminformik.errors.password}
+                                    </span>
+                                )}
+                            </div>
+
+                            <div className="flex justify-end items-center pt-0.5">
+                                <Link to="/forgot-password" className="text-xs font-bold text-[#0a643a] hover:underline">
+                                    Forgot password?
+                                </Link>
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={adminformik.isSubmitting}
+                                className="w-full py-3.5 bg-[#0a643a] hover:bg-[#08522f] disabled:opacity-60 text-white font-bold text-xs rounded-xl transition-all shadow-md hover:shadow-lg cursor-pointer flex items-center justify-center gap-2"
+                            >
+                                <span>{adminformik.isSubmitting ? "Signing In..." : "Sign In"}</span>
+                                <span>&rarr;</span>
+                            </button>
+                        </form>
+                    )}
+
+                    {/* Switch Link to SignUp */}
+                    <div className="pt-2 text-center text-xs text-gray-600 font-medium">
+                        Don't have an account?{" "}
+                        <Link to="/signup" className="text-[#0a643a] font-bold hover:underline">
+                            Begin Registration &rarr;
+                        </Link>
+                    </div>
+
+                </div>
+
+                {/* Right Bottom Footer */}
+                <div className="text-center text-[11px] text-gray-400 font-medium pt-8 flex items-center justify-between border-t border-gray-100 mt-6">
+                    <span>Smart Attendance | {new Date().getFullYear()}</span>
+                    <span>Powered by <strong className="text-[#0a643a]">MercyTech</strong></span>
+                </div>
+
+            </div>
+
+        </div>
+    );
+};
+
+export default SignIn;
