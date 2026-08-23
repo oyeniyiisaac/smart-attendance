@@ -93,6 +93,7 @@ const AdminDashboard = () => {
 
         setLoadingSessions(true);
         api.get('/admin/sessions')
+            .catch(() => api.get('/admin/sessionall'))
             .then((res) => {
                 const data = res.data.sessions || res.data.data || res.data || [];
                 setSessions(Array.isArray(data) ? data : []);
@@ -187,8 +188,8 @@ const AdminDashboard = () => {
     const availableDepartments = ['All', ...new Set(sessions.map(s => s.department).filter(Boolean))];
 
     const filteredSessions = sessions.filter(sessionItem => {
-        const isClosed = !sessionItem?.isSessionActive || (currentTime > new Date(sessionItem?.dateTimeTo));
-        if (isClosed) return false;
+        // Show all active sessions on live feed
+        if (sessionItem?.isSessionActive === false) return false;
         if (userRole === 'super_admin' && selectedDeptFilter !== 'All') {
             return sessionItem.department?.toLowerCase() === selectedDeptFilter.toLowerCase();
         }

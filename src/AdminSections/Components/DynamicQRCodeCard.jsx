@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { generateQRCodeSVG } from '../../Utils/qrGenerator';
 
+const computePasscode = (sessionId, slot) => {
+  const str = `${sessionId}_${slot}_SMART_ATTENDANCE`;
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return String(Math.abs(hash) % 900000 + 100000);
+};
+
 export function DynamicQRCodeCard({ session }) {
   const [timeLeft, setTimeLeft] = useState(20);
   const [qrSvg, setQrSvg] = useState('');
@@ -42,6 +52,8 @@ export function DynamicQRCodeCard({ session }) {
 
   const progressPercent = ((ROTATION_INTERVAL - timeLeft) / ROTATION_INTERVAL) * 100;
 
+  const currentPasscode = session ? computePasscode(session._id, currentSlot) : '------';
+
   return (
     <>
       {/* Standard Monitor Widget */}
@@ -75,6 +87,14 @@ export function DynamicQRCodeCard({ session }) {
           )}
         </div>
 
+        {/* Live 6-digit Passcode Badge */}
+        <div className="w-full bg-[#e2e9ec]/60 border border-[#bfc9bf] rounded-xl p-2.5 mb-3 flex items-center justify-between">
+          <span className="text-xs font-semibold text-slate-600">Manual Passcode:</span>
+          <span className="font-mono text-base font-bold tracking-widest text-[#0a643a] bg-white px-3 py-1 rounded-lg border border-[#a2dfc6] shadow-xs">
+            {currentPasscode.slice(0, 3)} {currentPasscode.slice(3)}
+          </span>
+        </div>
+
         {/* Countdown Progress Bar */}
         <div className="w-full bg-slate-100 rounded-full h-2 mb-2 overflow-hidden">
           <div
@@ -105,7 +125,7 @@ export function DynamicQRCodeCard({ session }) {
             <span className="material-symbols-outlined text-2xl">close</span>
           </button>
 
-          <div className="text-center max-w-xl mb-6">
+          <div className="text-center max-w-xl mb-4">
             <div className="inline-flex items-center gap-2 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider mb-2">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               Live Lecture Attendance
@@ -114,21 +134,29 @@ export function DynamicQRCodeCard({ session }) {
               {session.courseCode}: {session.courseName}
             </h2>
             <p className="text-sm text-slate-300 mt-1">
-              Point your smartphone camera at the screen to mark your attendance.
+              Point your smartphone camera at the screen or type the 6-digit passcode.
             </p>
           </div>
 
-          <div className="bg-white p-6 rounded-3xl shadow-2xl border-4 border-emerald-500/40">
+          <div className="bg-white p-6 rounded-3xl shadow-2xl border-4 border-emerald-500/40 mb-4">
             {qrSvg && (
               <div
-                className="w-80 h-80 sm:w-96 sm:h-96 flex items-center justify-center"
-                dangerouslySetInnerHTML={{ __html: qrSvg.replace('width="280"', 'width="380"').replace('height="280"', 'height="380"') }}
+                className="w-72 h-72 sm:w-84 sm:h-84 flex items-center justify-center"
+                dangerouslySetInnerHTML={{ __html: qrSvg.replace('width="280"', 'width="340"').replace('height="280"', 'height="340"') }}
               />
             )}
           </div>
 
+          {/* Projector Passcode Badge */}
+          <div className="bg-white/10 backdrop-blur-sm border border-emerald-400/40 rounded-2xl px-6 py-2.5 mb-4 flex items-center gap-3">
+            <span className="text-sm font-semibold text-emerald-200 uppercase tracking-wider">Live Passcode:</span>
+            <span className="font-mono text-2xl font-black tracking-widest text-emerald-400">
+              {currentPasscode.slice(0, 3)} {currentPasscode.slice(3)}
+            </span>
+          </div>
+
           {/* Projector Countdown Meter */}
-          <div className="w-80 sm:w-96 mt-6">
+          <div className="w-72 sm:w-84">
             <div className="w-full bg-white/10 rounded-full h-3 mb-2 overflow-hidden">
               <div
                 className="bg-emerald-400 h-full transition-all duration-1000 ease-linear rounded-full"

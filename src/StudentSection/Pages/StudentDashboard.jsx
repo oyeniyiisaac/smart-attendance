@@ -92,6 +92,7 @@ const StudentDashboard = () => {
             slot: scanPayload.slot,
             timestamp: scanPayload.timestamp,
             rawQR: scanPayload.rawQR,
+            passcode: scanPayload.passcode,
             verificationMethodChosen: 'qr'
         })
     }

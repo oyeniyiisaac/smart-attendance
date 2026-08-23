@@ -2,7 +2,26 @@ import React, { useState, useEffect } from 'react';
 import api from '../../Utils/api';
 import BackButton from '../../Components/BackButton';
 
+const getAdminRole = () => {
+    try {
+        const stored = localStorage.getItem('adminUser');
+        if (stored) {
+            const parsed = JSON.parse(stored);
+            if (parsed?.role) return parsed.role;
+        }
+        const token = localStorage.getItem('adminToken');
+        if (token) {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            return payload?.role || 'admin';
+        }
+        return 'admin';
+    } catch {
+        return 'admin';
+    }
+};
+
 const CourseManagement = () => {
+    const userRole = getAdminRole();
     const [courses, setCourses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
@@ -102,16 +121,27 @@ const CourseManagement = () => {
             <div className="flex justify-between items-center mb-6">
                 <div>
                     <h1 className="text-2xl font-bold text-[#0d1f18]">Course Management</h1>
-                    <p className="text-sm text-gray-500">Manage departmental course offerings per semester</p>
+                    <p className="text-sm text-gray-500">
+                        {userRole === 'super_admin' 
+                            ? 'Supervisory view of all departmental course offerings across faculty' 
+                            : 'Manage departmental course offerings per semester'}
+                    </p>
                 </div>
 
-                <button
-                    onClick={() => setIsAddModalOpen(true)}
-                    className="flex items-center gap-2 bg-[#0a643a] hover:bg-[#08522f] text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-colors cursor-pointer shadow-sm"
-                >
-                    <span className="material-symbols-outlined text-base">add_book</span>
-                    Add Course
-                </button>
+                {userRole !== 'super_admin' ? (
+                    <button
+                        onClick={() => setIsAddModalOpen(true)}
+                        className="flex items-center gap-2 bg-[#0a643a] hover:bg-[#08522f] text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-colors cursor-pointer shadow-sm"
+                    >
+                        <span className="material-symbols-outlined text-base">add_book</span>
+                        Add Course
+                    </button>
+                ) : (
+                    <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-50 text-amber-900 border border-amber-200">
+                        <span className="material-symbols-outlined text-sm text-amber-700">visibility</span>
+                        Supervisory View
+                    </span>
+                )}
             </div>
 
             {/* ── Filters & Search ─────────────────────────── */}
