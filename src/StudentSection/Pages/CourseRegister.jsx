@@ -71,6 +71,9 @@ export default function StudentCourseRegistration() {
     }, []);
 
     // ── Selection Logic ───────────────────────────────────────────────────
+    const [isCartModalOpen, setIsCartModalOpen] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+
     const toggleCourseSelect = (courseId) => {
         // Prevent selection if already registered or pending
         if (registeredStatusMap[courseId]) return;
@@ -100,6 +103,7 @@ export default function StudentCourseRegistration() {
     // ── Handle Submit Registration ────────────────────────────────────────
     const handleRegister = async () => {
         try {
+            setSubmitting(true);
             const token = localStorage.getItem('studentToken') || localStorage.getItem('token');
 
             if (!token) {
@@ -131,12 +135,15 @@ export default function StudentCourseRegistration() {
             );
 
             console.log('Registration Success:', response.data);
+            setIsCartModalOpen(false);
             navigate('/registration-success', { state: { registration: response.data.data } });
 
         } catch (err) {
             console.error('Failed to register courses:', err);
             const errorMessage = err.response?.data?.message || 'Failed to register courses';
             alert(errorMessage);
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -146,13 +153,8 @@ export default function StudentCourseRegistration() {
     return (
         <div className="min-h-screen bg-[#f3f7f5] font-sans text-[#2d3748] relative flex flex-col">
             
-            {/* Top Navbar */}
-            {/* <div className="fixed top-0 left-0 right-0 z-50 bg-white">
-                <NavBarTop />
-            </div> */}
-
             {/* Main Content Area */}
-            <main className="max-w-7xl mx-auto w-full px-6 pt-6 pb-24 space-y-6 flex-grow">
+            <main className="max-w-7xl mx-auto w-full px-6 pt-6 pb-48 md:pb-40 space-y-6 flex-grow">
 
                 <div className="flex justify-between items-center">
                     <BackButton to="/student/dashboard" label="Back to Student Dashboard" />
@@ -367,43 +369,129 @@ export default function StudentCourseRegistration() {
                 )}
             </main>
 
-            {/* Floating Summary Bar */}
-            <div className="fixed bottom-26 lg:bottom-12 left-1/2 -translate-x-1/2 lg:-translate-x-2/5 w-[92%] max-w-3xl bg-[#2a3437] text-white rounded-2xl p-3 shadow-2xl flex items-center justify-between border border-gray-700/50 z-30">
-                <div className="flex items-center gap-3">
-                    <div className="bg-[#0a643a] p-2.5 rounded-xl flex items-center justify-center">
-                        <span className="material-symbols-outlined text-white text-lg">
-                            description
-                        </span>
+            {/* Floating Summary Bar (Only shown when courses are selected) */}
+            {selectedCourseIds.length > 0 && (
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[92%] max-w-2xl bg-[#1e2925] text-white rounded-2xl p-3.5 shadow-2xl flex flex-col sm:flex-row items-center justify-between border border-emerald-900/60 z-40 gap-3 backdrop-blur-md animate-fade-in">
+                    <div className="flex items-center gap-3 w-full sm:w-auto">
+                        <div className="bg-[#0a643a] p-2.5 rounded-xl flex items-center justify-center shrink-0">
+                            <span className="material-symbols-outlined text-white text-lg">
+                                shopping_bag
+                            </span>
+                        </div>
+
+                        <div>
+                            <p className="text-[11px] text-emerald-300 font-medium">
+                                Registration Cart
+                            </p>
+                            <p className="text-sm font-bold text-white tracking-wide">
+                                {totalUnits} Units Selected{' '}
+                                <span className="text-gray-400 font-normal mx-1">•</span>{' '}
+                                {selectedCourseIds.length}{' '}
+                                {selectedCourseIds.length === 1 ? 'Course' : 'Courses'}
+                            </p>
+                        </div>
                     </div>
 
-                    <div>
-                        <p className="text-[11px] text-gray-400 font-medium">
-                            Registration Summary
-                        </p>
-                        <p className="text-sm font-bold text-white tracking-wide">
-                            {totalUnits} Units Selected{' '}
-                            <span className="text-gray-400 font-normal mx-1">|</span>{' '}
-                            {selectedCourseIds.length}{' '}
-                            {selectedCourseIds.length === 1 ? 'Course' : 'Courses'}
-                        </p>
+                    <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+                        <button 
+                            onClick={() => setIsCartModalOpen(true)}
+                            className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 border border-white/20 text-gray-100 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                        >
+                            <span className="material-symbols-outlined text-base">visibility</span>
+                            <span>View Cart</span>
+                        </button>
+
+                        <button 
+                            onClick={handleRegister} 
+                            disabled={submitting}
+                            className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl text-xs font-bold bg-[#6ee7b7] hover:bg-[#5ee0ad] disabled:opacity-50 text-[#0d1f18] transition-colors cursor-pointer shadow-sm flex items-center justify-center gap-1.5"
+                        >
+                            <span className="material-symbols-outlined text-base">how_to_reg</span>
+                            <span>{submitting ? 'Registering...' : 'Finalize Registration'}</span>
+                        </button>
                     </div>
                 </div>
+            )}
 
-                <div className="flex items-center gap-3">
-                    <button className="px-4 py-2 rounded-xl text-xs font-semibold bg-[#374347] hover:bg-[#435257] border border-gray-600 text-gray-200 transition-colors cursor-pointer">
-                        View Cart
-                    </button>
+            {/* View Cart Modal */}
+            {isCartModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-fade-in">
+                    <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[85vh] border border-gray-100">
+                        {/* Modal Header */}
+                        <div className="bg-[#0a643a] text-white p-5 flex items-center justify-between">
+                            <div className="flex items-center gap-2.5">
+                                <span className="material-symbols-outlined text-2xl">shopping_cart</span>
+                                <div>
+                                    <h3 className="font-bold text-base">Selected Courses ({selectedCourseIds.length})</h3>
+                                    <p className="text-xs text-emerald-100">{totalUnits} Total Credit Units</p>
+                                </div>
+                            </div>
+                            <button 
+                                onClick={() => setIsCartModalOpen(false)}
+                                className="p-1 rounded-lg hover:bg-white/20 text-white transition-colors cursor-pointer"
+                            >
+                                <span className="material-symbols-outlined text-xl">close</span>
+                            </button>
+                        </div>
 
-                    <button onClick={handleRegister} className="px-5 py-2 rounded-xl text-xs font-bold bg-[#6ee7b7] hover:bg-[#5ee0ad] text-[#0d1f18] transition-colors cursor-pointer shadow-sm">
-                        Finalize Registration
-                    </button>
+                        {/* Modal Course List */}
+                        <div className="p-5 overflow-y-auto space-y-3 flex-grow divide-y divide-gray-100">
+                            {selectedCoursesList.map((course) => (
+                                <div key={course._id} className="pt-3 first:pt-0 flex items-center justify-between gap-3">
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-0.5">
+                                            <span className="text-xs font-black font-mono px-2 py-0.5 rounded bg-emerald-50 text-[#0a643a] border border-emerald-200">
+                                                {course.courseCode}
+                                            </span>
+                                            <span className="text-xs text-slate-500 font-medium">
+                                                {course.unit || course.units || 3} Units
+                                            </span>
+                                        </div>
+                                        <h4 className="text-sm font-bold text-slate-800 line-clamp-1">{course.courseTitle}</h4>
+                                        <p className="text-xs text-slate-400">{course.department}</p>
+                                    </div>
+
+                                    <button
+                                        onClick={() => toggleCourseSelect(course._id)}
+                                        className="text-red-500 hover:bg-red-50 p-2 rounded-xl transition-colors cursor-pointer shrink-0"
+                                        title="Remove from cart"
+                                    >
+                                        <span className="material-symbols-outlined text-lg">delete</span>
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-3">
+                            <button
+                                onClick={() => setSelectedCourseIds([])}
+                                className="px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-200 rounded-xl transition-colors cursor-pointer"
+                            >
+                                Clear All
+                            </button>
+
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => setIsCartModalOpen(false)}
+                                    className="px-4 py-2.5 text-xs font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer"
+                                >
+                                    Add More
+                                </button>
+
+                                <button
+                                    onClick={handleRegister}
+                                    disabled={submitting}
+                                    className="px-5 py-2.5 text-xs font-bold text-white bg-[#0a643a] hover:bg-[#084f2e] disabled:opacity-50 rounded-xl transition-colors shadow-sm cursor-pointer flex items-center gap-1.5"
+                                >
+                                    <span className="material-symbols-outlined text-base">how_to_reg</span>
+                                    <span>{submitting ? 'Registering...' : 'Finalize Registration'}</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-
-            {/* Bottom Navbar */}
-            {/* <div className="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200">
-                <Navbar />
-            </div> */}
+            )}
         </div>
     );
 }
