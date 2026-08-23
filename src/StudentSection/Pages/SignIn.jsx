@@ -187,7 +187,7 @@ const SignIn = () => {
                                 </button>
                             </div>
                         </form>
-                        <p className='text-[#3f4941] text-sm mt-4 text-center'>Don't have an account? <a href="/" className='text-[#0a643a] hover:underline'><strong>Sign up</strong></a></p>
+                        <p className='text-[#3f4941] text-sm mt-4 text-center'>Don't have an account? <a href="/signup" className='text-[#0a643a] hover:underline'><strong>Sign up</strong></a></p>
                     </div>
                 </div>
             </div>
