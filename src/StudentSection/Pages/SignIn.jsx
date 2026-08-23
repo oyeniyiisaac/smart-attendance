@@ -130,7 +130,7 @@ const SignIn = () => {
                         </div>
                         <form id='studentForm' onSubmit={formik.handleSubmit} style={{ display: activeForm === 'student' ? 'block' : 'none' }}>
                             <label className='text-[#3f4941] text-lg'>Matric No</label>
-                            <input className="w-full border border-outline p-3 mt-2 rounded-lg focus:ring-0.5 focus:ring-[#0a643a] focus:ring-opacity-10 focus:border-[#0a643a] outline-none transition-all font-body-md text-body-md" placeholder="john.doe@email.com" required="" type="string" id='studentEmail' name="matricno" onChange={formik.handleChange} onBlur={formik.handleBlur} value={formik.values.matricno} />
+                            <input className="w-full border border-outline p-3 mt-2 rounded-lg focus:ring-0.5 focus:ring-[#0a643a] focus:ring-opacity-10 focus:border-[#0a643a] outline-none transition-all font-body-md text-body-md" placeholder="2022001234" required="" type="string" id='studentEmail' name="matricno" onChange={formik.handleChange} onBlur={formik.handleBlur} value={formik.values.matricno} />
                             <small className='block mb-3 text-[#ba1a1a] font-semibold'>{formik.touched.matricno && formik.errors.matricno}</small>
 
                             <label className='text-[#3f4941] text-lg mt-4 block'>Password</label>
