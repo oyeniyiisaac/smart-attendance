@@ -27,10 +27,12 @@ import LandingPage from '../LandingPage'
 import StudentProfileSettings from './StudentSection/Pages/StudentProfileSettings'
 import ForgotPassword from './StudentSection/Pages/ForgotPassword'
 import AdminSettings from './AdminSections/Pages/AdminSettings'
+import { AOSWrapper } from './Utils/aos'
+import BotpressChat from './Components/BotpressChat'
 
 const App = () => {
   return (
-    <>
+    <AOSWrapper>
       <Routes>
         <Route path='/' element={<LandingPage />} />
         <Route path='/signup' element={<SignUp />} />
@@ -65,12 +67,13 @@ const App = () => {
         {/* <Route path='/adminsidebar' element={<Adminsidebar/>} /> */}
         <Route path='/registration-success' element={<RegistrationSuccess />} />
 
-
         <Route path='*' element={<NotFound />} />
         {/* <Route path='/:ID' element={<SideBar/>} /> */}
       </Routes>
-      {/* {pages[currentPath] ?? <SignIn />} */}
-    </>
+      
+      {/* 🤖 Institutional Botpress Chatbot Widget on Every Page */}
+      <BotpressChat />
+    </AOSWrapper>
   )
 }
 

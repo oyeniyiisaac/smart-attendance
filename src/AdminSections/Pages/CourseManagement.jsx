@@ -117,23 +117,19 @@ const CourseManagement = () => {
                 <BackButton to="/admin/lecturer-dashboard" label="Back to Admin Dashboard" />
             </div>
 
-            {/* ── Header Bar ───────────────────────────────── */}
-            <div className="flex justify-between items-center mb-6">
+            {/* ── Top Bar Header ─────────────────────────────── */}
+            <div className="flex justify-between items-center mb-6" data-aos="fade-down" data-aos-duration="500">
                 <div>
                     <h1 className="text-2xl font-bold text-[#0d1f18]">Course Management</h1>
-                    <p className="text-sm text-gray-500">
-                        {userRole === 'super_admin' 
-                            ? 'Supervisory view of all departmental course offerings across faculty' 
-                            : 'Manage departmental course offerings per semester'}
-                    </p>
+                    <p className="text-xs text-slate-500 mt-0.5">Manage and organize courses across semesters</p>
                 </div>
 
                 {userRole !== 'super_admin' ? (
-                    <button
+                    <button 
                         onClick={() => setIsAddModalOpen(true)}
-                        className="flex items-center gap-2 bg-[#0a643a] hover:bg-[#08522f] text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-colors cursor-pointer shadow-sm"
+                        className="flex items-center gap-2 bg-[#0a643a] hover:bg-[#08522f] text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-colors shadow-sm cursor-pointer"
                     >
-                        <span className="material-symbols-outlined text-base">add_book</span>
+                        <span className="material-symbols-outlined text-base">add_circle</span>
                         Add Course
                     </button>
                 ) : (
@@ -145,7 +141,7 @@ const CourseManagement = () => {
             </div>
 
             {/* ── Filters & Search ─────────────────────────── */}
-            <div className="flex flex-wrap gap-4 mb-6 items-center justify-between">
+            <div className="flex flex-wrap gap-4 mb-6 items-center justify-between" data-aos="fade-down" data-aos-delay="100">
                 <div className="relative flex-1 max-w-md">
                     <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-lg">
                         search
@@ -173,7 +169,7 @@ const CourseManagement = () => {
             </div>
 
             {/* ── Course Table ─────────────────────────────── */}
-            <div className="bg-white border border-gray-200/80 rounded-2xl shadow-sm overflow-hidden">
+            <div className="bg-white border border-gray-200/80 rounded-2xl shadow-sm overflow-hidden" data-aos="fade-up" data-aos-delay="150">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>

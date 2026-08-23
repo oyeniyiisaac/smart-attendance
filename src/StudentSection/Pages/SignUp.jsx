@@ -208,11 +208,11 @@ const SignUp = () => {
     };
     return (
         <>
-            <div className='bg-[#f5f5f5] h-screen flex items-center justify-center font-sans'>
-                <div className='container mx-auto py-0 w-[450px] border-1 border-gray-300 rounded-lg'>
-                    <div className='bg-[#f0f4f1] p-6 rounded-lg'>
-                        <h4 className='text-[#0a643a] mb-2'>Create Account</h4>
-                        <p className='text-[#3f4941]'>Join the Institutional Smart Attendance System</p>
+            <div className='bg-[#f5f5f5] min-h-screen flex items-center justify-center font-sans p-4 py-8'>
+                <div className='container mx-auto py-0 w-[480px] max-w-full border border-gray-300 rounded-2xl shadow-lg overflow-hidden' data-aos="zoom-in" data-aos-duration="500">
+                    <div className='bg-[#f0f4f1] p-6'>
+                        <h4 className='text-[#0a643a] text-xl font-bold mb-1'>Create Account</h4>
+                        <p className='text-[#3f4941] text-xs font-medium'>Join the Institutional Smart Attendance System</p>
                     </div>
                     <hr className='text-gray-300' />
                     <div className='bg-white p-6'>

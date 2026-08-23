@@ -206,7 +206,7 @@ const AdminDashboard = () => {
         <div className="min-h-screen px-4 lg:px-8 pb-24 lg:pb-8 pt-3 max-w-7xl mx-auto">
 
             {/* ── Role Banner & Header ─────────────────────────────── */}
-            <div className="mb-6 bg-white border border-gray-200/80 rounded-2xl p-5 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="mb-6 bg-white border border-gray-200/80 rounded-2xl p-5 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4" data-aos="fade-down" data-aos-duration="550">
                 <div>
                     <div className="flex items-center gap-2 mb-1">
                         <span className="text-xl md:text-2xl font-bold text-slate-800">
@@ -240,15 +240,23 @@ const AdminDashboard = () => {
 
             {/* ── Stat Cards ──────────────────────────────── */}
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-5 mb-8">
-                <Cards icon="person" title="Total Students" value={loadingStats ? "..." : String(stats.totalStudents)} bgColor="bg-[#e8f0ec]" textColor="text-[#0a634a]" valueColor="text-[#0a634a]" />
-                <Cards icon="person_check" title="Present Today" value={loadingStats ? "..." : String(stats.presentToday)} bgColor="bg-[#baeed9]" textColor="text-[#0a634a]" valueColor="text-[#0a634a]" />
-                <Cards icon="person_remove" title="Absent Today" value={loadingStats ? "..." : String(stats.absentToday)} bgColor="bg-[#ffdad6]" textColor="text-[#ba1a1a]" valueColor="text-[#ba1a1a]" />
-                <Cards icon="warning" title="Flagged < 75%" value={loadingStats ? "..." : String(stats.flaggedLowAttendance)} bgColor="bg-[#e2e3e3]" textColor="text-[#535856]" valueColor="text-[#535856]" />
+                <div data-aos="fade-up" data-aos-delay="50">
+                    <Cards icon="person" title="Total Students" value={loadingStats ? "..." : String(stats.totalStudents)} bgColor="bg-[#e8f0ec]" textColor="text-[#0a634a]" valueColor="text-[#0a634a]" />
+                </div>
+                <div data-aos="fade-up" data-aos-delay="120">
+                    <Cards icon="person_check" title="Present Today" value={loadingStats ? "..." : String(stats.presentToday)} bgColor="bg-[#baeed9]" textColor="text-[#0a634a]" valueColor="text-[#0a634a]" />
+                </div>
+                <div data-aos="fade-up" data-aos-delay="190">
+                    <Cards icon="person_remove" title="Absent Today" value={loadingStats ? "..." : String(stats.absentToday)} bgColor="bg-[#ffdad6]" textColor="text-[#ba1a1a]" valueColor="text-[#ba1a1a]" />
+                </div>
+                <div data-aos="fade-up" data-aos-delay="260">
+                    <Cards icon="warning" title="Flagged < 75%" value={loadingStats ? "..." : String(stats.flaggedLowAttendance)} bgColor="bg-[#e2e3e3]" textColor="text-[#535856]" valueColor="text-[#535856]" />
+                </div>
             </div>
 
             {/* ── Faculty Super Admin Department Filter Tabs ─────────── */}
             {userRole === 'super_admin' && availableDepartments.length > 2 && (
-                <div className="bg-white border border-gray-200/80 rounded-2xl p-4 shadow-sm mb-6">
+                <div className="bg-white border border-gray-200/80 rounded-2xl p-4 shadow-sm mb-6" data-aos="fade-up">
                     <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-2">
                         Filter Live Lectures By Department:
                     </span>
@@ -271,7 +279,7 @@ const AdminDashboard = () => {
             )}
 
             {/* ── Today's Sessions Feed ────────────────────────── */}
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-center mb-4" data-aos="fade-up">
                 <div className="flex items-center gap-2">
                     <h2 className="text-lg font-bold text-[#1a1c1a]">Active & Upcoming Lecture Sessions</h2>
                     <span className="text-xs bg-[#baeed9] text-[#0a643a] font-bold px-2 py-0.5 rounded-full">
@@ -291,12 +299,12 @@ const AdminDashboard = () => {
             {loadingSessions ? (
                 <div className="py-8 text-center text-sm text-slate-500 font-medium animate-pulse">Loading live session feeds...</div>
             ) : filteredSessions.length === 0 ? (
-                <div className="bg-white border border-dashed border-gray-300 rounded-2xl p-8 text-center text-slate-400 font-medium text-sm mb-10">
+                <div className="bg-white border border-dashed border-gray-300 rounded-2xl p-8 text-center text-slate-400 font-medium text-sm mb-10" data-aos="fade-up">
                     No active or upcoming lecture sessions currently ongoing.
                 </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 md:gap-6 mb-10">
-                    {filteredSessions.slice(0, 4).map((sessionItem) => {
+                    {filteredSessions.slice(0, 4).map((sessionItem, sIdx) => {
                         const isLiveOpen =
                             sessionItem.isSessionActive &&
                             currentTime >= new Date(sessionItem.dateTimeFrom) &&
@@ -311,19 +319,20 @@ const AdminDashboard = () => {
                             : "09:00 AM";
 
                         return (
-                            <SessionCard
-                                key={sessionItem._id}
-                                id={sessionItem._id}
-                                sessionName={sessionItem.courseName}
-                                courseName={`${sessionItem.courseCode}: ${sessionItem.courseName}`}
-                                sessionStatus={sessionStatus}
-                                time={displayTime}
-                                bgStatusColor={bgStatusColor}
-                                textStatusColor={textStatusColor}
-                                icon="location_on"
-                                location={sessionItem.venue || "Unassigned"}
-                                onSessionClosed={loadDashboardData}
-                            />
+                            <div key={sessionItem._id} data-aos="zoom-in" data-aos-delay={(sIdx % 4) * 80}>
+                                <SessionCard
+                                    id={sessionItem._id}
+                                    sessionName={sessionItem.courseName}
+                                    courseName={`${sessionItem.courseCode}: ${sessionItem.courseName}`}
+                                    sessionStatus={sessionStatus}
+                                    time={displayTime}
+                                    bgStatusColor={bgStatusColor}
+                                    textStatusColor={textStatusColor}
+                                    icon="location_on"
+                                    location={sessionItem.venue || "Unassigned"}
+                                    onSessionClosed={loadDashboardData}
+                                />
+                            </div>
                         );
                     })}
                 </div>
@@ -331,7 +340,7 @@ const AdminDashboard = () => {
 
             {/* ── Invite Admin / Staff Panel ──────────────────────── */}
             {userRole !== 'course_rep' && (
-                <div className="border border-gray-200 rounded-2xl bg-white shadow-sm overflow-hidden mb-6">
+                <div className="border border-gray-200 rounded-2xl bg-white shadow-sm overflow-hidden mb-6" data-aos="fade-up">
                     <div className="bg-[#f0f4f1] px-6 py-4 flex items-center gap-3 border-b border-gray-200">
                         <span className="material-symbols-outlined text-[#0a643a] text-3xl">
                             person_add

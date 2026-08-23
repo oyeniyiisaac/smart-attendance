@@ -161,7 +161,7 @@ export default function StudentCourseRegistration() {
                 </div>
 
                 {/* Search Bar */}
-                <div className="relative max-w-2xl">
+                <div className="relative max-w-2xl" data-aos="fade-down" data-aos-duration="500">
                     <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-lg">
                         search
                     </span>
@@ -175,7 +175,7 @@ export default function StudentCourseRegistration() {
                 </div>
 
                 {/* Department Pills */}
-                <div className="flex flex-wrap gap-2.5 items-center">
+                <div className="flex flex-wrap gap-2.5 items-center" data-aos="fade-down" data-aos-delay="100">
                     {departments.map((dept) => {
                         const isActive = selectedDept === dept;
                         return (
@@ -196,7 +196,7 @@ export default function StudentCourseRegistration() {
 
                 {/* Error Banner */}
                 {error && (
-                    <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm border border-red-200">
+                    <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm border border-red-200" data-aos="shake">
                         {error}
                     </div>
                 )}
@@ -207,12 +207,12 @@ export default function StudentCourseRegistration() {
                         Loading courses from database...
                     </div>
                 ) : filteredCourses.length === 0 ? (
-                    <div className="text-center py-20 text-gray-400 font-medium">
+                    <div className="text-center py-20 text-gray-400 font-medium" data-aos="fade-up">
                         No courses found matching your criteria.
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
-                        {filteredCourses.map((course) => {
+                        {filteredCourses.map((course, cIdx) => {
                             const courseId = course._id;
                             const isSelected = selectedCourseIds.includes(courseId);
                             const registrationStatus = registeredStatusMap[courseId]; // "Approved", "Pending", or undefined
@@ -226,6 +226,8 @@ export default function StudentCourseRegistration() {
                             return (
                                 <div
                                     key={courseId}
+                                    data-aos="fade-up"
+                                    data-aos-delay={(cIdx % 6) * 70}
                                     className={`bg-white rounded-2xl border transition-all flex flex-col justify-between overflow-hidden shadow-sm ${
                                         isSelected
                                             ? 'border-[#0a643a] ring-2 ring-[#0a643a]/20'

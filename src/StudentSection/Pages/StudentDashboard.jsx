@@ -210,7 +210,7 @@ const StudentDashboard = () => {
                 <div className='pt-3 px-4 lg:px-8 w-full pb-20 max-w-7xl mx-auto'>
                     
                     {/* Header Welcome Section */}
-                    <div className='flex flex-col md:flex-row md:items-center justify-between bg-white p-6 rounded-xl border border-[#bfc9bf] shadow-sm gap-4 mt-6 lg:mt-0'>
+                    <div className='flex flex-col md:flex-row md:items-center justify-between bg-white p-6 rounded-xl border border-[#bfc9bf] shadow-sm gap-4 mt-6 lg:mt-0' data-aos="fade-down" data-aos-duration="550">
                         <div>
                             <div className='flex items-center gap-2 mb-1'>
                                 <h1 className='text-2xl md:text-3xl font-bold text-slate-800'>Welcome back, {firstname || "Student"}! 👋</h1>
@@ -236,6 +236,8 @@ const StudentDashboard = () => {
                             onClick={() => navigate('/student/history')}
                             className='bg-white border border-[#bfc9bf] hover:border-[#0a643a] p-4 rounded-xl shadow-sm flex items-center justify-between transition-all cursor-pointer'
                             title="Click to view full Attendance History"
+                            data-aos="fade-up"
+                            data-aos-delay="50"
                         >
                             <div>
                                 <span className='text-xs text-[#3f4941] font-semibold uppercase tracking-wider block mb-1'>Overall Attendance</span>
@@ -252,6 +254,8 @@ const StudentDashboard = () => {
                             onClick={() => navigate('/student/history')}
                             className='bg-white border border-[#bfc9bf] hover:border-[#0a643a] p-4 rounded-xl shadow-sm flex items-center justify-between transition-all cursor-pointer'
                             title="Click to view attended sessions breakdown"
+                            data-aos="fade-up"
+                            data-aos-delay="150"
                         >
                             <div>
                                 <span className='text-xs text-[#3f4941] font-semibold uppercase tracking-wider block mb-1'>Classes Attended</span>
@@ -268,6 +272,8 @@ const StudentDashboard = () => {
                             onClick={() => navigate('/student/eligibility')}
                             className='bg-white border border-[#bfc9bf] hover:border-[#0a643a] p-4 rounded-xl shadow-sm flex items-center justify-between transition-all cursor-pointer'
                             title="Click to view 75% Exam Clearance breakdown"
+                            data-aos="fade-up"
+                            data-aos-delay="250"
                         >
                             <div>
                                 <span className='text-xs text-[#3f4941] font-semibold uppercase tracking-wider block mb-1'>Exam Eligibility</span>
@@ -293,7 +299,7 @@ const StudentDashboard = () => {
                     <div className='grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8 items-start'>
                         
                         {/* Left Aspect: Active Sessions (Takes 2 Columns) */}
-                        <div className='lg:col-span-2 flex flex-col justify-between space-y-4'>
+                        <div className='lg:col-span-2 flex flex-col justify-between space-y-4' data-aos="fade-right" data-aos-duration="600">
                             <div className='flex items-center justify-between'>
                                 <div className='flex items-center gap-2'>
                                     <div className='p-1 bg-[#0a643a] rounded-full w-[8px] h-[8px] animate-ping'></div>
@@ -310,7 +316,7 @@ const StudentDashboard = () => {
                                 </div>
                             ) : sessions.length === 0 ? (
                                 !hasRegisteredCourses ? (
-                                    <div className="bg-white border border-amber-200 rounded-xl p-8 text-center shadow-sm flex flex-col items-center justify-center gap-3">
+                                    <div className="bg-white border border-amber-200 rounded-xl p-8 text-center shadow-sm flex flex-col items-center justify-center gap-3" data-aos="zoom-in">
                                         <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-700 flex items-center justify-center">
                                             <span className="material-symbols-outlined text-2xl">app_registration</span>
                                         </div>
@@ -329,7 +335,7 @@ const StudentDashboard = () => {
                                         </button>
                                     </div>
                                 ) : (
-                                    <div className="bg-white border border-[#bfc9bf] rounded-xl p-8 text-center shadow-sm flex flex-col items-center justify-center gap-3">
+                                    <div className="bg-white border border-[#bfc9bf] rounded-xl p-8 text-center shadow-sm flex flex-col items-center justify-center gap-3" data-aos="zoom-in">
                                         <div className="w-12 h-12 rounded-full bg-[#e2e9ec] flex items-center justify-center text-[#3f4941]">
                                             <span className="material-symbols-outlined text-2xl">event_busy</span>
                                         </div>
@@ -349,7 +355,7 @@ const StudentDashboard = () => {
                                 )
                             ) : (
                                 <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                                    {sessions.map((sessionItem) => {
+                                    {sessions.map((sessionItem, idx) => {
                                         const displayTimeFrom = sessionItem.dateTimeFrom
                                             ? new Date(sessionItem.dateTimeFrom).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                                             : "N/A";
@@ -359,7 +365,12 @@ const StudentDashboard = () => {
                                             : "N/A";
 
                                         return (
-                                            <div key={sessionItem._id} className='bg-white rounded-xl border border-[#bfc9bf] flex flex-col justify-between shadow-sm overflow-hidden hover:shadow-md transition-shadow'>
+                                            <div 
+                                                key={sessionItem._id} 
+                                                className='bg-white rounded-xl border border-[#bfc9bf] flex flex-col justify-between shadow-sm overflow-hidden hover:shadow-md transition-shadow'
+                                                data-aos="zoom-in"
+                                                data-aos-delay={(idx % 4) * 80}
+                                            >
                                                 <div className='bg-[#e2e9ec] flex justify-between p-3.5 items-center border-b border-[#bfc9bf]'>
                                                     <span className='text-xs text-[#3f4941] font-bold uppercase tracking-wider'>
                                                         {sessionItem.courseCode}
@@ -414,7 +425,7 @@ const StudentDashboard = () => {
                         </div>
 
                         {/* Right Aspect: Quick Info & Notices (Takes 1 Column) */}
-                        <div className='space-y-4'>
+                        <div className='space-y-4' data-aos="fade-left" data-aos-duration="600">
                             <h2 className='text-lg font-bold text-slate-800'>Class Announcements</h2>
                             
                             <div className='bg-white border border-[#bfc9bf] rounded-xl p-5 shadow-sm space-y-4 mb-6'>

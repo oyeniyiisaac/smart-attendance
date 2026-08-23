@@ -54,7 +54,7 @@ const StudentManagement = () => {
             </div>
 
             {/* ── Top Bar Header ─────────────────────────────── */}
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex justify-between items-center mb-6" data-aos="fade-down" data-aos-duration="500">
                 <div className="flex items-center gap-3">
                     <h1 className="text-2xl font-bold text-[#0d1f18]">Student Management</h1>
                 </div>
@@ -69,7 +69,7 @@ const StudentManagement = () => {
             </div>
 
             {/* ── Search Input Filter ────────────────────────── */}
-            <div className="mb-6 max-w-md relative">
+            <div className="mb-6 max-w-md relative" data-aos="fade-down" data-aos-delay="100">
                 <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-lg">
                     search
                 </span>
@@ -86,7 +86,7 @@ const StudentManagement = () => {
             </div>
 
             {/* ── Student Data Table Container ───────────────── */}
-            <div className="bg-white border border-gray-200/80 rounded-2xl shadow-sm overflow-hidden">
+            <div className="bg-white border border-gray-200/80 rounded-2xl shadow-sm overflow-hidden" data-aos="fade-up" data-aos-delay="150">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
