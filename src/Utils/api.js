@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getDeviceIdSync } from './deviceManager';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://smart-backend-1-q3fb.onrender.com';
 
@@ -9,9 +10,19 @@ const api = axios.create({
     },
 });
 
-// Request Interceptor: Route-Aware Token Injection
+// Request Interceptor: Route-Aware Token & Persistent Device ID Injection
 api.interceptors.request.use(
     (config) => {
+        // Automatically inject persistent device ID for anti-proxy enforcement
+        try {
+            const deviceId = getDeviceIdSync();
+            if (deviceId) {
+                config.headers['x-device-id'] = deviceId;
+            }
+        } catch {
+            // Silently continue if storage fails
+        }
+
         const adminToken = localStorage.getItem('adminToken');
         const studentToken = localStorage.getItem('token') || localStorage.getItem('studentToken');
 

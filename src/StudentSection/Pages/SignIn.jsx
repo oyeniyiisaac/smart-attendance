@@ -1,4 +1,5 @@
 import api from '../../Utils/api';
+import { getOrCreateDeviceId, getDeviceInfo, checkIsPrivateMode } from '../../Utils/deviceManager';
 import { useFormik } from 'formik';
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
@@ -7,7 +8,7 @@ import * as yup from 'yup';
 const SignIn = () => {
     const navigate = useNavigate();
     const [activeForm, setActiveForm] = useState('student');
-    const [studentAlert, setStudentAlert] = useState(false);
+    const [studentAlert, setStudentAlert] = useState(null);
     const [showPassword, setShowPassword] = useState(false);
 
     const formik = useFormik({
@@ -16,20 +17,47 @@ const SignIn = () => {
             password: ""
         },
         onSubmit: async (values, { setSubmitting }) => {
-            setStudentAlert(false);
+            setStudentAlert(null);
             try {
-                const response = await api.post('/login', values);
+                // Anti-proxy check: Verify standard browsing mode
+                const isPrivate = await checkIsPrivateMode();
+                if (isPrivate) {
+                    setStudentAlert({
+                        type: 'warning',
+                        code: 'PRIVATE_MODE',
+                        message: "Private/Incognito mode detected. University attendance policy requires standard browsing mode to ensure verified 1-to-1 device binding. Please switch to a normal tab."
+                    });
+                    setSubmitting(false);
+                    return;
+                }
+
+                const deviceId = await getOrCreateDeviceId();
+                const deviceInfo = getDeviceInfo();
+
+                const response = await api.post('/login', {
+                    ...values,
+                    deviceId,
+                    deviceInfo
+                });
+
                 if (response.status === 200 || response.status === 201) {
-                    localStorage.token = response.data.token;
+                    localStorage.setItem('token', response.data.token);
+                    localStorage.setItem('studentToken', response.data.token);
+                    if (response.data.deviceInfo) {
+                        localStorage.setItem('studentDevice', JSON.stringify(response.data.deviceInfo));
+                    }
                     navigate('/student/dashboard');
                 }
             } catch (err) {
                 console.error("Student Login Error:", err);
-                if (err.response?.status === 401 || err.response?.status === 400) {
-                    setStudentAlert(true);
-                } else {
-                    setStudentAlert(true);
-                }
+                const errorData = err.response?.data;
+                const msg = errorData?.message || "Invalid Matric number or password. Please verify and retry.";
+                const code = errorData?.code || 'AUTH_ERROR';
+                setStudentAlert({
+                    type: code.includes('DEVICE') ? 'device_error' : 'error',
+                    code,
+                    message: msg
+                });
             } finally {
                 setSubmitting(false);
             }
@@ -203,9 +231,26 @@ const SignIn = () => {
                     {activeForm === 'student' && (
                         <form onSubmit={formik.handleSubmit} className="space-y-4">
                             {studentAlert && (
-                                <div className="flex items-center gap-2.5 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-xs font-medium animate-pulse">
-                                    <span className="material-symbols-outlined text-base">error</span>
-                                    <span>Invalid Matric number or password. Please verify and retry.</span>
+                                <div className={`p-4 rounded-xl text-xs font-medium border flex items-start gap-3 transition-all ${
+                                    studentAlert.type === 'device_error'
+                                        ? 'bg-amber-50 border-amber-300 text-amber-900 shadow-sm'
+                                        : studentAlert.type === 'warning'
+                                        ? 'bg-orange-50 border-orange-300 text-orange-900 shadow-sm'
+                                        : 'bg-red-50 border-red-200 text-red-700'
+                                }`}>
+                                    <span className={`material-symbols-outlined text-xl shrink-0 mt-0.5 ${
+                                        studentAlert.type === 'device_error' ? 'text-amber-600' : studentAlert.type === 'warning' ? 'text-orange-600' : 'text-red-600'
+                                    }`}>
+                                        {studentAlert.type === 'device_error' ? 'phonelink_lock' : studentAlert.type === 'warning' ? 'visibility_off' : 'error'}
+                                    </span>
+                                    <div className="space-y-1 text-left">
+                                        <span className="font-bold block text-xs">
+                                            {studentAlert.code === 'DEVICE_MISMATCH' ? '🔒 Device Lock Active' :
+                                             studentAlert.code === 'DEVICE_ALREADY_BOUND' ? '⚠️ Device Conflict' :
+                                             studentAlert.type === 'warning' ? 'Incognito Mode Restricted' : 'Authentication Error'}
+                                        </span>
+                                        <p className="leading-relaxed text-[11px] opacity-90">{studentAlert.message}</p>
+                                    </div>
                                 </div>
                             )}
 
@@ -282,6 +327,12 @@ const SignIn = () => {
                                 <span>{formik.isSubmitting ? "Signing In..." : "Sign In"}</span>
                                 <span>&rarr;</span>
                             </button>
+
+                            {/* Device Security Badge */}
+                            <div className="flex items-center justify-center gap-1.5 text-[11px] text-gray-400 pt-1">
+                                <span className="material-symbols-outlined text-emerald-600 text-sm">phonelink_lock</span>
+                                <span>Protected by 1-to-1 Device Hardware Binding</span>
+                            </div>
                         </form>
                     )}
 

@@ -1,4 +1,5 @@
 import api from '../../Utils/api'
+import { getDeviceIdSync } from '../../Utils/deviceManager'
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ToastContainer, toast } from 'react-toastify'
@@ -179,7 +180,11 @@ const StudentDashboard = () => {
     const sendToServer = async (payloadData) => {
         try {
             setVerifying(true);
-            const response = await api.post('/verify-attendance', payloadData);
+            const enrichedPayload = {
+                ...payloadData,
+                deviceId: getDeviceIdSync()
+            };
+            const response = await api.post('/verify-attendance', enrichedPayload);
 
             if (response.data.verified) {
                 toast.success(response.data.message || "Attendance marked successfully! 🎉");

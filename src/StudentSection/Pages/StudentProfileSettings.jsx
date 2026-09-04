@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../Utils/api';
+import { getDeviceIdSync } from '../../Utils/deviceManager';
 import { Modal, ModalBody, ModalHeader } from "flowbite-react";
 import { HiOutlineExclamationCircle } from "react-icons/hi";
 import { ToastContainer, toast } from 'react-toastify';
@@ -56,7 +57,28 @@ export default function StudentProfileSettings() {
     const [discrepancyForm, setDiscrepancyForm] = useState({ courseCode: '', date: '', reason: '' });
     const [gpsStatus, setGpsStatus] = useState('Checking...');
 
-    // Test Geolocation Diagnostic on Mount
+    // 🔒 1-to-1 Bound Device State
+    const [deviceStatus, setDeviceStatus] = useState(null);
+    const [loadingDevice, setLoadingDevice] = useState(true);
+    const [openResetDeviceModal, setOpenResetDeviceModal] = useState(false);
+    const [resetReason, setResetReason] = useState('');
+    const [submittingReset, setSubmittingReset] = useState(false);
+
+    const fetchDeviceStatus = async () => {
+        try {
+            setLoadingDevice(true);
+            const response = await api.get('/device-status');
+            if (response.data.success) {
+                setDeviceStatus(response.data);
+            }
+        } catch (err) {
+            console.error("Failed to fetch device status:", err);
+        } finally {
+            setLoadingDevice(false);
+        }
+    };
+
+    // Test Geolocation Diagnostic & Fetch Device Status on Mount
     useEffect(() => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
@@ -67,7 +89,32 @@ export default function StudentProfileSettings() {
         } else {
             setGpsStatus('Not Supported by Browser');
         }
+
+        fetchDeviceStatus();
     }, []);
+
+    const submitDeviceResetRequest = async (e) => {
+        e.preventDefault();
+        if (!resetReason.trim()) {
+            toast.error("Please enter a reason for device reset.");
+            return;
+        }
+        try {
+            setSubmittingReset(true);
+            const res = await api.post('/request-device-reset', { reason: resetReason.trim() });
+            if (res.data.success) {
+                toast.success(res.data.message || "Device reset request submitted!");
+                setOpenResetDeviceModal(false);
+                setResetReason('');
+                fetchDeviceStatus();
+            }
+        } catch (err) {
+            console.error("Reset request error:", err);
+            toast.error(err.response?.data?.message || "Failed to submit request.");
+        } finally {
+            setSubmittingReset(false);
+        }
+    };
 
     const handleImageChange = async (e) => {
         const file = e.target.files[0];
@@ -277,6 +324,96 @@ export default function StudentProfileSettings() {
                         <span className="material-symbols-outlined text-base">devices</span>
                         <span>Device & Geofence Diagnostics</span>
                     </h3>
+
+                    {/* 🔒 1-to-1 Device Hardware Binding Card */}
+                    <div className="bg-gradient-to-br from-white to-[#f4fbf7] rounded-2xl border border-emerald-200/80 shadow-sm p-5 space-y-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-gray-100">
+                            <div className="flex items-start gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-emerald-100 text-[#0a643a] flex items-center justify-center shrink-0 shadow-inner">
+                                    <span className="material-symbols-outlined text-xl">phonelink_lock</span>
+                                </div>
+                                <div>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <span className="text-xs font-bold text-slate-900 block">
+                                            1-to-1 Device Hardware Binding
+                                        </span>
+                                        <span className="text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-[#0a643a] px-2 py-0.5 rounded-full">
+                                            Anti-Proxy Security
+                                        </span>
+                                    </div>
+                                    <span className="text-[11px] text-slate-500 block mt-0.5">
+                                        Your matric number is locked to one physical device to prevent proxy attendance
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Status Indicator */}
+                            {deviceStatus?.isBound ? (
+                                deviceStatus.deviceId === getDeviceIdSync() ? (
+                                    <span className="text-xs font-bold text-emerald-800 bg-emerald-100/90 border border-emerald-300 px-3 py-1.5 rounded-xl flex items-center gap-1.5 w-fit">
+                                        <span className="material-symbols-outlined text-sm text-emerald-700">verified</span>
+                                        <span>Verified Device</span>
+                                    </span>
+                                ) : (
+                                    <span className="text-xs font-bold text-amber-800 bg-amber-100/90 border border-amber-300 px-3 py-1.5 rounded-xl flex items-center gap-1.5 w-fit">
+                                        <span className="material-symbols-outlined text-sm text-amber-700">warning</span>
+                                        <span>Other Browser / Device</span>
+                                    </span>
+                                )
+                            ) : (
+                                <span className="text-xs font-bold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-xl flex items-center gap-1.5 w-fit">
+                                    <span className="material-symbols-outlined text-sm">schedule</span>
+                                    <span>Unbound (Will bind on phone login)</span>
+                                </span>
+                            )}
+                        </div>
+
+                        {/* Device Details Grid */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                            <div className="bg-white/80 p-3 rounded-xl border border-gray-100 space-y-1">
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Registered Hardware</span>
+                                <span className="font-semibold text-slate-800 block truncate">
+                                    {deviceStatus?.deviceInfo?.name || "Not registered yet"}
+                                </span>
+                            </div>
+
+                            <div className="bg-white/80 p-3 rounded-xl border border-gray-100 space-y-1">
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Bound Date</span>
+                                <span className="font-semibold text-slate-800 block">
+                                    {deviceStatus?.deviceInfo?.boundAt 
+                                        ? new Date(deviceStatus.deviceInfo.boundAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                                        : "Pending First Login"}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Reset Request Alert or Action */}
+                        {deviceStatus?.deviceResetRequested ? (
+                            <div className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs">
+                                <span className="material-symbols-outlined text-base text-amber-600 shrink-0 mt-0.5">hourglass_top</span>
+                                <div>
+                                    <span className="font-bold block">Device Reset Request Pending</span>
+                                    <p className="text-[11px] text-amber-800 mt-0.5 leading-relaxed">
+                                        Reason: "{deviceStatus.deviceResetReason}". A lecturer or administrator has been notified to reset your binding.
+                                    </p>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 border-t border-gray-100 text-[11px] text-slate-500">
+                                <span>Changed your phone or lost access?</span>
+                                <button
+                                    type="button"
+                                    onClick={() => setOpenResetDeviceModal(true)}
+                                    className="text-[#0a643a] hover:text-[#08522f] font-bold hover:underline cursor-pointer flex items-center gap-1 w-fit"
+                                >
+                                    <span className="material-symbols-outlined text-sm">restart_alt</span>
+                                    <span>Request Device Reset</span>
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Standard Sensors Card */}
                     <div className="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-5 space-y-3">
                         <div className="flex items-center justify-between pb-3 border-b border-gray-100">
                             <div className="flex items-center gap-3">
@@ -518,6 +655,53 @@ export default function StudentProfileSettings() {
                                 className="px-4 py-2 bg-[#0a643a] hover:bg-[#084f2e] text-white text-xs font-bold rounded-xl transition-colors shadow-sm cursor-pointer"
                             >
                                 Submit for Review
+                            </button>
+                        </div>
+                    </form>
+                </ModalBody>
+            </Modal>
+
+            {/* ── DEVICE RESET REQUEST MODAL ──────────────────────────────────── */}
+            <Modal show={openResetDeviceModal} size="md" onClose={() => setOpenResetDeviceModal(false)}>
+                <ModalHeader className="border-b border-gray-100 px-6 py-4">
+                    <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[#0a643a] text-xl">phonelink_lock</span>
+                        <h3 className="text-sm font-bold text-slate-900">Request Device Reset</h3>
+                    </div>
+                </ModalHeader>
+                <ModalBody className="p-6">
+                    <form onSubmit={submitDeviceResetRequest} className="space-y-4">
+                        <p className="text-xs text-slate-600 leading-relaxed">
+                            Under university anti-proxy regulations, accounts are bound to a single physical device. If you lost, damaged, or replaced your smartphone, state the reason below. Your lecturer or department admin will review and reset your binding.
+                        </p>
+
+                        <div>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">Reason for Device Change</label>
+                            <textarea
+                                rows={3}
+                                required
+                                value={resetReason}
+                                onChange={(e) => setResetReason(e.target.value)}
+                                placeholder="e.g. Lost my phone last Friday, bought a new Samsung A15..."
+                                className="w-full bg-slate-50 border border-gray-200 rounded-xl p-3 text-xs font-medium outline-none focus:border-[#0a643a]"
+                            />
+                        </div>
+
+                        <div className="flex justify-end gap-2 pt-2">
+                            <button
+                                type="button"
+                                onClick={() => setOpenResetDeviceModal(false)}
+                                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-colors cursor-pointer"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={submittingReset}
+                                className="px-4 py-2 bg-[#0a643a] hover:bg-[#084f2e] disabled:opacity-60 text-white text-xs font-bold rounded-xl transition-colors shadow-sm cursor-pointer flex items-center gap-1.5"
+                            >
+                                <span className="material-symbols-outlined text-sm">send</span>
+                                <span>{submittingReset ? "Submitting..." : "Submit Request"}</span>
                             </button>
                         </div>
                     </form>
