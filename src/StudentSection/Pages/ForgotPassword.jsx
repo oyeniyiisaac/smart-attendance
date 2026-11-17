@@ -119,6 +119,7 @@ const ForgotPassword = () => {
                 email: cleanIdentifier,
                 otp: cleanOtp,
                 newPassword: newPassword.trim(),
+                confirmPassword: confirmPassword.trim(),
             };
 
             const res = await api.post(endpoint, payload);
